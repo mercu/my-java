@@ -1,22 +1,19 @@
 package com.mercu.http;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -31,57 +28,43 @@ public class HttpService {
         httpClient = HttpClientBuilder.create().build();
     }
 
-    public void get(String url) {
+    public HttpResponse get(String url) {
         HttpGet request = new HttpGet(url);
-
         //        request.addHeader("User-Agent", "");
-        HttpResponse response = null;
-        try {
-            response = httpClient.execute(request);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("response.statusLine.statusCode : " + response.getStatusLine().getStatusCode());
-        printEntityContent(response);
 
+        HttpResponse response = executeHttpClient(request);
+        return response;
     }
 
-    private void printEntityContent(HttpResponse response) {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-            System.out.println("=== response body ===");
-            br.lines().forEach(line -> System.out.println(line));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("=== end of body ===");
-    }
+    public HttpResponse post(String url) {
+        return post(url, null);
 
-    public void post(String url) {
+    }
+    public HttpResponse post(String url, HttpEntity httpEntity) {
         HttpPost post = new HttpPost(url);
-
 //        post.setHeader("User-Agent", "");
+        if (Objects.nonNull(httpEntity)) post.setEntity(httpEntity);
 
-        List<NameValuePair> params = new ArrayList<>();
-        params.add(new BasicNameValuePair("userid", "mercujjang@gmail.com"));
-        params.add(new BasicNameValuePair("password", System.getProperty("pass"))); // !!!!!!!!!!!!!
-        params.add(new BasicNameValuePair("override", "false"));
-        params.add(new BasicNameValuePair("keepme_loggedin", "false"));
-        params.add(new BasicNameValuePair("mid", "166afe6283900000-8299106d32c5b932"));
-        params.add(new BasicNameValuePair("pageid", "MAIN"));
+        HttpResponse response = executeHttpClient(post);
+        return response;
+    }
 
+    public String toStringHttpReponse(HttpResponse response) {
         try {
-            post.setEntity(new UrlEncodedFormEntity(params));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            HttpResponse response = httpClient.execute(post);
-            System.out.println("response.statusLine.statusCode : " + response.getStatusLine().getStatusCode());
-            printEntityContent(response);
+            return EntityUtils.toString(response.getEntity());
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException("toStringHttpReponse failed!", e);
         }
-
     }
+
+    private HttpResponse executeHttpClient(HttpUriRequest request) {
+        try {
+            return httpClient.execute(request);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("executeHttpClient failed!", e);
+        }
+    }
+
 }
