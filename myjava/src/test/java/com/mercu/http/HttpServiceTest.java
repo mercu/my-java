@@ -20,6 +20,12 @@ public class HttpServiceTest {
 
     @Test
     public void httpGet() {
-        httpService.get("http://www.google.com");
+        httpService.get("http://bricklink.com");
     }
+
+    @Test
+    public void httpPost() {
+        httpService.post("https://www.bricklink.com/ajax/renovate/loginandout.ajax");
+    }
+
 }
