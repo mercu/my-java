@@ -30,7 +30,20 @@ public class BrickLinkTest {
 
     @Test
     public void wantedList() {
-        // TODO
+        brickLinkService.loginIfNeed();
+        brickLinkService.wantedList();
+    }
+
+    @Test
+    public void findSetId() {
+        System.out.println(brickLinkService.findSetId("70403"));
+    }
+
+    @Test
+    public void setInventory() {
+//        brickLinkService.setInventory("70403");
+//        brickLinkService.setInventory("10706");
+        brickLinkService.setInventory("75055");
     }
 
 }
