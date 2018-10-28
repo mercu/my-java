@@ -49,6 +49,10 @@ public class HttpService {
         return response;
     }
 
+    public String getAsString(String url) {
+        return toStringHttpReponse(get(url));
+    }
+
     public String toStringHttpReponse(HttpResponse response) {
         try {
             return EntityUtils.toString(response.getEntity());

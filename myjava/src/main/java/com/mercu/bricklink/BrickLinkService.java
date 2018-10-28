@@ -1,31 +1,32 @@
 package com.mercu.bricklink;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mercu.utils.HtmlUtils;
+import com.mercu.html.WebDomService;
 import com.mercu.http.HttpEntityBuilder;
 import com.mercu.http.HttpService;
+import com.mercu.utils.JsonUtils;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-
 @Service
 public class BrickLinkService {
     @Autowired
     private HttpService httpService;
+    @Autowired
+    private WebDomService webDomService;
 
     /**
      *
      */
-    public void loginIfNeed() {
+    public void loginIfNotLoggedin() {
         if (isLoggedIn()) {
             return;
         }
@@ -39,44 +40,31 @@ public class BrickLinkService {
                 .addParameter("pageid", "MAIN")
                 .build();
 
-        httpService.toStringHttpReponse(
-                httpService.post("https://www.bricklink.com/ajax/renovate/loginandout.ajax", httpEntity));
+        httpService.post("https://www.bricklink.com/ajax/renovate/loginandout.ajax", httpEntity);
 
     }
 
     private boolean isLoggedIn() {
-        HttpResponse response = httpService.get("http://bricklink.com");
-        return !httpService.toStringHttpReponse(response).contains("Log in or Register");
+        return !httpService.getAsString("http://bricklink.com").contains("Log in or Register");
     }
 
     /**
-     *
+     * My WantedList
      */
     public void wantedList() {
-        String jsonLine = wantedJsonLine(httpService.toStringHttpReponse(
-                httpService.get("https://www.bricklink.com/v2/wanted/list.page")));
+        String jsonContainedLine = HtmlUtils.findLineOfStringContains(
+                httpService.getAsString("https://www.bricklink.com/v2/wanted/list.page"),
+                "wantedLists");
 
-        String wantedJsonLine = jsonLine.substring(jsonLine.indexOf("{"), jsonLine.lastIndexOf("}") + 1);
-        JsonObject jsonObj = new JsonParser().parse(wantedJsonLine).getAsJsonObject();
+        JsonObject jsonObj = new JsonParser().parse(
+                JsonUtils.substringBetweenWithout(jsonContainedLine, "{", "}"))
+                .getAsJsonObject();
+
         JsonArray wantedLists = jsonObj.get("wantedLists").getAsJsonArray();
-
         for (JsonElement wantedEl : wantedLists) {
             System.out.println("wantedEl : " + wantedEl);
         }
 
-    }
-
-    private String wantedJsonLine(String wantedPage) {
-        String jsonLine = null;
-        try (BufferedReader br = new BufferedReader(new StringReader(wantedPage))) {
-            jsonLine = br.lines()
-                    .filter(line -> line.contains("wantedLists"))
-                    .findFirst()
-                    .get();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return jsonLine;
     }
 
     /**
@@ -85,14 +73,13 @@ public class BrickLinkService {
      * @param setNo
      */
     public String findSetId(String setNo) {
-        String jsonLine = httpService.toStringHttpReponse(
-                httpService.get("https://www.bricklink.com/ajax/clone/search/autocomplete.ajax?callback=jQuery111208572062803442151_1540631420720&suggest_str=" + setNo + "&_=1540631420723"));
+        String jsonLine = httpService.getAsString("https://www.bricklink.com/ajax/clone/search/autocomplete.ajax?callback=jQuery111208572062803442151_1540631420720&suggest_str=" + setNo + "&_=1540631420723");
 
-        String wantedJsonLine = jsonLine.substring(jsonLine.indexOf("(") + 1, jsonLine.lastIndexOf(")") );
-        JsonObject jsonObj = new JsonParser().parse(wantedJsonLine).getAsJsonObject();
+        JsonObject jsonObj = new JsonParser().parse(
+                JsonUtils.substringBetweenWith(jsonLine, "(", ")"))
+                .getAsJsonObject();
 
         JsonArray products = jsonObj.get("products").getAsJsonArray();
-
         for (JsonElement productEl : products) {
             JsonObject productObj = productEl.getAsJsonObject();
 
@@ -112,12 +99,9 @@ public class BrickLinkService {
     public void setInventory(String setNo) {
         String setId = findSetId(setNo);
 
-        String inventoryPage = httpService.toStringHttpReponse(
-                httpService.get("https://www.bricklink.com/v2/catalog/catalogitem_invtab.page?idItem=" + setId + "&st=1&show_invid=0&show_matchcolor=1&show_pglink=0&show_pcc=0&show_missingpcc=0&itemNoSeq=" + setNo + "-1"));
+        String inventoryPage = httpService.getAsString("https://www.bricklink.com/v2/catalog/catalogitem_invtab.page?idItem=" + setId + "&st=1&show_invid=0&show_matchcolor=1&show_pglink=0&show_pcc=0&show_missingpcc=0&itemNoSeq=" + setNo + "-1");
 
-        Document document = Jsoup.parse(inventoryPage);
-
-        Elements itemRows = document.select(".pciinvItemRow, .pciinvExtraHeader, .pciinvItemTypeHeader");
+        Elements itemRows = webDomService.elements(inventoryPage, ".pciinvItemRow, .pciinvExtraHeader, .pciinvItemTypeHeader");
         for (Element itemRow : itemRows) {
             if (itemRow.hasClass("pciinvItemRow")) {
                 itemToString(itemRow);
@@ -139,5 +123,14 @@ public class BrickLinkService {
         System.out.println("* image : " + image + "\t, * qty : " + qty + "\t, * itemNo : " + itemNo + "\t, * desc : " + desc);
     }
 
+    /**
+     * https://www.bricklink.com/catalogTree.asp?itemBrand=1000&itemType=P
+     * - table.catalog-list__category-list--internal
+     */
+    public void partCategories() {
+        Element baseEl = webDomService.element(httpService.getAsString("https://www.bricklink.com/catalogTree.asp?itemBrand=1000&itemType=P"), "table.catalog-tree__category-list--internal");
+        System.out.println(baseEl);
+
+    }
 
 }

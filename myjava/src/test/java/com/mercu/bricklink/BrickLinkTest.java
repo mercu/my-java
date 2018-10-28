@@ -25,12 +25,12 @@ public class BrickLinkTest {
 
     @Test
     public void login() {
-        brickLinkService.loginIfNeed();
+        brickLinkService.loginIfNotLoggedin();
     }
 
     @Test
     public void wantedList() {
-        brickLinkService.loginIfNeed();
+        brickLinkService.loginIfNotLoggedin();
         brickLinkService.wantedList();
     }
 
@@ -46,4 +46,8 @@ public class BrickLinkTest {
         brickLinkService.setInventory("75055");
     }
 
+    @Test
+    public void partCategories() {
+        brickLinkService.partCategories();
+    }
 }
