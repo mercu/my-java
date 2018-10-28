@@ -1,5 +1,7 @@
 package com.mercu.bricklink;
 
+import com.mercu.bricklink.model.PartCategory;
+import com.mercu.bricklink.repository.PartCategoryRepository;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
 import com.mercu.bricklink.service.BrickLinkLoginService;
 import com.mercu.bricklink.service.BrickLinkMyService;
@@ -12,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.List;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {AppConfig.class})
 public class BrickLinkTest {
@@ -23,9 +27,10 @@ public class BrickLinkTest {
     private BrickLinkMyService brickLinkMyService;
     @Autowired
     private BrickLinkCatalogService brickLinkCatalogService;
-
     @Autowired
     private HttpService httpService;
+    @Autowired
+    private PartCategoryRepository partCategoryRepository;
 
     @Test
     public void home() {
@@ -58,6 +63,11 @@ public class BrickLinkTest {
 
     @Test
     public void partCategories() {
-        System.out.println(brickLinkCatalogService.partCategoryList());
+        List<PartCategory> partCategoryList = brickLinkCatalogService.partCategoryList();
+        System.out.println(partCategoryList);
+
+//        for (PartCategory partCategory : partCategoryList) {
+//            partCategoryRepository.save(partCategory);
+//        }
     }
 }
