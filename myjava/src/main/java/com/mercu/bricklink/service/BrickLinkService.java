@@ -1,16 +1,13 @@
-package com.mercu.bricklink;
+package com.mercu.bricklink.service;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mercu.utils.HtmlUtils;
 import com.mercu.html.WebDomService;
-import com.mercu.http.HttpEntityBuilder;
 import com.mercu.http.HttpService;
 import com.mercu.utils.JsonUtils;
-import org.apache.commons.codec.binary.StringUtils;
-import org.apache.http.HttpEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,50 +19,6 @@ public class BrickLinkService {
     private HttpService httpService;
     @Autowired
     private WebDomService webDomService;
-
-    /**
-     *
-     */
-    public void loginIfNotLoggedin() {
-        if (isLoggedIn()) {
-            return;
-        }
-
-        HttpEntity httpEntity = HttpEntityBuilder.create()
-                .addParameter("userid", "mercujjang@gmail.com")
-                .addParameter("password", System.getProperty("pass"))
-                .addParameter("override", "false")
-                .addParameter("keepme_loggedin", "true")
-                .addParameter("mid", "166afe6283900000-8299106d32c5b932")
-                .addParameter("pageid", "MAIN")
-                .build();
-
-        httpService.post("https://www.bricklink.com/ajax/renovate/loginandout.ajax", httpEntity);
-
-    }
-
-    private boolean isLoggedIn() {
-        return !httpService.getAsString("http://bricklink.com").contains("Log in or Register");
-    }
-
-    /**
-     * My WantedList
-     */
-    public void wantedList() {
-        String jsonContainedLine = HtmlUtils.findLineOfStringContains(
-                httpService.getAsString("https://www.bricklink.com/v2/wanted/list.page"),
-                "wantedLists");
-
-        JsonObject jsonObj = new JsonParser().parse(
-                JsonUtils.substringBetweenWithout(jsonContainedLine, "{", "}"))
-                .getAsJsonObject();
-
-        JsonArray wantedLists = jsonObj.get("wantedLists").getAsJsonArray();
-        for (JsonElement wantedEl : wantedLists) {
-            System.out.println("wantedEl : " + wantedEl);
-        }
-
-    }
 
     /**
      * https://www.bricklink.com/ajax/clone/search/autocomplete.ajax?callback=jQuery111208572062803442151_1540631420720&suggest_str=70403&_=1540631420723
@@ -121,16 +74,6 @@ public class BrickLinkService {
         String itemNo = itemRow.select("td:nth-of-type(4) a").first().html();
         String desc = itemRow.select("td:nth-of-type(5) b").first().html();
         System.out.println("* image : " + image + "\t, * qty : " + qty + "\t, * itemNo : " + itemNo + "\t, * desc : " + desc);
-    }
-
-    /**
-     * https://www.bricklink.com/catalogTree.asp?itemBrand=1000&itemType=P
-     * - table.catalog-list__category-list--internal
-     */
-    public void partCategories() {
-        Element baseEl = webDomService.element(httpService.getAsString("https://www.bricklink.com/catalogTree.asp?itemBrand=1000&itemType=P"), "table.catalog-tree__category-list--internal");
-        System.out.println(baseEl);
-
     }
 
 }

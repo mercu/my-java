@@ -1,5 +1,9 @@
 package com.mercu.bricklink;
 
+import com.mercu.bricklink.service.BrickLinkCatalogService;
+import com.mercu.bricklink.service.BrickLinkLoginService;
+import com.mercu.bricklink.service.BrickLinkMyService;
+import com.mercu.bricklink.service.BrickLinkService;
 import com.mercu.config.AppConfig;
 import com.mercu.http.HttpService;
 import org.junit.Test;
@@ -13,6 +17,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class BrickLinkTest {
     @Autowired
     private BrickLinkService brickLinkService;
+    @Autowired
+    private BrickLinkLoginService brickLinkLoginService;
+    @Autowired
+    private BrickLinkMyService brickLinkMyService;
+    @Autowired
+    private BrickLinkCatalogService brickLinkCatalogService;
 
     @Autowired
     private HttpService httpService;
@@ -25,13 +35,13 @@ public class BrickLinkTest {
 
     @Test
     public void login() {
-        brickLinkService.loginIfNotLoggedin();
+        brickLinkLoginService.loginIfNotLoggedin();
     }
 
     @Test
     public void wantedList() {
-        brickLinkService.loginIfNotLoggedin();
-        brickLinkService.wantedList();
+        brickLinkLoginService.loginIfNotLoggedin();
+        brickLinkMyService.wantedList();
     }
 
     @Test
@@ -48,6 +58,6 @@ public class BrickLinkTest {
 
     @Test
     public void partCategories() {
-        brickLinkService.partCategories();
+        System.out.println(brickLinkCatalogService.partCategoryList());
     }
 }
