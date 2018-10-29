@@ -18,7 +18,7 @@ public class BrickLinkMyService {
     /**
      * My WantedList
      */
-    public void wantedList() {
+    public void crawlWantedList() {
         String jsonContainedLine = HtmlUtils.findLineOfStringContains(
                 httpService.getAsString("https://www.bricklink.com/v2/wanted/list.page"),
                 "wantedLists");
