@@ -6,8 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mercu.html.WebDomService;
 import com.mercu.http.HttpService;
-import com.mercu.utils.JsonUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.mercu.utils.SubstringUtils;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +28,14 @@ public class BrickLinkService {
         String jsonLine = httpService.getAsString("https://www.bricklink.com/ajax/clone/search/autocomplete.ajax?callback=jQuery111208572062803442151_1540631420720&suggest_str=" + setNo + "&_=1540631420723");
 
         JsonObject jsonObj = new JsonParser().parse(
-                JsonUtils.substringBetweenWith(jsonLine, "(", ")"))
+                SubstringUtils.substringBetweenWithout(jsonLine, "(", ")"))
                 .getAsJsonObject();
 
         JsonArray products = jsonObj.get("products").getAsJsonArray();
         for (JsonElement productEl : products) {
             JsonObject productObj = productEl.getAsJsonObject();
 
-            if (StringUtils.equals(productObj.get("itemNo").getAsString(), setNo)) {
+            if (org.apache.commons.lang3.StringUtils.equals(productObj.get("itemNo").getAsString(), setNo)) {
                 return productObj.get("id").getAsString();
             }
         }

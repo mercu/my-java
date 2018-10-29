@@ -3,11 +3,15 @@ package com.mercu.bricklink.service;
 import com.mercu.http.HttpEntityBuilder;
 import com.mercu.http.HttpService;
 import org.apache.http.HttpEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BrickLinkLoginService {
+    private Logger logger = LoggerFactory.getLogger(BrickLinkLoginService.class);
+
     @Autowired
     private HttpService httpService;
 
@@ -28,7 +32,7 @@ public class BrickLinkLoginService {
                 .addParameter("pageid", "MAIN")
                 .build();
 
-        httpService.post("https://www.bricklink.com/ajax/renovate/loginandout.ajax", httpEntity);
+        logger.info("loggedin : " + httpService.toStringHttpReponse(httpService.post("https://www.bricklink.com/ajax/renovate/loginandout.ajax", httpEntity)));
 
     }
 

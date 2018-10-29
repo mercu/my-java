@@ -4,6 +4,7 @@ import com.mercu.bricklink.model.PartCategory;
 import com.mercu.bricklink.model.SetCategory;
 import com.mercu.html.WebDomService;
 import com.mercu.http.HttpService;
+import com.mercu.utils.SubstringUtils;
 import com.mercu.utils.UrlUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
@@ -62,6 +63,29 @@ public class BrickLinkCatalogService {
         setCategory.setParts(spanEl.html());
         setCategory.setType(aQueriesMap.get("catType"));
         return setCategory;
+    }
+
+    /**
+     * https://www.bricklink.com/catalogList.asp?pg=1&catString=102&itemBrand=1000&catType=S
+     * - table.catalog-list__body-main
+     * - catSring :
+     * - pg : 1 ~ n
+     */
+    public void setList() {
+        Elements setEls =
+                webDomService.elements(
+                        httpService.getAsString("https://www.bricklink.com/catalogList.asp?pg=1&catString=102&itemBrand=1000&catType=S"),
+                        "table.catalog-list__body-main tr");
+        for (Element setEl : setEls) {
+            if (!setEl.toString().contains("Set No:")) continue;
+            System.out.println("* setEl : " + setEl);
+            System.out.println("- title : " + setEl.selectFirst("span").attr("title"));
+            System.out.println("- itemid : " + setEl.selectFirst("span").attr("data-itemid"));
+            System.out.println("- img : " + setEl.selectFirst("img").attr("src"));
+            System.out.println("- setNo : " + setEl.selectFirst("a").html().replace("-1", ""));
+            System.out.println("- setName : " + setEl.selectFirst("td strong").html());
+            System.out.println("- setBrief : " + SubstringUtils.substringBetweenWithout(setEl.select("td:nth-of-type(3) font").html(), "<br>", "<br>"));
+        }
     }
 
     /**

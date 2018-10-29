@@ -89,4 +89,9 @@ public class BrickLinkTest {
 //            setCategoryRepository.save(setCategory);
 //        }
     }
+
+    @Test
+    public void setList() {
+        brickLinkCatalogService.setList();
+    }
 }

@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mercu.http.HttpService;
 import com.mercu.utils.HtmlUtils;
-import com.mercu.utils.JsonUtils;
+import com.mercu.utils.SubstringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ public class BrickLinkMyService {
                 "wantedLists");
 
         JsonObject jsonObj = new JsonParser().parse(
-                JsonUtils.substringBetweenWithout(jsonContainedLine, "{", "}"))
+                SubstringUtils.substringBetweenWith(jsonContainedLine, "{", "}"))
                 .getAsJsonObject();
 
         JsonArray wantedLists = jsonObj.get("wantedLists").getAsJsonArray();
