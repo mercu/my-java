@@ -1,4 +1,4 @@
-package com.mercu.bricklink.model;
+package com.mercu.bricklink.model.info;
 
 import lombok.Data;
 import lombok.Getter;
@@ -14,13 +14,14 @@ import javax.persistence.Table;
 @ToString
 @Data
 @Entity
-@Table(name = "BL_PART_INFO")
-public class PartInfo {
+@Table(name = "BL_SET_INFO")
+public class SetInfo implements AbstractInfo {
     @Id
     private String id;
     private String categoryId;
     private String img;
-    private String partNo;
-    private String partName;
+    private String setNo;
+    private String setName;
+    private String setBrief;
 
 }

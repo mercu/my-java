@@ -1,4 +1,4 @@
-package com.mercu.bricklink.model;
+package com.mercu.bricklink.model.category;
 
 import lombok.Data;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table(name = "BL_PART_CATEGORY")
-public class PartCategory {
+public class PartCategory implements AbstractCategory {
     @Id
     private String id;
     private String type;

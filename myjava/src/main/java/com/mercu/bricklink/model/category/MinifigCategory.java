@@ -1,4 +1,4 @@
-package com.mercu.bricklink.model;
+package com.mercu.bricklink.model.category;
 
 import lombok.Data;
 import lombok.Getter;
@@ -14,8 +14,8 @@ import javax.persistence.Table;
 @ToString
 @Data
 @Entity
-@Table(name = "BL_SET_CATEGORY")
-public class SetCategory {
+@Table(name = "BL_MINIFIG_CATEGORY")
+public class MinifigCategory implements AbstractCategory {
     @Id
     private String id;
     private Integer depth;

@@ -1,11 +1,15 @@
 package com.mercu.bricklink;
 
-import com.mercu.bricklink.model.PartCategory;
-import com.mercu.bricklink.model.PartInfo;
-import com.mercu.bricklink.model.SetCategory;
-import com.mercu.bricklink.model.SetInfo;
+import com.mercu.bricklink.model.category.MinifigCategory;
+import com.mercu.bricklink.model.category.PartCategory;
+import com.mercu.bricklink.model.category.SetCategory;
+import com.mercu.bricklink.model.info.MinifigInfo;
+import com.mercu.bricklink.model.info.PartInfo;
+import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
+import com.mercu.bricklink.service.BrickLinkCategoryService;
 import com.mercu.config.AppConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -23,10 +27,12 @@ public class BrickLinkCatalogTest {
 
     @Autowired
     private BrickLinkCatalogService brickLinkCatalogService;
+    @Autowired
+    private BrickLinkCategoryService brickLinkCategoryService;
 
     @Test
     public void crawlPartCategories() {
-        List<PartCategory> partCategoryList = brickLinkCatalogService.crawlPartCategoryList();
+        List<PartCategory> partCategoryList = brickLinkCategoryService.crawlPartCategoryList();
         System.out.println(partCategoryList);
 
 //        brickLinkCatalogService.savePartCategoryList(partCategoryList);
@@ -34,16 +40,29 @@ public class BrickLinkCatalogTest {
 
     @Test
     public void crawlSetCategories() {
-        List<SetCategory> setCategoryList = brickLinkCatalogService.crawlSetCategoryList();
+        List<SetCategory> setCategoryList = brickLinkCategoryService.crawlSetCategoryList();
         System.out.println(setCategoryList);
 
 //        brickLinkCatalogService.saveSetCategoryList(setCategoryList);
     }
 
     @Test
+    public void crawlMinifigCategories() {
+        List<MinifigCategory> minifigCategoryList = brickLinkCategoryService.crawlMinifigCategoryList();
+        System.out.println(minifigCategoryList);
+
+        brickLinkCategoryService.saveMinifigCategoryList(minifigCategoryList);
+    }
+
+    @Test
     public void findSetCategoriesAll() {
         System.out.println(
-                brickLinkCatalogService.findSetCategoriesAll());
+                brickLinkCategoryService.findSetCategoriesAll());
+    }
+
+    @Test
+    public void findMinifigCategoriesRoot() {
+        System.out.println(brickLinkCategoryService.findMinifigCategoriesRoot());
     }
 
     @Test
@@ -52,8 +71,20 @@ public class BrickLinkCatalogTest {
     }
 
     @Test
+    public void crawlMinifigInfoListOfCategoriesRoot() {
+        List<MinifigCategory> minifigCategoryList = brickLinkCategoryService.findMinifigCategoriesRoot();
+        for (MinifigCategory minifigCategory : minifigCategoryList) {
+            if (StringUtils.equals(minifigCategory.getParts(), "(1)")) continue;
+
+
+            List<MinifigInfo> minifigInfoList = brickLinkCatalogService.crawlMinifigInfoListOfCategory(minifigCategory.getId());
+            brickLinkCatalogService.saveMinifigInfoList(minifigInfoList);
+        }
+    }
+
+    @Test
     public void crawlSetInfoListOfCategoriesAll() {
-        List<SetCategory> setCategoryList = brickLinkCatalogService.findSetCategoriesAll();
+        List<SetCategory> setCategoryList = brickLinkCategoryService.findSetCategoriesAll();
         for (SetCategory setCategory : setCategoryList) {
             List<SetInfo> setInfoList = brickLinkCatalogService.crawlSetInfoListOfCategory(setCategory.getId());
             brickLinkCatalogService.saveSetInfoList(setInfoList);
@@ -70,7 +101,7 @@ public class BrickLinkCatalogTest {
 
     @Test
     public void crawlPartInfoListOfCategoriesAll() {
-        List<PartCategory> partCategoryList = brickLinkCatalogService.findPartCategoriesAll();
+        List<PartCategory> partCategoryList = brickLinkCategoryService.findPartCategoriesAll();
         for (PartCategory partCategory : partCategoryList) {
             List<PartInfo> partInfoList = brickLinkCatalogService.crawlPartInfoListOfCategory(partCategory.getId());
             brickLinkCatalogService.savePartInfoList(partInfoList);
