@@ -19,13 +19,14 @@ public class BrickLinkTest {
     private static final Logger logger = LoggerFactory.getLogger(BrickLinkTest.class);
 
     @Autowired
+    private HttpService httpService;
+
+    @Autowired
     private BrickLinkService brickLinkService;
     @Autowired
     private BrickLinkLoginService brickLinkLoginService;
     @Autowired
     private BrickLinkMyService brickLinkMyService;
-    @Autowired
-    private HttpService httpService;
 
     @Test
     public void home() {
@@ -47,13 +48,6 @@ public class BrickLinkTest {
     @Test
     public void ajaxFindSetId() {
         System.out.println(brickLinkService.ajaxFindSetId("70403"));
-    }
-
-    @Test
-    public void crawlSetInventory() {
-//        brickLinkService.crawlSetInventory("70403");
-//        brickLinkService.crawlSetInventory("10706");
-        brickLinkService.crawlSetInventory("75055");
     }
 
 }

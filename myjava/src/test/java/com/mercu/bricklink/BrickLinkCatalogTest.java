@@ -3,6 +3,7 @@ package com.mercu.bricklink;
 import com.mercu.bricklink.model.category.MinifigCategory;
 import com.mercu.bricklink.model.category.PartCategory;
 import com.mercu.bricklink.model.category.SetCategory;
+import com.mercu.bricklink.model.info.ColorInfo;
 import com.mercu.bricklink.model.info.MinifigInfo;
 import com.mercu.bricklink.model.info.PartInfo;
 import com.mercu.bricklink.model.info.SetInfo;
@@ -106,6 +107,12 @@ public class BrickLinkCatalogTest {
             List<PartInfo> partInfoList = brickLinkCatalogService.crawlPartInfoListOfCategory(partCategory.getId());
             brickLinkCatalogService.savePartInfoList(partInfoList);
         }
+    }
+
+    @Test
+    public void crawlColorInfoList() {
+        List<ColorInfo> colorInfoList = brickLinkCatalogService.crawlColorInfoList();
+        brickLinkCatalogService.saveColorInfoList(colorInfoList);
     }
 
 }

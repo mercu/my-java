@@ -1,10 +1,8 @@
 package com.mercu.bricklink.service;
 
 import com.mercu.bricklink.model.CategoryType;
-import com.mercu.bricklink.model.info.AbstractInfo;
-import com.mercu.bricklink.model.info.MinifigInfo;
-import com.mercu.bricklink.model.info.PartInfo;
-import com.mercu.bricklink.model.info.SetInfo;
+import com.mercu.bricklink.model.info.*;
+import com.mercu.bricklink.repository.ColorInfoRepository;
 import com.mercu.bricklink.repository.MinifigInfoRepository;
 import com.mercu.bricklink.repository.PartInfoRepository;
 import com.mercu.bricklink.repository.SetInfoRepository;
@@ -42,6 +40,8 @@ public class BrickLinkCatalogService {
     private PartInfoRepository partInfoRepository;
     @Autowired
     private MinifigInfoRepository minifigInfoRepository;
+    @Autowired
+    private ColorInfoRepository colorInfoRepository;
 
     /**
      * @param setCategoryId
@@ -178,6 +178,10 @@ public class BrickLinkCatalogService {
         return setInfo;
     }
 
+    public List<SetInfo> findSetInfoListByYear(String year) {
+        return setInfoRepository.findAllByYear(year);
+    }
+
     /**
      * @param setInfoList
      */
@@ -212,6 +216,44 @@ public class BrickLinkCatalogService {
                     minifigInfoRepository.save((MinifigInfo)info);
                     break;
             }
+        }
+    }
+
+    /**
+     * https://www.bricklink.com/catalogColors.asp?sortBy=N
+     * - table:nth-of-type(3) table tr
+     */
+    public List<ColorInfo> crawlColorInfoList() {
+        String colorUrl = "https://www.bricklink.com/catalogColors.asp?sortBy=N";
+        Elements colorEls = webDomService.elements(
+                httpService.getAsString(colorUrl),
+                "table:nth-of-type(3) table tr");
+        List<ColorInfo> colorInfoList = new ArrayList<>();
+        for (Element colorEl : colorEls) {
+            if (!colorEl.toString().contains("colorID=")) continue;
+
+            colorInfoList.add(elToColorInfo(colorEl));
+        }
+
+        return colorInfoList;
+    }
+
+    private ColorInfo elToColorInfo(Element colorEl) {
+        ColorInfo colorInfo = new ColorInfo();
+        colorInfo.setId(UrlUtils.urlParametersMap("http:" + colorEl.selectFirst("a").attr("href"))
+                .get("colorID"));
+        colorInfo.setName(colorEl.select("td:nth-of-type(4) font").html().replaceAll("&nbsp;", ""));
+        colorInfo.setColorCode(colorEl.select("td:nth-of-type(2)").attr("bgcolor"));
+
+        return colorInfo;
+    }
+
+    /**
+     * @param colorInfoList
+     */
+    public void saveColorInfoList(List<ColorInfo> colorInfoList) {
+        for (ColorInfo colorInfo : colorInfoList) {
+            colorInfoRepository.save(colorInfo);
         }
     }
 
