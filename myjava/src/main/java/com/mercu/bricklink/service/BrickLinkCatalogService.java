@@ -171,7 +171,7 @@ public class BrickLinkCatalogService {
                         .replaceAll("&=", "&catString="))
                         .get("catString"));
         setInfo.setImg(setEl.selectFirst("img").attr("src"));
-        setInfo.setSetNo(setEl.selectFirst("a").html().replace("-1", ""));
+        setInfo.setSetNo(setEl.selectFirst("a").html().split("-")[0]);
         setInfo.setSetName(setEl.selectFirst("td strong").html());
         setInfo.setSetBrief(SubstringUtils.substringBetweenWithout(setEl.select("td:nth-of-type(3) font").html(), "<br>", "<br>"));
         System.out.println(setInfo);

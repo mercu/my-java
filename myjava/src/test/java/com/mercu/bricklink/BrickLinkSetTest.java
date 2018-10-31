@@ -44,20 +44,25 @@ public class BrickLinkSetTest {
 
     @Test
     public void crawlSetInventories() {
-        for (int year = 2017; year >= 1953; year--) {
+        for (int year = 2018; year >= 1953; year--) {
             logService.log("crawlSetInventories", "- year : " + year);
             List<SetInfo> setInfoList = brickLinkCatalogService.findSetInfoListByYear(String.valueOf(year));
             int index = 0;
             for (SetInfo setInfo : setInfoList) {
                 index++;
-                if (brickLinkSetService.existsSetItem(setInfo.getId())) {
-                    logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - exists - skipped!");
-                    continue;
+                try {
+                    if (brickLinkSetService.existsSetItem(setInfo.getId())) {
+                        logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - exists - skipped!");
+                        continue;
+                    }
+                    logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - start");
+                    String setNo = setInfo.getSetNo().split("-")[0];
+                    brickLinkSetService.saveSetItemList(
+                        brickLinkService.crawlSetInventoryBySetNo(setNo));
+                    logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - finish");
+                } catch (Exception e) {
+                    logService.log("crawlSetInventories", e.getMessage(), "exception");
                 }
-                logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - start");
-                brickLinkSetService.saveSetItemList(
-                        brickLinkService.crawlSetInventoryBySetNo(setInfo.getSetNo()));
-                logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - finish");
             }
         }
     }
