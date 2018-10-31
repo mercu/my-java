@@ -11,6 +11,7 @@ import com.mercu.bricklink.repository.MinifigInfoRepository;
 import com.mercu.bricklink.repository.PartInfoRepository;
 import com.mercu.html.WebDomService;
 import com.mercu.http.HttpService;
+import com.mercu.log.LogService;
 import com.mercu.utils.SubstringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jsoup.nodes.Element;
@@ -40,6 +41,9 @@ public class BrickLinkService {
     private PartInfoRepository partInfoRepository;
     @Autowired
     private MinifigInfoRepository minifigInfoRepository;
+
+    @Autowired
+    private LogService logService;
 
     /**
      * https://www.bricklink.com/ajax/clone/search/autocomplete.ajax?callback=jQuery111208572062803442151_1540631420720&suggest_str=70403&_=1540631420723
@@ -71,11 +75,11 @@ public class BrickLinkService {
      * @param setNo
      */
     public List<SetItem> crawlSetInventoryBySetNo(String setNo) {
-        logger.info("crawlSetInventoryBySetNo : {}", setNo);
+        logService.log("crawlSetInventoryBySetNo", "crawlSetInventoryBySetNo : " + setNo);
         String setId = ajaxFindSetId(setNo);
 
         String setInventoryUrl = "https://www.bricklink.com/v2/catalog/catalogitem_invtab.page?idItem=" + setId + "&st=1&show_invid=0&show_matchcolor=1&show_pglink=0&show_pcc=0&show_missingpcc=0&itemNoSeq=" + setNo + "-1";
-        logger.info("setInventoryUrl : {}", setInventoryUrl);
+        logService.log("crawlSetInventoryBySetNo", "setInventoryUrl : " + setInventoryUrl);
         String inventoryPage = httpService.getAsString(setInventoryUrl);
 
         List<SetItem> setItemList = new ArrayList<>();
@@ -90,6 +94,11 @@ public class BrickLinkService {
                 else if ("Minifigs:".equals(itemType)) categoryType = CategoryType.M;
                 else if ("Sets:".equals(itemType)) categoryType = CategoryType.S;
             } else if (itemRow.hasClass("pciinvItemRow")) {
+                if (Objects.isNull(categoryType)) {
+                    logService.log("crawlSetInventoryBySetNo", "categoryType is null! - itemRow : " + itemRow, "exception");
+                    continue;
+                }
+
                 SetItem setItem = itemToString(itemRow, categoryType);
                 setItem.setSetId(setId);
                 setItem.setSetNo(setNo);
@@ -103,7 +112,7 @@ public class BrickLinkService {
             }
         }
 
-        logger.info("setNo : {}, setItemList.size : {}", setNo, setItemList.size());
+        logService.log("crawlSetInventoryBySetNo", "setNo : " + setNo + ", setItemList.size : " + setItemList.size());
         return setItemList;
     }
 

@@ -21,4 +21,8 @@ public class BrickLinkSetService {
             setItemRepository.save(setItem);
         }
     }
+
+    public boolean existsSetItem(String setId) {
+        return setItemRepository.existsBySetId(setId);
+    }
 }

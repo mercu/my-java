@@ -5,6 +5,7 @@ import com.mercu.bricklink.service.BrickLinkCatalogService;
 import com.mercu.bricklink.service.BrickLinkService;
 import com.mercu.bricklink.service.BrickLinkSetService;
 import com.mercu.config.AppConfig;
+import com.mercu.log.LogService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -27,6 +28,9 @@ public class BrickLinkSetTest {
     @Autowired
     private BrickLinkCatalogService brickLinkCatalogService;
 
+    @Autowired
+    private LogService logService;
+
     @Test
     public void crawlSetInventory() {
         brickLinkSetService.saveSetItemList(
@@ -34,15 +38,27 @@ public class BrickLinkSetTest {
     }
 
     @Test
+    public void existsSetItem() {
+        System.out.println(brickLinkSetService.existsSetItem("149900"));
+    }
+
+    @Test
     public void crawlSetInventories() {
-        List<SetInfo> setInfoList = brickLinkCatalogService.findSetInfoListByYear("2018");
-        int index = 0;
-        for (SetInfo setInfo : setInfoList) {
-            index++;
-            logger.info("* {}/{} - setInfo : {} - start", index, setInfoList.size(), setInfo);
-            brickLinkSetService.saveSetItemList(
-                    brickLinkService.crawlSetInventoryBySetNo(setInfo.getSetNo()));
-            logger.info("* {}/{} - setInfo : {} - finish", index, setInfoList.size(), setInfo);
+        for (int year = 2017; year >= 1953; year--) {
+            logService.log("crawlSetInventories", "- year : " + year);
+            List<SetInfo> setInfoList = brickLinkCatalogService.findSetInfoListByYear(String.valueOf(year));
+            int index = 0;
+            for (SetInfo setInfo : setInfoList) {
+                index++;
+                if (brickLinkSetService.existsSetItem(setInfo.getId())) {
+                    logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - exists - skipped!");
+                    continue;
+                }
+                logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - start");
+                brickLinkSetService.saveSetItemList(
+                        brickLinkService.crawlSetInventoryBySetNo(setInfo.getSetNo()));
+                logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - finish");
+            }
         }
     }
 
