@@ -54,16 +54,23 @@ public class BrickLinkSetTest {
                     if (brickLinkSetService.existsSetItem(setInfo.getId())) {
                         logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - exists - skipped!");
                         continue;
+                    } else if (setInfo.getSetNo().contains("-")) {
+                        logService.log("crawlSetInventories", "- invalid setNo : " + setInfo.getSetNo() + " - skipped!", "invalid");
+                        continue;
                     }
+
                     logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - start");
                     brickLinkSetService.saveSetItemList(
                         brickLinkService.crawlSetInventoryBySetNo(setInfo.getSetNo()));
                     logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - finish");
                 } catch (Exception e) {
-                    logService.log("crawlSetInventories", e.getMessage(), "exception");
+                    logService.log("crawlSetInventories", "setNo : " + setInfo.getSetNo() + ", e : " + e.getMessage(), "exception");
                 }
             }
         }
     }
+
+    // TODO minifigs set 처리 (-2 ~ -n)
+
 
 }
