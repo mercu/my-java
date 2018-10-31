@@ -56,9 +56,8 @@ public class BrickLinkSetTest {
                         continue;
                     }
                     logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - start");
-                    String setNo = setInfo.getSetNo().split("-")[0];
                     brickLinkSetService.saveSetItemList(
-                        brickLinkService.crawlSetInventoryBySetNo(setNo));
+                        brickLinkService.crawlSetInventoryBySetNo(setInfo.getSetNo()));
                     logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - finish");
                 } catch (Exception e) {
                     logService.log("crawlSetInventories", e.getMessage(), "exception");
