@@ -17,9 +17,7 @@ public class BrickLinkSetService {
     private SetItemRepository setItemRepository;
 
     public void saveSetItemList(List<SetItem> setItemList) {
-        for (SetItem setItem : setItemList) {
-            setItemRepository.save(setItem);
-        }
+        setItemRepository.saveAll(setItemList);
     }
 
     public boolean existsSetItem(String setId) {

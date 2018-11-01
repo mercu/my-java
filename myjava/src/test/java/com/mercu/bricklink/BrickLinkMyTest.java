@@ -34,17 +34,17 @@ public class BrickLinkMyTest {
 
     @Test
     public void addMyListBySetNo() {
-        brickLinkMyService.addMyListBySetNo("10247");
+        brickLinkMyService.addMyListBySetNo("10243", "virtual");
     }
 
     @Test
     public void mapMyItemToSet() {
-        brickLinkMyService.mapMyItemToSet("181101-2");
+        brickLinkMyService.mapMyItemToSet("181101-6");
     }
 
     @Test
     public void mapMyItemToSetRatio() {
-        brickLinkMyService.mapMyItemToSetRatio("181101-1");
+        brickLinkMyService.mapMyItemToSetRatio("181101-6");
     }
 
 }

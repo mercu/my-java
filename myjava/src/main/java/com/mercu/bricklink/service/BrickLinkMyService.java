@@ -1,12 +1,5 @@
 package com.mercu.bricklink.service;
 
-import static java.util.stream.Collectors.*;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -24,6 +17,14 @@ import com.mercu.http.HttpService;
 import com.mercu.log.LogService;
 import com.mercu.utils.HtmlUtils;
 import com.mercu.utils.SubstringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class BrickLinkMyService {
@@ -64,7 +65,7 @@ public class BrickLinkMyService {
     /**
      * @param setNo
      */
-    public void addMyListBySetNo(String setNo) {
+    public void addMyListBySetNo(String setNo, String whereCode) {
         logService.log("addMyListBySetNo", "add start - setNo : " + setNo);
         // setItemList 가져오기
         List<SetItem> setItemList = setItemRepository.findBySetNo(setNo);
@@ -74,14 +75,19 @@ public class BrickLinkMyService {
         int index = 0;
         for (SetItem setItem : setItemList) {
             index++;
-            logService.log("addMyListBySetNo", "add item : " + setItem);
+            logService.log("addMyListBySetNo", "add item : " + setItem, index + "/" + setItemList.size());
 
-            MyItem myItem = new MyItem();
-            myItem.setItemType(CategoryType.P.getCode());
-            myItem.setItemNo(setItem.getItemNo());
-            myItem.setColorId(setItem.getColorId());
-            myItem.setQty(setItem.getQty());
-            myItem.setWhereType("virtual");
+            MyItem myItem = myItemRepository.findById(CategoryType.P.getCode(), setItem.getItemNo(), setItem.getColorId(), whereCode);
+            if (Objects.nonNull(myItem)) {
+                myItem.setQty(myItem.getQty() + setItem.getQty());
+            } else {
+                myItem = new MyItem();
+                myItem.setItemType(CategoryType.P.getCode());
+                myItem.setItemNo(setItem.getItemNo());
+                myItem.setColorId(setItem.getColorId());
+                myItem.setQty(setItem.getQty());
+                myItem.setWhereCode(whereCode);
+            }
 
             myItemRepository.save(myItem);
         }
@@ -101,7 +107,7 @@ public class BrickLinkMyService {
         for (MyItem myItem : myItemList) {
             index++;
             logService.log("mapMyItemToSet", index + "/" + myItemList.size() + ", myItem : " + myItem);
-            boolean existsMapItem = matchMyItemSetItemRepository.existsMapItem(matchId, myItem.getItemNo());
+            boolean existsMapItem = matchMyItemSetItemRepository.existsMapItem(matchId, myItem.getItemNo(), myItem.getColorId());
             if (existsMapItem) {
                 logService.log("mapMyItemToSet", "alread exists! - skipped");
                 continue;
@@ -110,21 +116,25 @@ public class BrickLinkMyService {
             // find set
             // TODO 유사 item 반영하기
             // TODO color 범위 확대하기
+            // TODO 수량 적용하기
             List<SetItem> setItemList = setItemRepository.findByItemAndColor(myItem.getItemNo(), myItem.getColorId());
             logService.log("mapMyItemToSet", "setItemList.size : " + setItemList.size());
 
+            List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
             for (SetItem setItem : setItemList) {
-                MatchMyItemSetItem findItemSet = new MatchMyItemSetItem();
-                findItemSet.setItemNo(myItem.getItemNo());
-                findItemSet.setColorId(myItem.getColorId());
-                findItemSet.setSetId(setItem.getSetId());
-                findItemSet.setSetNo(setItem.getSetNo());
-                findItemSet.setQty(setItem.getQty());
-                findItemSet.setMatchId(matchId);
-                findItemSet.setItemType(CategoryType.P.getCode());
+                MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
+                matchMyItemSetItem.setItemNo(myItem.getItemNo());
+                matchMyItemSetItem.setColorId(myItem.getColorId());
+                matchMyItemSetItem.setSetId(setItem.getSetId());
+                matchMyItemSetItem.setSetNo(setItem.getSetNo());
+                matchMyItemSetItem.setQty(setItem.getQty());
+                matchMyItemSetItem.setMatchId(matchId);
+                matchMyItemSetItem.setItemType(CategoryType.P.getCode());
 
-                matchMyItemSetItemRepository.save(findItemSet);
+                matchMyItemSetItemList.add(matchMyItemSetItem);
             }
+
+            matchMyItemSetItemRepository.saveAll(matchMyItemSetItemList);
         }
         logService.log("mapMyItemToSet", "map finish - matchId : " + matchId);
     }

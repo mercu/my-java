@@ -252,9 +252,7 @@ public class BrickLinkCatalogService {
      * @param colorInfoList
      */
     public void saveColorInfoList(List<ColorInfo> colorInfoList) {
-        for (ColorInfo colorInfo : colorInfoList) {
-            colorInfoRepository.save(colorInfo);
-        }
+        colorInfoRepository.saveAll(colorInfoList);
     }
 
 }

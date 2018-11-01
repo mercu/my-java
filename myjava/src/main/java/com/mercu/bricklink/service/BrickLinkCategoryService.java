@@ -151,27 +151,21 @@ public class BrickLinkCategoryService {
      * @param partCategoryList
      */
     public void savePartCategoryList(List<PartCategory> partCategoryList) {
-        for (PartCategory partCategory : partCategoryList) {
-            partCategoryRepository.save(partCategory);
-        }
+        partCategoryRepository.saveAll(partCategoryList);
     }
 
     /**
      * @param setCategoryList
      */
     public void saveSetCategoryList(List<SetCategory> setCategoryList) {
-        for (SetCategory setCategory : setCategoryList) {
-            setCategoryRepository.save(setCategory);
-        }
+        setCategoryRepository.saveAll(setCategoryList);
     }
 
     /**
      * @param minifigCategoryList
      */
     public void saveMinifigCategoryList(List<MinifigCategory> minifigCategoryList) {
-        for (MinifigCategory minifigCategory : minifigCategoryList) {
-            minifigCategoryRepository.save(minifigCategory);
-        }
+        minifigCategoryRepository.saveAll(minifigCategoryList);
     }
 
     /**

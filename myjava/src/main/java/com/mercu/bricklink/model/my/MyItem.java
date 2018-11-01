@@ -2,7 +2,11 @@ package com.mercu.bricklink.model.my;
 
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.Table;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -11,16 +15,20 @@ import javax.persistence.*;
 @Entity
 @Table(name = "BL_MY_ITEM")
 @NoArgsConstructor
+@IdClass(MyItemId.class)
 public class MyItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String seq;
-
     private String itemType;
+    @Id
     private String itemNo;
-    private String colorId;
-    private Integer qty;
-    private String whereType;
+    @Id
+    private String colorId = "0";
+    @Id
     private String whereCode;
 
+    private Integer qty;
+
+    public void setColorId(String colorId) {
+        if (Objects.nonNull(colorId)) this.colorId = colorId;
+    }
 }
