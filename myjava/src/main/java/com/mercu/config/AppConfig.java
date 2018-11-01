@@ -4,7 +4,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaVendorAdapter;
@@ -20,13 +19,12 @@ import java.util.Properties;
 @SpringBootApplication
 @EntityScan
 @ComponentScan(basePackages = {
-    "com.mercu.bricklink",
-    "com.mercu.html",
-    "com.mercu.http",
-    "com.mercu.log"
+        "com.mercu.bricklink",
+        "com.mercu.http",
+        "com.mercu.html",
+        "com.mercu.log"
 })
 @EnableJpaRepositories(basePackages = {"com.mercu"})
-@Configuration
 public class AppConfig {
 
     @Bean
