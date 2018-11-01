@@ -42,4 +42,9 @@ public class BrickLinkMyTest {
         brickLinkMyService.mapMyItemToSet("181101-1");
     }
 
+    @Test
+    public void mapMyItemToSetRatio() {
+        brickLinkMyService.mapMyItemToSetRatio("181101-1");
+    }
+
 }

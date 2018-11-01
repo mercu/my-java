@@ -1,4 +1,4 @@
-package com.mercu.bricklink.model.map;
+package com.mercu.bricklink.model.match;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -9,7 +9,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class FindItemSetId implements Serializable {
+public class MatchMyItemSetItemId implements Serializable {
     private String itemNo;
     private String setId;
 
