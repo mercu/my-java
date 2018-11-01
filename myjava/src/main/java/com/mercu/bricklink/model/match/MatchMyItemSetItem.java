@@ -22,8 +22,9 @@ public class MatchMyItemSetItem {
     private String itemNo;
     @Id
     private String setId;
-
+    @Id
     private String matchId;
+
     private String itemType;
 
     private String colorId;

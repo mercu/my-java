@@ -12,5 +12,6 @@ import java.io.Serializable;
 public class MatchMyItemSetItemId implements Serializable {
     private String itemNo;
     private String setId;
+    private String matchId;
 
 }
