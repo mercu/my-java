@@ -65,12 +65,17 @@ public class BrickLinkMyService {
      * @param setNo
      */
     public void addMyListBySetNo(String setNo) {
+        logService.log("addMyListBySetNo", "add start - setNo : " + setNo);
         // setItemList 가져오기
         List<SetItem> setItemList = setItemRepository.findBySetNo(setNo);
         System.out.println(setItemList);
 
         // myItem에 추가하기
+        int index = 0;
         for (SetItem setItem : setItemList) {
+            index++;
+            logService.log("addMyListBySetNo", "add item : " + setItem);
+
             MyItem myItem = new MyItem();
             myItem.setItemType(CategoryType.P.getCode());
             myItem.setItemNo(setItem.getItemNo());
@@ -80,6 +85,7 @@ public class BrickLinkMyService {
 
             myItemRepository.save(myItem);
         }
+        logService.log("addMyListBySetNo", "add finish - setNo : " + setNo);
     }
 
     /**

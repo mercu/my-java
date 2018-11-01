@@ -10,9 +10,17 @@
 
 <script type="text/babel">
     ReactDOM.render(
-        <h1>Index</h1>
+        <h1>BrickLink !!!</h1>
         , document.getElementById("main")
     );
+
+    window.fetch("http://localhost:8888/index.html")
+        .then(res => {console.log(res.text())});
+
+
+</script>
+<script type="text/javascript">
+
 </script>
 
 </body>

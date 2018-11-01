@@ -1,11 +1,16 @@
 package com.mercu.config;
 
+import java.util.Properties;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
+import org.springframework.web.servlet.mvc.UrlFilenameViewController;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 /**
@@ -15,6 +20,17 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 @EnableWebMvc
 @ComponentScan(basePackages = {"com.mercu"})
 public class WebAppConfig extends WebMvcConfigurerAdapter {
+    @Bean
+    public HandlerMapping handlerMapping() {
+        SimpleUrlHandlerMapping handlerMapping = new SimpleUrlHandlerMapping();
+
+        Properties properties = new Properties();
+        properties.put("/**", new UrlFilenameViewController());
+        handlerMapping.setMappings(properties);
+
+        return handlerMapping;
+    }
+
     @Bean
     public InternalResourceViewResolver viewResolver() {
         InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
