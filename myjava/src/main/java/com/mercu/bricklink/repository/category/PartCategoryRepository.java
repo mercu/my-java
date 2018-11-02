@@ -1,4 +1,4 @@
-package com.mercu.bricklink.repository;
+package com.mercu.bricklink.repository.category;
 
 import com.mercu.bricklink.model.category.PartCategory;
 import org.springframework.data.repository.CrudRepository;

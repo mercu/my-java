@@ -1,4 +1,4 @@
-package com.mercu.bricklink.repository;
+package com.mercu.bricklink.repository.match;
 
 import org.springframework.data.repository.CrudRepository;
 

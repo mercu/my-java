@@ -1,30 +1,24 @@
 package com.mercu.bricklink.service;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.mercu.bricklink.model.CategoryType;
-import com.mercu.bricklink.model.map.SetItem;
-import com.mercu.bricklink.model.match.MatchMyItemSetItem;
-import com.mercu.bricklink.model.match.MatchMyItemSetItemRatio;
-import com.mercu.bricklink.model.my.MyItem;
-import com.mercu.bricklink.repository.MatchMyItemSetItemRatioRepository;
-import com.mercu.bricklink.repository.MatchMyItemSetItemRepository;
-import com.mercu.bricklink.repository.MyItemRepository;
-import com.mercu.bricklink.repository.SetItemRepository;
-import com.mercu.http.HttpService;
-import com.mercu.log.LogService;
-import com.mercu.utils.HtmlUtils;
-import com.mercu.utils.SubstringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import static java.util.stream.Collectors.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static java.util.stream.Collectors.toList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.mercu.bricklink.model.CategoryType;
+import com.mercu.bricklink.model.map.SetItem;
+import com.mercu.bricklink.model.match.MatchMyItemSetItem;
+import com.mercu.bricklink.model.match.MatchMyItemSetItemRatio;
+import com.mercu.bricklink.model.my.MyItem;
+import com.mercu.bricklink.repository.map.SetItemRepository;
+import com.mercu.bricklink.repository.match.MatchMyItemSetItemRatioRepository;
+import com.mercu.bricklink.repository.match.MatchMyItemSetItemRepository;
+import com.mercu.bricklink.repository.my.MyItemRepository;
+import com.mercu.log.LogService;
 
 @Service
 public class BrickLinkMyService {
@@ -39,28 +33,7 @@ public class BrickLinkMyService {
     private MatchMyItemSetItemRatioRepository matchMyItemSetItemRatioRepository;
 
     @Autowired
-    private HttpService httpService;
-    @Autowired
     private LogService logService;
-
-    /**
-     * My WantedList
-     */
-    public void crawlWantedList() {
-        String jsonContainedLine = HtmlUtils.findLineOfStringContains(
-                httpService.getAsString("https://www.bricklink.com/v2/wanted/list.page"),
-                "wantedLists");
-
-        JsonObject jsonObj = new JsonParser().parse(
-                SubstringUtils.substringBetweenWith(jsonContainedLine, "{", "}"))
-                .getAsJsonObject();
-
-        JsonArray wantedLists = jsonObj.get("wantedLists").getAsJsonArray();
-        for (JsonElement wantedEl : wantedLists) {
-            System.out.println("wantedEl : " + wantedEl);
-        }
-
-    }
 
     /**
      * @param setNo

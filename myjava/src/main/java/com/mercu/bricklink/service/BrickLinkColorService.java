@@ -1,7 +1,7 @@
 package com.mercu.bricklink.service;
 
 import com.mercu.bricklink.model.info.ColorInfo;
-import com.mercu.bricklink.repository.ColorInfoRepository;
+import com.mercu.bricklink.repository.info.ColorInfoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

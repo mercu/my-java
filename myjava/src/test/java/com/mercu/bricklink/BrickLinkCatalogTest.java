@@ -1,5 +1,18 @@
 package com.mercu.bricklink;
 
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.mercu.bricklink.crawler.BrickLinkCatalogCrawler;
+import com.mercu.bricklink.crawler.BrickLinkCategoryCrawler;
 import com.mercu.bricklink.model.category.MinifigCategory;
 import com.mercu.bricklink.model.category.PartCategory;
 import com.mercu.bricklink.model.category.SetCategory;
@@ -10,16 +23,6 @@ import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
 import com.mercu.bricklink.service.BrickLinkCategoryService;
 import com.mercu.config.AppConfig;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {AppConfig.class})
@@ -27,13 +30,17 @@ public class BrickLinkCatalogTest {
     private static final Logger logger = LoggerFactory.getLogger(BrickLinkCatalogTest.class);
 
     @Autowired
+    private BrickLinkCatalogCrawler brickLinkCatalogCrawler;
+    @Autowired
+    private BrickLinkCategoryCrawler brickLinkCategoryCrawler;
+    @Autowired
     private BrickLinkCatalogService brickLinkCatalogService;
     @Autowired
     private BrickLinkCategoryService brickLinkCategoryService;
 
     @Test
     public void crawlPartCategories() {
-        List<PartCategory> partCategoryList = brickLinkCategoryService.crawlPartCategoryList();
+        List<PartCategory> partCategoryList = brickLinkCategoryCrawler.crawlPartCategoryList();
         System.out.println(partCategoryList);
 
 //        brickLinkCatalogService.savePartCategoryList(partCategoryList);
@@ -41,7 +48,7 @@ public class BrickLinkCatalogTest {
 
     @Test
     public void crawlSetCategories() {
-        List<SetCategory> setCategoryList = brickLinkCategoryService.crawlSetCategoryList();
+        List<SetCategory> setCategoryList = brickLinkCategoryCrawler.crawlSetCategoryList();
         System.out.println(setCategoryList);
 
 //        brickLinkCatalogService.saveSetCategoryList(setCategoryList);
@@ -49,7 +56,7 @@ public class BrickLinkCatalogTest {
 
     @Test
     public void crawlMinifigCategories() {
-        List<MinifigCategory> minifigCategoryList = brickLinkCategoryService.crawlMinifigCategoryList();
+        List<MinifigCategory> minifigCategoryList = brickLinkCategoryCrawler.crawlMinifigCategoryList();
         System.out.println(minifigCategoryList);
 
         brickLinkCategoryService.saveMinifigCategoryList(minifigCategoryList);
@@ -68,7 +75,7 @@ public class BrickLinkCatalogTest {
 
     @Test
     public void crawlSetInfoListOfCategory() {
-        brickLinkCatalogService.crawlSetInfoListOfCategory("143");
+        brickLinkCatalogCrawler.crawlSetInfoListOfCategory("143");
     }
 
     @Test
@@ -78,7 +85,7 @@ public class BrickLinkCatalogTest {
             if (StringUtils.equals(minifigCategory.getParts(), "(1)")) continue;
 
 
-            List<MinifigInfo> minifigInfoList = brickLinkCatalogService.crawlMinifigInfoListOfCategory(minifigCategory.getId());
+            List<MinifigInfo> minifigInfoList = brickLinkCatalogCrawler.crawlMinifigInfoListOfCategory(minifigCategory.getId());
             brickLinkCatalogService.saveMinifigInfoList(minifigInfoList);
         }
     }
@@ -87,7 +94,7 @@ public class BrickLinkCatalogTest {
     public void crawlSetInfoListOfCategoriesAll() {
         List<SetCategory> setCategoryList = brickLinkCategoryService.findSetCategoriesAll();
         for (SetCategory setCategory : setCategoryList) {
-            List<SetInfo> setInfoList = brickLinkCatalogService.crawlSetInfoListOfCategory(setCategory.getId());
+            List<SetInfo> setInfoList = brickLinkCatalogCrawler.crawlSetInfoListOfCategory(setCategory.getId());
             brickLinkCatalogService.saveSetInfoList(setInfoList);
         }
     }
@@ -95,7 +102,7 @@ public class BrickLinkCatalogTest {
     @Test
     public void crawlSetInfoListOfYear() {
         for (int year = 0; year >= 0; year--) {
-            List<SetInfo> setInfoList = brickLinkCatalogService.crawlSetInfoListOfYear(String.valueOf(year));
+            List<SetInfo> setInfoList = brickLinkCatalogCrawler.crawlSetInfoListOfYear(String.valueOf(year));
             brickLinkCatalogService.saveSetInfoList(setInfoList);
         }
     }
@@ -104,14 +111,14 @@ public class BrickLinkCatalogTest {
     public void crawlPartInfoListOfCategoriesAll() {
         List<PartCategory> partCategoryList = brickLinkCategoryService.findPartCategoriesAll();
         for (PartCategory partCategory : partCategoryList) {
-            List<PartInfo> partInfoList = brickLinkCatalogService.crawlPartInfoListOfCategory(partCategory.getId());
+            List<PartInfo> partInfoList = brickLinkCatalogCrawler.crawlPartInfoListOfCategory(partCategory.getId());
             brickLinkCatalogService.savePartInfoList(partInfoList);
         }
     }
 
     @Test
     public void crawlColorInfoList() {
-        List<ColorInfo> colorInfoList = brickLinkCatalogService.crawlColorInfoList();
+        List<ColorInfo> colorInfoList = brickLinkCatalogCrawler.crawlColorInfoList();
         brickLinkCatalogService.saveColorInfoList(colorInfoList);
     }
 

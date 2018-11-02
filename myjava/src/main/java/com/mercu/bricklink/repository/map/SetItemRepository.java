@@ -1,4 +1,4 @@
-package com.mercu.bricklink.repository;
+package com.mercu.bricklink.repository.map;
 
 import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.map.SetItem;

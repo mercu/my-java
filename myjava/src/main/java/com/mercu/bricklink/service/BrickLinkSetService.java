@@ -1,7 +1,7 @@
 package com.mercu.bricklink.service;
 
 import com.mercu.bricklink.model.map.SetItem;
-import com.mercu.bricklink.repository.SetItemRepository;
+import com.mercu.bricklink.repository.map.SetItemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

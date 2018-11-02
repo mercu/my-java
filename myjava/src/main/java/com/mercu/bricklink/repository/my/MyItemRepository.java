@@ -1,4 +1,4 @@
-package com.mercu.bricklink.repository;
+package com.mercu.bricklink.repository.my;
 
 import com.mercu.bricklink.model.my.MyItem;
 import org.springframework.data.jpa.repository.Query;

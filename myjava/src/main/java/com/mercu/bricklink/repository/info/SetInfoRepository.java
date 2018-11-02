@@ -1,4 +1,4 @@
-package com.mercu.bricklink.repository;
+package com.mercu.bricklink.repository.info;
 
 import com.mercu.bricklink.model.info.SetInfo;
 import org.springframework.data.jpa.repository.Query;

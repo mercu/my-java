@@ -1,10 +1,5 @@
 package com.mercu.bricklink;
 
-import com.mercu.bricklink.service.BrickLinkLoginService;
-import com.mercu.bricklink.service.BrickLinkMyService;
-import com.mercu.bricklink.service.BrickLinkService;
-import com.mercu.config.AppConfig;
-import com.mercu.http.HttpService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -12,6 +7,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.mercu.bricklink.crawler.BrickLinkMyCrawler;
+import com.mercu.bricklink.service.BrickLinkAjaxService;
+import com.mercu.bricklink.service.BrickLinkLoginService;
+import com.mercu.config.AppConfig;
+import com.mercu.http.HttpService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {AppConfig.class})
@@ -22,11 +23,11 @@ public class BrickLinkTest {
     private HttpService httpService;
 
     @Autowired
-    private BrickLinkService brickLinkService;
-    @Autowired
     private BrickLinkLoginService brickLinkLoginService;
     @Autowired
-    private BrickLinkMyService brickLinkMyService;
+    private BrickLinkMyCrawler brickLinkMyCrawler;
+    @Autowired
+    private BrickLinkAjaxService brickLinkAjaxService;
 
     @Test
     public void home() {
@@ -42,12 +43,12 @@ public class BrickLinkTest {
     @Test
     public void crawlWantedList() {
         brickLinkLoginService.loginIfNotLoggedin();
-        brickLinkMyService.crawlWantedList();
+        brickLinkMyCrawler.crawlWantedList();
     }
 
     @Test
     public void ajaxFindSetId() {
-        System.out.println(brickLinkService.ajaxFindSetId("70403"));
+        System.out.println(brickLinkAjaxService.ajaxFindSetId("70403"));
     }
 
 }

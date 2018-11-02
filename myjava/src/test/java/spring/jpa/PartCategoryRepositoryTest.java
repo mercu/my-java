@@ -1,7 +1,7 @@
 package spring.jpa;
 
 import com.mercu.bricklink.model.category.PartCategory;
-import com.mercu.bricklink.repository.PartCategoryRepository;
+import com.mercu.bricklink.repository.category.PartCategoryRepository;
 import com.mercu.config.AppConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;

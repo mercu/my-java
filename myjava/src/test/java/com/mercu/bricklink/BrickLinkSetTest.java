@@ -2,7 +2,7 @@ package com.mercu.bricklink;
 
 import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
-import com.mercu.bricklink.service.BrickLinkService;
+import com.mercu.bricklink.crawler.BrickLinkSetCrawler;
 import com.mercu.bricklink.service.BrickLinkSetService;
 import com.mercu.config.AppConfig;
 import com.mercu.log.LogService;
@@ -22,7 +22,7 @@ public class BrickLinkSetTest {
     private static final Logger logger = LoggerFactory.getLogger(BrickLinkSetTest.class);
 
     @Autowired
-    private BrickLinkService brickLinkService;
+    private BrickLinkSetCrawler brickLinkService;
     @Autowired
     private BrickLinkSetService brickLinkSetService;
     @Autowired
