@@ -1,22 +1,47 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
 
 <body>
+<button onclick="partCategories()">
+Part Categories
+</button>
 <div id="main">
 
 </div>
 
-<script src="https://unpkg.com/react@16/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js" crossorigin></script>
 
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
 <script type="text/babel">
-    ReactDOM.render(
-        <h1>BrickLink !!!</h1>
-        , document.getElementById("main")
-    );
-
-    window.fetch("http://localhost:8888/index.html")
-        .then(res => {console.log(res.text())});
-
+    function partCategories() {
+        $.ajax({
+            url:"http://localhost:8888/partCategories",
+            type : "GET",
+            dataType : "json",
+            ContentType: "application/json"
+        }).done(function(data){
+            ReactDOM.render(
+                    <table className="table">
+                    <tbody>
+                    {data.map(function(item, key) {
+                        return <tr key={key}>
+                            <td>{item.id}</td>
+                            <td>{item.type}</td>
+                            <td>{item.name}</td>
+                            <td>{item.parts}</td>
+                        </tr>
+                    })}
+                    </tbody>
+                    </table>
+                , document.getElementById("main")
+            );
+        });
+    }
 
 </script>
 <script type="text/javascript">
