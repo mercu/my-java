@@ -18,9 +18,10 @@ import javax.persistence.Table;
 public class PartInfo implements AbstractInfo {
     @Id
     private String id;
-    private String categoryId;
+    private Integer categoryId;
     private String img;
     private String partNo;
     private String partName;
+    private Integer setQty;
 
 }

@@ -1,22 +1,23 @@
 package com.mercu.bricklink.service;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.mercu.bricklink.model.CategoryType;
-import com.mercu.bricklink.model.info.AbstractInfo;
-import com.mercu.bricklink.model.info.ColorInfo;
-import com.mercu.bricklink.model.info.MinifigInfo;
-import com.mercu.bricklink.model.info.PartInfo;
-import com.mercu.bricklink.model.info.SetInfo;
+import com.mercu.bricklink.model.info.*;
+import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.repository.info.ColorInfoRepository;
 import com.mercu.bricklink.repository.info.MinifigInfoRepository;
 import com.mercu.bricklink.repository.info.PartInfoRepository;
 import com.mercu.bricklink.repository.info.SetInfoRepository;
+import com.mercu.bricklink.repository.map.SetItemRepository;
+import com.mercu.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class BrickLinkCatalogService {
@@ -30,6 +31,21 @@ public class BrickLinkCatalogService {
     private MinifigInfoRepository minifigInfoRepository;
     @Autowired
     private ColorInfoRepository colorInfoRepository;
+    @Autowired
+    private SetItemRepository setItemRepository;
+
+    @Autowired
+    private LogService logService;
+
+    public List<PartInfo> findPartInfoListByCategoryId(Integer categoryId) {
+        return partInfoRepository.findAllByCategoryId(categoryId);
+    }
+
+    public List<PartInfo> findPartInfoListByCategoryIdLimit(Integer categoryId, Integer limit) {
+        if (Objects.isNull(limit)) limit = Integer.MAX_VALUE;
+        Pageable pageable = new PageRequest(0, limit);
+        return partInfoRepository.findAllByCategoryId(categoryId, pageable);
+    }
 
     public List<SetInfo> findSetInfoListByYear(String year) {
         return setInfoRepository.findAllByYear(year);
@@ -79,4 +95,26 @@ public class BrickLinkCatalogService {
         colorInfoRepository.saveAll(colorInfoList);
     }
 
+    /**
+     * 부품별 세트내 총 수량 개수를 업데이트 한다.
+     */
+    public void updatePartInfoSetQty() {
+        logService.log("updatePartInfoSetQty", "=== start !");
+
+        List<PartInfo> partInfoAll = (List<PartInfo>)partInfoRepository.findAll();
+        logService.log("updatePartInfoSetQty", "partInfoAll : " + partInfoAll.size());
+
+        int index = 0;
+        for (PartInfo partInfo : partInfoAll) {
+            index++;
+            List<SetItem> setItems = setItemRepository.findByItemNo(partInfo.getPartNo());
+            partInfo.setSetQty(setItems.stream()
+                    .mapToInt(SetItem::getQty)
+                    .sum());
+            logService.log(index + "/" + partInfoAll.size() + " - updatePartInfoSetQty", "partInfo : " + partInfo);
+            partInfoRepository.save(partInfo);
+        }
+
+        logService.log("updatePartInfoSetQty", "=== finish !");
+    }
 }

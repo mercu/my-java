@@ -20,6 +20,7 @@ import java.util.Properties;
 @EntityScan
 @ComponentScan(basePackages = {
         "com.mercu.bricklink",
+        "com.mercu.lego",
         "com.mercu.http",
         "com.mercu.html",
         "com.mercu.log"
@@ -31,7 +32,7 @@ public class AppConfig {
     public DataSource dataSource(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://mercu.ipdisk.co.kr:13306/mercu?autoReconnect=true&useSSL=false");
+        dataSource.setUrl("jdbc:mysql://mercu.ipdisk.co.kr:13306/mercu?autoReconnect=true&useSSL=false&characterEncoding=utf8");
         dataSource.setUsername( "" );
         dataSource.setPassword( "" );
         return dataSource;

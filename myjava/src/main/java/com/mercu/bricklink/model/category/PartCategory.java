@@ -17,9 +17,14 @@ import javax.persistence.Table;
 @Table(name = "BL_PART_CATEGORY")
 public class PartCategory implements AbstractCategory {
     @Id
-    private String id;
+    private Integer id;
+
     private String type;
     private String name;
     private String parts;
+    private Integer depth;
+    private Integer parentId;
+    private String repImgs;
+    private Integer setQty;
 
 }

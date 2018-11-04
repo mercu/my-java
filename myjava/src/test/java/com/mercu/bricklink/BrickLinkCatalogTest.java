@@ -1,16 +1,5 @@
 package com.mercu.bricklink;
 
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import com.mercu.bricklink.crawler.BrickLinkCatalogCrawler;
 import com.mercu.bricklink.crawler.BrickLinkCategoryCrawler;
 import com.mercu.bricklink.model.category.MinifigCategory;
@@ -23,6 +12,16 @@ import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
 import com.mercu.bricklink.service.BrickLinkCategoryService;
 import com.mercu.config.AppConfig;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {AppConfig.class})
@@ -111,7 +110,7 @@ public class BrickLinkCatalogTest {
     public void crawlPartInfoListOfCategoriesAll() {
         List<PartCategory> partCategoryList = brickLinkCategoryService.findPartCategoriesAll();
         for (PartCategory partCategory : partCategoryList) {
-            List<PartInfo> partInfoList = brickLinkCatalogCrawler.crawlPartInfoListOfCategory(partCategory.getId());
+            List<PartInfo> partInfoList = brickLinkCatalogCrawler.crawlPartInfoListOfCategory(String.valueOf(partCategory.getId()));
             brickLinkCatalogService.savePartInfoList(partInfoList);
         }
     }
@@ -120,6 +119,30 @@ public class BrickLinkCatalogTest {
     public void crawlColorInfoList() {
         List<ColorInfo> colorInfoList = brickLinkCatalogCrawler.crawlColorInfoList();
         brickLinkCatalogService.saveColorInfoList(colorInfoList);
+    }
+
+    /**
+     * 부품 카테고리별 대표 이미지를 최대 5개 까지 추출한다.
+     */
+    @Test
+    public void partCategoryRepresentImages() {
+        brickLinkCategoryService.autoUpdatePartCategoryRepresentImagesAll();
+    }
+
+    /**
+     * 부품 카테고리의 세트내 총 수량 개수를 업데이트 한다.
+     */
+    @Test
+    public void updatePartCategorySetQty() {
+        brickLinkCategoryService.updatePartCategorySetQty();
+    }
+
+    /**
+     * 부품별 세트내 총 수량 개수를 업데이트 한다.
+     */
+    @Test
+    public void updatePartInfoSetQty() {
+        brickLinkCatalogService.updatePartInfoSetQty();
     }
 
 }

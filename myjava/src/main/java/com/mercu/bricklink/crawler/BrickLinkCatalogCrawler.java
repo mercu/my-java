@@ -145,9 +145,10 @@ public class BrickLinkCatalogCrawler {
         PartInfo partInfo = new PartInfo();
         partInfo.setId(partEl.selectFirst("span").attr("data-itemid"));
         partInfo.setCategoryId(
-                UrlUtils.urlParametersMap("http:" + partEl.selectFirst("td:nth-of-type(3) a:last-of-type").attr("href")
-                        .replaceAll("&=", "&catString="))
-                        .get("catString"));
+                NumberUtils.toInt(
+                        UrlUtils.urlParametersMap("http:" + partEl.selectFirst("td:nth-of-type(3) a:last-of-type").attr("href")
+                                .replaceAll("&=", "&catString="))
+                                .get("catString")));
         partInfo.setImg(partEl.selectFirst("img").attr("src"));
         partInfo.setPartNo(partEl.selectFirst("a").html());
         partInfo.setPartName(partEl.selectFirst("td strong").html());

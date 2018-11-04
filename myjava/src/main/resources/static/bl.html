@@ -1,11 +1,33 @@
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<body>
-<button onclick="partCategories()">
-Part Categories
-</button>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+
+</head>
+
+<body style="min-width:600px;">
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">MercuBricks!</a>
+
+        </div>
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#" onclick="partCategories(); handleClick(event);">Part Categories</a></li>
+        </ul>
+    </div>
+</nav>
+
+
+
 <div id="main">
+
+</div>
+
+<div id="layer_1" style="position:fixed; top:0; background-color:#fff;overflow: scroll; max-height: 100%; width:100%;">
 
 </div>
 
@@ -17,34 +39,27 @@ Part Categories
 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 
+<script src="/static/js/part_category.jsx" type="text/babel"></script>
+<script src="/static/js/part_list.jsx" type="text/babel"></script>
+
 <script type="text/babel">
-    function partCategories() {
-        $.ajax({
-            url:"http://localhost:8888/partCategories",
-            type : "GET",
-            dataType : "json",
-            ContentType: "application/json"
-        }).done(function(data){
-            ReactDOM.render(
-                    <table className="table">
-                    <tbody>
-                    {data.map(function(item, key) {
-                        return <tr key={key}>
-                            <td>{item.id}</td>
-                            <td>{item.type}</td>
-                            <td>{item.name}</td>
-                            <td>{item.parts}</td>
-                        </tr>
-                    })}
-                    </tbody>
-                    </table>
-                , document.getElementById("main")
-            );
-        });
-    }
 
 </script>
+
 <script type="text/javascript">
+    function handleClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    //onBeforeUnload 이벤트 지정
+    // window.onbeforeunload = function(e) {
+    //     if (!confirm("페이지를 벗어나시겠습니까?")) {
+    //         partCategories();
+    //         $("#layer_1").hide();
+    //         return false;
+    //     }
+    // }
 
 </script>
 

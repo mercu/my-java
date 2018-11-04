@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
@@ -124,7 +125,7 @@ public class BrickLinkCategoryCrawler {
         partCategory.setName(aEl.selectFirst("b").html());
         partCategory.setParts(spanEl.html());
         partCategory.setType(aQueriesMap.get("catType"));
-        partCategory.setId(aQueriesMap.get("catString"));
+        partCategory.setId(NumberUtils.toInt(aQueriesMap.get("catString")));
         return partCategory;
     }
 
