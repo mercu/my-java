@@ -2,7 +2,6 @@ package com.mercu.lego;
 
 import com.mercu.bricklink.model.category.PartCategory;
 import com.mercu.bricklink.repository.info.PartInfoRepository;
-import com.mercu.bricklink.service.BrickLinkCatalogService;
 import com.mercu.bricklink.service.BrickLinkCategoryService;
 import com.mercu.config.AppConfig;
 import com.mercu.lego.model.MyPartCategory;
@@ -56,6 +55,25 @@ public class MyLegoCategoryTest {
         }
 
         logService.log("migrateBrickLinkPartCategories", "=== finish !");
+    }
+
+    /**
+     * BrickLink 부품 카테고리 목록의 대표이미지들을 이관한다.
+     */
+    @Test
+    public void migrateBrickLinkPartCategoryRepImgs() {
+        logService.log("migrateBrickLinkPartCategoryRepImgs", "=== start !");
+        List<PartCategory> blPartCategories = brickLinkCategoryService.findPartCategoriesAll();
+
+        for (PartCategory partCategory : blPartCategories) {
+            MyPartCategory myPartCategory = myCategoryService.findByBlCategoryId(partCategory.getId());
+            myPartCategory.setRepImgs(partCategory.getRepImgs());
+            logService.log("migrateBrickLinkPartCategoryRepImgs", "myPartCategory : " + myPartCategory);
+
+            myCategoryService.save(myPartCategory);
+        }
+
+        logService.log("migrateBrickLinkPartCategoryRepImgs", "=== finish !");
     }
 
     /**

@@ -54,6 +54,10 @@ public class MyCategoryService {
         return partCategories;
     }
 
+    public MyPartCategory findByBlCategoryId(Integer blCategoryId) {
+        return myPartCategoryRepository.findByBlCategoryId(blCategoryId);
+    }
+
     private String firstRepresentImageUrl(MyPartCategory childPartCategory) {
         List<String> imgUrls = JsonUtils.toObject(
                 childPartCategory.getRepImgs(),
@@ -124,4 +128,5 @@ public class MyCategoryService {
 
         myPartCategoryRepository.save(myPartCategory);
     }
+
 }

@@ -10,11 +10,11 @@ public interface PartCategoryRepository extends CrudRepository<PartCategory, Int
 
     @Query(value = "select cr.id, p.img as repImgs " +
             "from ( " +
-            "  select c.id, sp.itemNo, sp.cnt " +
-            "    , ROW_NUMBER() OVER(PARTITION BY id ORDER BY cnt desc) AS crank " +
+            "  select c.id, sp.itemNo, sp.qty " +
+            "    , ROW_NUMBER() OVER(PARTITION BY id ORDER BY qty desc) AS crank " +
             "  from bl_part_category c " +
             "  left join ( " +
-            "    select s.itemNo, p.categoryId, count(1) cnt " +
+            "    select s.itemNo, p.categoryId, sum(s.qty) qty " +
             "    from bl_set_item s " +
             "    join bl_part_info p on p.partNo = s.itemNo " +
             "    group by s.itemNo, p.categoryId " +
@@ -22,7 +22,7 @@ public interface PartCategoryRepository extends CrudRepository<PartCategory, Int
             ") cr " +
             "join bl_part_info p on p.partNo = cr.itemNo " +
             "where cr.crank <= 1 " +
-            "  or (cr.cnt >= 100 and cr.crank <= 5) ",
+            "  or (cr.qty >= 100 and cr.crank <= 7) ",
             nativeQuery = true
     )
     List<Object[]> extractRepresentImagesAll();

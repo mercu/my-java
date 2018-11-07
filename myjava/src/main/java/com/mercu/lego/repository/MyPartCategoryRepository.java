@@ -13,4 +13,7 @@ public interface MyPartCategoryRepository extends CrudRepository<MyPartCategory,
 
     @Query("select m from MyPartCategory m where m.parentId = :parentId order by m.setQty desc, m.parts desc")
     List<MyPartCategory> findByParentCategoryId(@Param("parentId") Integer parentCategoryId);
+
+    @Query("select m from MyPartCategory m where m.blCategoryId = :blCategoryId")
+    MyPartCategory findByBlCategoryId(@Param("blCategoryId") Integer blCategoryId);
 }
