@@ -21,8 +21,12 @@ import com.mercu.bricklink.model.info.ColorInfo;
 import com.mercu.bricklink.model.info.MinifigInfo;
 import com.mercu.bricklink.model.info.PartInfo;
 import com.mercu.bricklink.model.info.SetInfo;
+import com.mercu.bricklink.model.similar.SimilarPart;
+import com.mercu.bricklink.repository.info.PartInfoRepository;
+import com.mercu.bricklink.repository.similar.SimilarPartRepository;
 import com.mercu.html.WebDomService;
 import com.mercu.http.HttpService;
+import com.mercu.log.LogService;
 import com.mercu.utils.SubstringUtils;
 import com.mercu.utils.UrlUtils;
 
@@ -34,6 +38,14 @@ public class BrickLinkCatalogCrawler {
     private HttpService httpService;
     @Autowired
     private WebDomService webDomService;
+
+    @Autowired
+    private SimilarPartRepository similarPartRepository;
+    @Autowired
+    private PartInfoRepository partInfoRepository;
+
+    @Autowired
+    private LogService logService;
 
     /**
      * @param setCategoryId
@@ -200,4 +212,99 @@ public class BrickLinkCatalogCrawler {
         return colorInfo;
     }
 
+    /**
+     * https://www.bricklink.com/catalogRelList.asp?relID=4&catID={93}
+     * $("form tbody tr")
+     * - <tr bgcolor="#5E5A80"><td colspan="4"><font face="Tahoma,Arial" size="2" color="#FFFFFF">&nbsp;<b>Match #293</b></font></td></tr>
+     * - <tr bgcolor="#EEEEEE"><td align="CENTER" width="10%"><a id="imgLink0" href="/catalogItemPic.asp?P=3475" rel="blcatimg">
+     *     <img alt="Part No: 3475  Name: Engine, Smooth Small, 1 x 2 Side Plate (Undetermined Axle Holders Type)" title="Part No: 3475  Name: Engine, Smooth Small, 1 x 2 Side Plate (Undetermined Axle Holders Type)" border="0" width="80" height="60" src="http://img.bricklink.com/P/1/3475.jpg" name="img0" id="img0" onerror="killImage('img0');">
+     *         </a><br><font face="Tahoma,Arial" size="1">*</font>&nbsp;<font id="d3d3475" face="Tahoma,Arial" size="1">!</font><script>if (brickList["3475"]) $('#d3d3475').text('!')</script>
+     *         </td><td nowrap="">&nbsp;<font face="Tahoma,Arial" size="2"><a href="/v2/catalog/catalogitem.page?P=3475">3475</a>&nbsp;</font></td>
+     *         <td><font face="Tahoma,Arial" size="2"><b>Engine, Smooth Small, 1 x 2 Side Plate (Undetermined Axle Holders Type)</b></font><font class="fv"><br><a href="/catalog.asp">Catalog</a>: <a href="catalogTree.asp?itemType=P">Parts</a>
+     *         :&nbsp;<a href="/catalogList.asp?catType=P&amp;catID=93">Aircraft</a></font></td><td nowrap=""><font class="fv">&nbsp;</font></td></tr>
+     */
+    public void crawSimilarParts() {
+        List<String> categoryIds = crawSimilarPartCategoryIds();
+        logService.log("crawSimilarParts", "crawling start. - categoryIds : " + categoryIds.size());
+
+        int index = 0;
+        for (String categoryId : categoryIds) {
+            index++;
+            logService.log("crawSimilarParts", index + "/" + categoryIds.size() + " - categoryId : " + categoryId + " - crawling start.");
+            int saved = crawlSimilarPartsByCategoryId(categoryId);
+            logService.log("crawSimilarParts", index + "/" + categoryIds.size() + " - categoryId : " + categoryId + " - crawling finish. - saved : " + saved);
+        }
+
+        logService.log("crawSimilarParts", "crawling finish.");
+    }
+
+    private int crawlSimilarPartsByCategoryId(String categoryId) {
+        Elements similarPartEls = webDomService.elements(
+            httpService.getAsString("https://www.bricklink.com/catalogRelList.asp?relID=4&catID=" + categoryId),
+            "form tbody tr");
+
+        // 유사아이템 그룹ID
+        Integer similarId = null;
+        int saved = 0;
+        for (Element similarPartEl : similarPartEls) {
+            if (similarPartEl.toString().contains("Match #")) {
+                // 유사아이템 그룹ID 초기화
+                similarId = null;
+            } else if (similarPartEl.toString().contains("catalogitem.page")) {
+                // $("font a:nth-of-type(1)").html()
+                String partNo = similarPartEl.selectFirst("font a:nth-of-type(1)").html();
+
+                SimilarPart similarPart = similarPartRepository.findByPartNo(partNo);
+                if (Objects.isNull(similarPart)) {
+                    similarId = saveSimilarPart(similarId, partNo);
+                    saved++;
+                } else {
+                    // 이미 있으면 업데이트 안함
+                    logService.log("crawlSimilarPartsByCategoryId", "partNo : " + partNo + " - similarPart is exists. - skiped");
+                }
+            }
+        }
+
+        return saved;
+    }
+
+    private Integer saveSimilarPart(Integer similarId, String partNo) {
+        SimilarPart similarPart;
+        similarPart = new SimilarPart();
+        similarPart.setPartNo(partNo);
+        similarPart.setPartId(findPartId(partNo));
+
+        // 첫번째 유사 아이템이면
+        if (Objects.isNull(similarId)) {
+            similarPartRepository.save(similarPart);
+            similarPart.setSimilarId(similarPart.getId());
+            similarId = similarPart.getId();
+        } else {
+            // 기 등록된 유사 아이템 그룹이면
+            similarPart.setSimilarId(similarId);
+        }
+
+        similarPartRepository.save(similarPart);
+        return similarId;
+    }
+
+    private String findPartId(String partNo) {
+        PartInfo partInfo = partInfoRepository.findByPartNo(partNo).orElse(null);
+        if (Objects.nonNull(partInfo)) return partInfo.getId();
+        else return null;
+    }
+
+    private List<String> crawSimilarPartCategoryIds() {
+        String similarPartCategoriesUrl = "https://www.bricklink.com/catalogRelCat.asp?relID=4";
+
+        // $(".bl-classic tbody tbody tr:nth-of-type(2) a")
+        // <a href="/catalogRelList.asp?relID=4&amp;catID=93">Aircraft</a>
+        List<String> categoryIds = webDomService.elements(
+            httpService.getAsString(similarPartCategoriesUrl),
+            ".bl-classic tbody tbody tr:nth-of-type(2) a").stream()
+            .map(categoryEl -> UrlUtils.urlParametersMap("http:" + categoryEl.selectFirst("a").attr("href"))
+                    .get("catID"))
+            .collect(toList());
+        return categoryIds;
+    }
 }
