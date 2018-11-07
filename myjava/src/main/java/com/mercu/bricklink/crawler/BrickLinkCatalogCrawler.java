@@ -213,6 +213,21 @@ public class BrickLinkCatalogCrawler {
     }
 
     /**
+     * https://www.bricklink.com/catalogRelCat.asp?relID=12
+     *
+     */
+    public void crawlDuplicateParts() {
+        crawlSimilarParts("12");
+    }
+
+    /**
+     *
+     */
+    public void crawlSimilarParts() {
+        crawlSimilarParts("4");
+    }
+
+    /**
      * https://www.bricklink.com/catalogRelList.asp?relID=4&catID={93}
      * $("form tbody tr")
      * - <tr bgcolor="#5E5A80"><td colspan="4"><font face="Tahoma,Arial" size="2" color="#FFFFFF">&nbsp;<b>Match #293</b></font></td></tr>
@@ -223,24 +238,24 @@ public class BrickLinkCatalogCrawler {
      *         <td><font face="Tahoma,Arial" size="2"><b>Engine, Smooth Small, 1 x 2 Side Plate (Undetermined Axle Holders Type)</b></font><font class="fv"><br><a href="/catalog.asp">Catalog</a>: <a href="catalogTree.asp?itemType=P">Parts</a>
      *         :&nbsp;<a href="/catalogList.asp?catType=P&amp;catID=93">Aircraft</a></font></td><td nowrap=""><font class="fv">&nbsp;</font></td></tr>
      */
-    public void crawSimilarParts() {
-        List<String> categoryIds = crawSimilarPartCategoryIds();
-        logService.log("crawSimilarParts", "crawling start. - categoryIds : " + categoryIds.size());
+    public void crawlSimilarParts(String relId) {
+        List<String> categoryIds = crawSimilarPartCategoryIds(relId);
+        logService.log("crawlSimilarParts", "crawling start. - categoryIds : " + categoryIds.size());
 
         int index = 0;
         for (String categoryId : categoryIds) {
             index++;
-            logService.log("crawSimilarParts", index + "/" + categoryIds.size() + " - categoryId : " + categoryId + " - crawling start.");
-            int saved = crawlSimilarPartsByCategoryId(categoryId);
-            logService.log("crawSimilarParts", index + "/" + categoryIds.size() + " - categoryId : " + categoryId + " - crawling finish. - saved : " + saved);
+            logService.log("crawlSimilarParts", index + "/" + categoryIds.size() + " - categoryId : " + categoryId + " - crawling start.");
+            int saved = crawlSimilarPartsByCategoryId(relId, categoryId);
+            logService.log("crawlSimilarParts", index + "/" + categoryIds.size() + " - categoryId : " + categoryId + " - crawling finish. - saved : " + saved);
         }
 
-        logService.log("crawSimilarParts", "crawling finish.");
+        logService.log("crawlSimilarParts", "crawling finish.");
     }
 
-    private int crawlSimilarPartsByCategoryId(String categoryId) {
+    private int crawlSimilarPartsByCategoryId(String relId, String categoryId) {
         Elements similarPartEls = webDomService.elements(
-            httpService.getAsString("https://www.bricklink.com/catalogRelList.asp?relID=4&catID=" + categoryId),
+            httpService.getAsString("https://www.bricklink.com/catalogRelList.asp?relID=" + relId + "&catID=" + categoryId),
             "form tbody tr");
 
         // 유사아이템 그룹ID
@@ -294,8 +309,8 @@ public class BrickLinkCatalogCrawler {
         else return null;
     }
 
-    private List<String> crawSimilarPartCategoryIds() {
-        String similarPartCategoriesUrl = "https://www.bricklink.com/catalogRelCat.asp?relID=4";
+    private List<String> crawSimilarPartCategoryIds(String relId) {
+        String similarPartCategoriesUrl = "https://www.bricklink.com/catalogRelCat.asp?relID=" + relId;
 
         // $(".bl-classic tbody tbody tr:nth-of-type(2) a")
         // <a href="/catalogRelList.asp?relID=4&amp;catID=93">Aircraft</a>
@@ -307,4 +322,5 @@ public class BrickLinkCatalogCrawler {
             .collect(toList());
         return categoryIds;
     }
+
 }

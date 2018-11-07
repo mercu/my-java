@@ -113,7 +113,12 @@ public class BrickLinkCatalogCrawlTest {
 
     @Test
     public void crawlSimilarParts() {
-        brickLinkCatalogCrawler.crawSimilarParts();
+        brickLinkCatalogCrawler.crawlSimilarParts();
+    }
+
+    @Test
+    public void crawDuplicateParts() {
+        brickLinkCatalogCrawler.crawlDuplicateParts();
     }
 
 }
