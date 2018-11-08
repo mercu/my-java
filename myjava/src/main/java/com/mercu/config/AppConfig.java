@@ -23,6 +23,7 @@ import java.util.Properties;
         "com.mercu.lego",
         "com.mercu.http",
         "com.mercu.html",
+        "com.mercu.member",
         "com.mercu.log"
 })
 @EnableJpaRepositories(basePackages = {"com.mercu"})

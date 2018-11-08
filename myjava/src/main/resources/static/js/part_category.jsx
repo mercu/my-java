@@ -163,7 +163,7 @@ function PartCategoriesModal(props) {
                     </form>
                 </div>
                 <div className="modal-footer">
-                    <button type="submit" className="btn btn-primary" onClick={(e) => newPartCategory(this.form, e)}>생성하기</button>
+                    <button type="submit" className="btn btn-primary" onClick={(e) => newPartCategory($("#partCategoryForm"), e)}>생성하기</button>
                     <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
