@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -17,9 +18,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 
 import com.mercu.member.service.MemberUserDetailsService;
@@ -43,15 +43,35 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.csrf().disable()
             .authorizeRequests()
 //                .antMatchers("/bl").hasRole("ADMIN")
-            .antMatchers("/partCategory/**").hasRole("ADMIN")
-//                .antMatchers("/partCategory/**").hasRole("ADMIN")
+            .antMatchers("/admin/**").hasRole("ADMIN")
             .antMatchers("/**").permitAll()
+            .and()
+            .logout().logoutSuccessUrl("/bl")
             .and()
             .formLogin().defaultSuccessUrl("/bl")
             .and()
-            .logout().logoutSuccessUrl("/bl");
+            .exceptionHandling()
+            .accessDeniedPage("/accessDenied")
+//            .accessDeniedHandler(accessDeniedHandler())
+//            .authenticationEntryPoint(authenticationEntryPoint())
+            ;
 //                .httpBasic().realmName("mercu")
 //                .authenticationEntryPoint(memberBasicAuthenticationEntryPoint())
+    }
+
+    private AuthenticationEntryPoint authenticationEntryPoint() {
+        AuthenticationEntryPoint entryPoint = new BasicAuthenticationEntryPoint();
+        return entryPoint;
+    }
+
+    private AccessDeniedHandler accessDeniedHandler() {
+        AccessDeniedHandler accessDeniedHandler = new AccessDeniedHandler() {
+            @Override
+            public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AccessDeniedException e) throws IOException, ServletException {
+                System.out.println("access deinied");
+            }
+        };
+        return  accessDeniedHandler;
     }
 
     @Bean

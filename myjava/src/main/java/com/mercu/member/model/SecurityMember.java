@@ -13,8 +13,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SecurityMember extends User {
+    private Member member;
+
     public SecurityMember(Member member) {
         super(member.getId(), member.getPassword(), makeGrantedAuthority(member.getRoles()));
+        this.member = member;
     }
 
     private static List<GrantedAuthority> makeGrantedAuthority(List<MemberRole> memberRoles) {

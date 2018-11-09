@@ -54,7 +54,7 @@ class PartCategories extends React.Component {
 function PartCategoriesRoot(props) {
     return (
         <div className={'panel panel-default'}>
-            {loggedIn ? (
+            {loginUser !== undefined ? (
             <div className={'panel-heading'} style={{position:'fixed'}}>
                 <PartCategoriesFloatLayer parentId={props.parentId} parentParentId={props.parentParentId} movePartCategoryIdFrom={props.movePartCategoryIdFrom}/>
             </div>
@@ -214,7 +214,7 @@ function movePartCategoryHere(parentId, e) {
     // if(!confirm("여기로 카테고리를 이동하시겠습니까?")) return;
 
     $.ajax({
-        url:"/partCategory/move",
+        url:"/admin/partCategory/move",
         type : "POST",
         dataType : "json",
         data : {
@@ -236,7 +236,7 @@ function newPartCategory(form, e) {
     if (typeof e != "undefined") e.preventDefault();
 
     $.ajax({
-        url:"/partCategory/new",
+        url:"/admin/partCategory/new",
         type : "POST",
         dataType : "json",
         data : {

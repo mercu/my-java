@@ -8,28 +8,16 @@
 </head>
 
 <body style="min-width:600px;">
-<nav class="navbar navbar-default">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="#">MercuBricks!</a>
+<div id="navi">
 
-        </div>
-        <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#" onclick="partCategories(); handleClick(event);">Part Categories</a></li>
-            <li><a href="/login">Login</a></li>
-            <li><a href="/logout">Logout</a></li>
-        </ul>
-    </div>
-</nav>
-
+</div>
 
 
 <div id="main">
 
 </div>
 
-<div id="layer_1" style="position:fixed; top:0; background-color:#fff;overflow: scroll; max-height: 100%; width:100%;">
+<div id="layer_1" style="position:fixed; top:0; background-color:#fff;overflow: scroll; max-height: 100%; width:100%; display:none;">
 
 </div>
 
@@ -43,6 +31,8 @@
 
 <script src="/static/js/part_category.jsx" type="text/babel"></script>
 <script src="/static/js/part_list.jsx" type="text/babel"></script>
+
+<script src="/static/js/navigator.jsx" type="text/babel"></script>
 
 <script type="text/babel">
 
@@ -58,17 +48,23 @@
     function checkLogin() {
         $.ajax({
             cache : false,
-            url:"/loginCheck",
+            url:"/loginUser",
             type : "GET",
             dataType : "json",
             contentType: "application/json;charset=UTF-8",
             async : true
-        }).done(function(data) {
-            loggedIn = data;
+        }).always(function(data) {
+            if (data.responseText == "anonymousUser") {
+                loginUser = null;
+            } else {
+                loginUser = data.responseText;
+            }
         });
     }
-    var loggedIn = false;
+    var loginUser = null;
     checkLogin();
+
+
 
     //onBeforeUnload 이벤트 지정
     // window.onbeforeunload = function(e) {

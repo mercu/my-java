@@ -26,14 +26,14 @@ public class CategoryController {
         return JsonUtils.toJson(partCategories);
     }
 
-    @RequestMapping(path = "/partCategory/new", method = RequestMethod.POST)
+    @RequestMapping(path = "/admin/partCategory/new", method = RequestMethod.POST)
     @ResponseBody
     public String newPartCategory(@RequestParam("parentId") Integer parentId, @RequestParam("name") String name) {
         myCategoryService.newPartCatergory(name, parentId);
         return "success";
     }
 
-    @RequestMapping(path = "/partCategory/move", method = RequestMethod.POST)
+    @RequestMapping(path = "/admin/partCategory/move", method = RequestMethod.POST)
     @ResponseBody
     public String movePartCategory(@RequestParam("categoryIdFrom") Integer categoryIdFrom, @RequestParam("parentIdTo") Integer parentIdTo) {
         try {
@@ -45,7 +45,7 @@ public class CategoryController {
         }
     }
 
-    @RequestMapping(path = "/partCategory/addRepresentImage", method = RequestMethod.POST)
+    @RequestMapping(path = "/admin/partCategory/addRepresentImage", method = RequestMethod.POST)
     @ResponseBody
     public String addPartCategoryRepresentImage(@RequestParam("categoryId") Integer categoryId, @RequestParam("representImageUrl") String representImageUrl) {
 //        brickLinkCategoryService.addPartCategoryRepresentImage(categoryId, representImageUrl);
