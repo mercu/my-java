@@ -54,9 +54,11 @@ class PartCategories extends React.Component {
 function PartCategoriesRoot(props) {
     return (
         <div className={'panel panel-default'}>
+            {loggedIn ? (
             <div className={'panel-heading'} style={{position:'fixed'}}>
                 <PartCategoriesFloatLayer parentId={props.parentId} parentParentId={props.parentParentId} movePartCategoryIdFrom={props.movePartCategoryIdFrom}/>
             </div>
+            ) : (<div/>)}
             <div className={'panel-body'}>
                 <PartCategoriesBodyTable items={props.items} />
             </div>

@@ -17,6 +17,8 @@
         <ul class="nav navbar-nav">
             <li class="active"><a href="#">Home</a></li>
             <li><a href="#" onclick="partCategories(); handleClick(event);">Part Categories</a></li>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/logout">Logout</a></li>
         </ul>
     </div>
 </nav>
@@ -51,6 +53,22 @@
         e.preventDefault();
         e.stopPropagation();
     }
+
+    // login 체크
+    function checkLogin() {
+        $.ajax({
+            cache : false,
+            url:"/loginCheck",
+            type : "GET",
+            dataType : "json",
+            contentType: "application/json;charset=UTF-8",
+            async : true
+        }).done(function(data) {
+            loggedIn = data;
+        });
+    }
+    var loggedIn = false;
+    checkLogin();
 
     //onBeforeUnload 이벤트 지정
     // window.onbeforeunload = function(e) {
