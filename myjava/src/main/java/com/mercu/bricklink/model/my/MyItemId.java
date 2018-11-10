@@ -14,5 +14,6 @@ public class MyItemId implements Serializable {
     private String itemNo;
     private String colorId;
     private String whereCode;
+    private String whereMore;
 
 }

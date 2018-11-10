@@ -2,6 +2,7 @@ package com.mercu.bricklink;
 
 import java.util.List;
 
+import com.mercu.log.LogService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +38,9 @@ public class BrickLinkCatalogCrawlTest {
     private BrickLinkCatalogService brickLinkCatalogService;
     @Autowired
     private BrickLinkCategoryService brickLinkCategoryService;
+
+    @Autowired
+    private LogService logService;
 
     @Test
     public void crawlPartCategories() {
@@ -90,10 +94,13 @@ public class BrickLinkCatalogCrawlTest {
 
     @Test
     public void crawlSetInfoListOfYear() {
-        for (int year = 0; year >= 0; year--) {
+        logService.log("crawlSetInfoListOfYear", "=== start");
+        for (int year = 2018; year >= 1953; year--) {
+            logService.log("crawlSetInfoListOfYear", "year : " + year);
             List<SetInfo> setInfoList = brickLinkCatalogCrawler.crawlSetInfoListOfYear(String.valueOf(year));
             brickLinkCatalogService.saveSetInfoList(setInfoList);
         }
+        logService.log("crawlSetInfoListOfYear", "=== finish");
     }
 
     @Test

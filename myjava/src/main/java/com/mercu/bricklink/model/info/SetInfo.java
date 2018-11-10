@@ -21,6 +21,7 @@ public class SetInfo implements AbstractInfo {
     private String categoryId;
     private String img;
     private String setNo;
+    private String blSetNo;
     private String setName;
     private String setBrief;
 

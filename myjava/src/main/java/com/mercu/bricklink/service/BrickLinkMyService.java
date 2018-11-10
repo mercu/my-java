@@ -1,14 +1,5 @@
 package com.mercu.bricklink.service;
 
-import static java.util.stream.Collectors.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.model.match.MatchMyItemSetItem;
@@ -19,9 +10,18 @@ import com.mercu.bricklink.repository.match.MatchMyItemSetItemRatioRepository;
 import com.mercu.bricklink.repository.match.MatchMyItemSetItemRepository;
 import com.mercu.bricklink.repository.my.MyItemRepository;
 import com.mercu.log.LogService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+import static java.util.stream.Collectors.*;
 
 @Service
 public class BrickLinkMyService {
+
+    @Autowired
+    private BrickLinkSimilarService brickLinkSimilarService;
 
     @Autowired
     private MyItemRepository myItemRepository;
@@ -73,7 +73,16 @@ public class BrickLinkMyService {
     public void mapMyItemToSet(String matchId) {
         logService.log("mapMyItemToSet", "map start - matchId : " + matchId);
         // myItemList 조회하기
-        List<MyItem> myItemList = (List<MyItem>)myItemRepository.findAll();
+        List<MyItem> myItemList = ((List<MyItem>)myItemRepository.findAll()).stream()
+                .collect(
+                        groupingBy(myItem -> new MyItem(myItem.getItemType(), myItem.getItemNo(), myItem.getColorId()),
+                                summingInt(MyItem::getQty))
+                ).entrySet().stream()
+                .map(entry -> {
+                    MyItem myItem = new MyItem(entry.getKey().getItemType(), entry.getKey().getItemNo(), entry.getKey().getColorId());
+                    myItem.setQty(entry.getValue());
+                    return myItem;
+                }).collect(toList());
         logService.log("mapMyItemToSet", "myItemList.size : " + myItemList.size());
 
         int index = 0;
@@ -87,29 +96,51 @@ public class BrickLinkMyService {
             }
 
             // find set
-            // TODO 유사 item 반영하기
             // TODO color 범위 확대하기
             // TODO 수량 적용하기
-            List<SetItem> setItemList = setItemRepository.findByItemAndColor(myItem.getItemNo(), myItem.getColorId());
-            logService.log("mapMyItemToSet", "setItemList.size : " + setItemList.size());
-
-            List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
-            for (SetItem setItem : setItemList) {
-                MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
-                matchMyItemSetItem.setItemNo(myItem.getItemNo());
-                matchMyItemSetItem.setColorId(myItem.getColorId());
-                matchMyItemSetItem.setSetId(setItem.getSetId());
-                matchMyItemSetItem.setSetNo(setItem.getSetNo());
-                matchMyItemSetItem.setQty(setItem.getQty());
-                matchMyItemSetItem.setMatchId(matchId);
-                matchMyItemSetItem.setItemType(CategoryType.P.getCode());
-
-                matchMyItemSetItemList.add(matchMyItemSetItem);
-            }
-
-            matchMyItemSetItemRepository.saveAll(matchMyItemSetItemList);
+            addMatchSetItemWithSimilarAll(matchId, myItem);
         }
         logService.log("mapMyItemToSet", "map finish - matchId : " + matchId);
+    }
+
+    private void addMatchSetItemWithSimilarAll(String matchId, MyItem myItem) {
+        // 유사 item 반영하기
+        Set<String> itemNosWithSimilarAll = itemNosWithSimilarAll(myItem.getItemNo());
+        List<SetItem> setItemList = itemNosWithSimilarAll.stream()
+                .map(itemNo -> setItemRepository.findByItemAndColor(itemNo, myItem.getColorId()))
+                .flatMap(List::stream)
+                .collect(toList());
+        logService.log("addMatchSetItemWithSimilarAll", "setItemList.size : " + setItemList.size());
+
+        // 대표 itemNo
+        String itemNo = myItem.getItemNo();
+        if (itemNosWithSimilarAll.size() > 1) {
+            itemNo = brickLinkSimilarService.findRepresentPartNo(itemNo);
+        }
+
+        List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
+        for (SetItem setItem : setItemList) {
+            MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
+            matchMyItemSetItem.setItemNo(itemNo);
+            matchMyItemSetItem.setColorId(myItem.getColorId());
+            matchMyItemSetItem.setSetId(setItem.getSetId());
+            matchMyItemSetItem.setSetNo(setItem.getSetNo());
+            matchMyItemSetItem.setQty(setItem.getQty());
+            matchMyItemSetItem.setMatchId(matchId);
+            matchMyItemSetItem.setItemType(CategoryType.P.getCode());
+
+            matchMyItemSetItemList.add(matchMyItemSetItem);
+        }
+
+        matchMyItemSetItemRepository.saveAll(matchMyItemSetItemList);
+    }
+
+    private Set<String> itemNosWithSimilarAll(String itemNo) {
+        Set<String> itemNos = new HashSet<>();
+        itemNos.add(itemNo);
+        itemNos.addAll(brickLinkSimilarService.findPartNos(itemNo));
+
+        return itemNos;
     }
 
     /**

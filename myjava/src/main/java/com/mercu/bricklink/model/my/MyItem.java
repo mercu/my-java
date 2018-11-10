@@ -17,6 +17,8 @@ import java.util.Objects;
 @NoArgsConstructor
 @IdClass(MyItemId.class)
 public class MyItem {
+    public static final String WHERE_CODE_WANTED = "wanted";
+
     @Id
     private String itemType;
     @Id
@@ -25,8 +27,16 @@ public class MyItem {
     private String colorId = "0";
     @Id
     private String whereCode;
+    @Id
+    private String whereMore;
 
     private Integer qty;
+
+    public MyItem(String itemType, String itemNo, String colorId) {
+        this.itemType = itemType;
+        this.itemNo = itemNo;
+        this.colorId = colorId;
+    }
 
     public void setColorId(String colorId) {
         if (Objects.nonNull(colorId)) this.colorId = colorId;
