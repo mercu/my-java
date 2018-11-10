@@ -1,12 +1,12 @@
 package com.mercu.lego.controller;
 
-import com.mercu.lego.model.MyPartCategory;
 import com.mercu.lego.service.MyCategoryService;
 import com.mercu.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -22,8 +22,11 @@ public class CategoryController {
     public String partCategories(@RequestParam(value = "parentId", required = false) Integer parentId) {
         if (Objects.isNull(parentId)) parentId = 0;
 
-        List<MyPartCategory> partCategories = myCategoryService.findPartCategoriesByParentId(parentId);
-        return JsonUtils.toJson(partCategories);
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("parentCategory", myCategoryService.findById(parentId));
+        resultMap.put("partCategories", myCategoryService.findPartCategoriesByParentId(parentId));
+
+        return JsonUtils.toJson(resultMap);
     }
 
     @RequestMapping(path = "/admin/partCategory/new", method = RequestMethod.POST)

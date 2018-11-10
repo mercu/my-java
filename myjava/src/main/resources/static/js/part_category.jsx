@@ -40,6 +40,7 @@ class PartCategories extends React.Component {
     }
 
     render() {
+        console.log("render : " + this.state.parentParentId);
         return (
             <PartCategoriesRoot
                 parentId={this.state.parentId}
@@ -52,44 +53,42 @@ class PartCategories extends React.Component {
 }
 
 function PartCategoriesRoot(props) {
+    console.log("PartCategoriesRoot : " + props.parentParentId);
     return (
         <div className={'panel panel-default'}>
-            {loginUser !== undefined ? (
-            <div className={'panel-heading'} style={{position:'fixed'}}>
-                <PartCategoriesFloatLayer parentId={props.parentId} parentParentId={props.parentParentId} movePartCategoryIdFrom={props.movePartCategoryIdFrom}/>
-            </div>
-            ) : (<div/>)}
-            <div className={'panel-body'}>
-                <PartCategoriesBodyTable items={props.items} />
-            </div>
-
+            <PartCategoriesFloatLayer parentId={props.parentId}
+                parentParentId={props.parentParentId}
+                movePartCategoryIdFrom={props.movePartCategoryIdFrom}/>
+            <PartCategoriesBodyTable items={props.items} />
             <PartCategoriesModal parentId={props.parentId}/>
         </div>
     );
 }
 
 function PartCategoriesFloatLayer(props) {
+    const isGoUp = props.parentId != 0;
+    const isMovePartCategoryFrom = props.movePartCategoryIdFrom != null;
+    const isFloatLayer = isGoUp || loginUserAdmin;
+
     return (
-        <div>
-            <button name={'goUp'} className={'btn btn-primary'} style={{display:(props.parentId == 0 ? 'none' : 'inline-block')}} onClick={(e) => partCategories(props.parentParentId, e)}>&lt;</button>
-            <button className={'btn btn-primary'} onClick={(e) => e.preventDefault()} data-toggle="modal" data-target="#myModal">+</button>
-            <button name={'moveHere'} className={'btn btn-primary'} style={{display:(props.movePartCategoryIdFrom == null ? 'none' : 'inline-block')}} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>
-            <button name={'moveHere'} className={'btn btn-danger'} style={{display:(props.movePartCategoryIdFrom == null ? 'none' : 'inline-block')}} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>
+        <div className={'panel-heading' + (isFloatLayer ? '' : ' hide')} style={{position:'fixed'}}>
+            <button name={'goUp'} className={'btn btn-primary' + (isGoUp ? '' : ' hide')} onClick={(e) => partCategories(props.parentParentId, e)}>&lt;</button>
+            <button className={'btn btn-primary' + (loginUserAdmin ? '' : ' hide')} onClick={(e) => e.preventDefault()} data-toggle="modal" data-target="#myModal">+</button>
+            <button name={'moveHere'} className={'btn btn-primary' + (loginUserAdmin && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>
+            <button name={'moveHere'} className={'btn btn-danger' + (loginUserAdmin && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>
         </div>
     );
 }
 
 function PartCategoriesBodyTable(props) {
     return (
+        <div className={'panel-body'}>
         <table className="table table-bordered">
             <thead>
             <tr>
                 <th>ID</th>
-                <th>
-                    LVL<br/>
-                    P_ID
-                </th>
-                <th>NAME</th>
+                <th>P_ID</th>
+                <th>NAME(QTY/PARTS)</th>
                 <th>REP_IMG</th>
             </tr>
             </thead>
@@ -100,29 +99,30 @@ function PartCategoriesBodyTable(props) {
                     repImgs = JSON.parse(item.repImgs);
                 }
 
-                return <PartCategoriesElement
-                    key={key}
+                return <PartCategoriesElement key={key}
                     item={item}
                     movePartCategoryIdFrom={movePartCategoryIdFrom}
                     repImgs={repImgs}/>
             })}
             </tbody>
         </table>
+        </div>
     );
 }
 
 function PartCategoriesElement(props) {
     const item = props.item;
-    const movePartCategoryIdFrom = props.movePartCategoryIdFrom;
     const repImgs = props.repImgs;
+
+    const isMovePartCategoryIdFrom = props.movePartCategoryIdFrom != null;
 
     return (
         <tr>
             <td>{item.blCategoryId}</td>
             <td>
-                {item.depth} ({item.parentId})
-                <button className={'btn btn-primary btn-sm btn-block'} onClick={(e) => movePartCategory(item.id, e)}>GoTo</button>
-                {item.blCategoryId == null ? <button name={'moveHere'} className={'btn btn-primary btn-sm btn-block'} style={{display:(movePartCategoryIdFrom == null ? 'none' : 'block')}} onClick={(e) => movePartCategoryHere(item.id, e)}>Paste</button> : ''}
+                {item.parentId}
+                <button className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin ? '' : ' hide')} onClick={(e) => movePartCategory(item.id, e)}>GoTo</button>
+                {item.blCategoryId == null ? <button name={'moveHere'} className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin && isMovePartCategoryIdFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(item.id, e)}>Paste</button> : ''}
             </td>
             <td>
                 {item.setQty} / ({item.parts})
@@ -185,9 +185,13 @@ function partCategoriesAjax(parentId) {
         contentType: "application/json;charset=UTF-8",
         async : true
     }).done(function(data) {
+        if (data.parentCategory === undefined) {
+            data.parentCategory = {id : 0, parentId : 0};
+        }
         partCategoriesDOM.setState({
-            parentId : parentId,
-            items:data
+            parentId : data.parentCategory.id,
+            parentParentId : data.parentCategory.parentId,
+            items : data.partCategories
         });
     });
 }
@@ -198,7 +202,7 @@ function movePartCategory(categoryId, e) {
     if (typeof e != "undefined") e.preventDefault();
 
     movePartCategoryIdFrom = categoryId;
-    $("[name=moveHere]").show();
+    $("[name=moveHere]").removeClass("hide");
     // alert("clipped!");
 }
 
@@ -206,7 +210,7 @@ function movePartCategoryCancel(e) {
     if (typeof e != "undefined") e.preventDefault();
 
     movePartCategoryIdFrom = null;
-    $("[name=moveHere]").hide();
+    $("[name=moveHere]").addClass("hide");
 }
 
 function movePartCategoryHere(parentId, e) {
@@ -226,7 +230,7 @@ function movePartCategoryHere(parentId, e) {
     }).always(function(data) {
         // alert(data.responseText);
         movePartCategoryIdFrom = null;
-        $("[name=moveHere]").hide();
+        $("[name=moveHere]").addClass("hide");
         partCategories($("#partCategoryForm [name=parentId]").val());
     });
 

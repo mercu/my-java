@@ -54,6 +54,18 @@ public class MyCategoryService {
         return partCategories;
     }
 
+    /**
+     * @param id
+     * @return
+     */
+    public MyPartCategory findById(Integer id) {
+        return myPartCategoryRepository.findById(id).orElse(null);
+    }
+
+    /**
+     * @param blCategoryId
+     * @return
+     */
     public MyPartCategory findByBlCategoryId(Integer blCategoryId) {
         return myPartCategoryRepository.findByBlCategoryId(blCategoryId);
     }

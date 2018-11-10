@@ -54,14 +54,20 @@
             contentType: "application/json;charset=UTF-8",
             async : true
         }).always(function(data) {
-            if (data.responseText == "anonymousUser") {
+            if (data.userId == "anonymousUser") {
                 loginUser = null;
+                loginUserId = null;
+                loginUserAdmin = false;
             } else {
-                loginUser = data.responseText;
+                loginUser = data.nick;
+                loginUserId = data.userId;
+                loginUserAdmin = data.isAdmin;
             }
         });
     }
     var loginUser = null;
+    var loginUserId = null;
+    var loginUserAdmin = false;
     checkLogin();
 
 
