@@ -7,10 +7,10 @@
 
 </head>
 
-<body style="min-width:600px;">
+<body style="min-width:640px; width:100%;">
 <div id="navi"></div>
-<div id="partCategories"></div>
-<div id="myParts"></div>
+<div id="partCategories" style="position: fixed; overflow-y: scroll; height: 100%; width:100%;padding-bottom: 400px;"></div>
+<div id="myParts" style="position: fixed; overflow-y: scroll; height: 100%; width:100%;padding-bottom: 400px;"></div>
 
 
 <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
@@ -36,32 +36,6 @@
         e.preventDefault();
         e.stopPropagation();
     }
-
-    // login 체크
-    function checkLogin() {
-        $.ajax({
-            cache : false,
-            url:"/loginUser",
-            type : "GET",
-            dataType : "json",
-            contentType: "application/json;charset=UTF-8",
-            async : true
-        }).always(function(data) {
-            if (data.userId == "anonymousUser") {
-                loginUser = null;
-                loginUserId = null;
-                loginUserAdmin = false;
-            } else {
-                loginUser = data.nick;
-                loginUserId = data.userId;
-                loginUserAdmin = data.isAdmin;
-            }
-        });
-    }
-    var loginUser = null;
-    var loginUserId = null;
-    var loginUserAdmin = false;
-    checkLogin();
 
 
 
