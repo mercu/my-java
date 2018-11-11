@@ -28,10 +28,15 @@ public class BrickLinkColorService {
         return null;
     }
 
+    public ColorInfo findColorById(String colorId) {
+        return colorInfoRepository.findById(colorId).orElse(null);
+    }
+
     public List<ColorInfo> allColors() {
         if (Objects.isNull(allColors)) {
             allColors = (List<ColorInfo>)colorInfoRepository.findAll();
         }
         return allColors;
     }
+
 }

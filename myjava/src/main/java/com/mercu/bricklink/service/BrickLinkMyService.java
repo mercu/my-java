@@ -5,11 +5,13 @@ import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.model.match.MatchMyItemSetItem;
 import com.mercu.bricklink.model.match.MatchMyItemSetItemRatio;
 import com.mercu.bricklink.model.my.MyItem;
+import com.mercu.bricklink.model.my.MyItemGroup;
 import com.mercu.bricklink.repository.map.SetItemRepository;
 import com.mercu.bricklink.repository.match.MatchMyItemSetItemRatioRepository;
 import com.mercu.bricklink.repository.match.MatchMyItemSetItemRepository;
 import com.mercu.bricklink.repository.my.MyItemRepository;
 import com.mercu.log.LogService;
+import com.mercu.utils.UrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,10 @@ public class BrickLinkMyService {
 
     @Autowired
     private BrickLinkSimilarService brickLinkSimilarService;
+    @Autowired
+    private BrickLinkCatalogService brickLinkCatalogService;
+    @Autowired
+    private BrickLinkColorService brickLinkColorService;
 
     @Autowired
     private MyItemRepository myItemRepository;
@@ -43,6 +49,36 @@ public class BrickLinkMyService {
     public List<MyItem> findMyItems() {
         Pageable pageable = new PageRequest(0, 500);
         return myItemRepository.findList(pageable);
+    }
+
+    /**
+     * @return
+     */
+    public List<MyItemGroup> findMyItemsGroup() {
+        return findMyItems().stream()
+                .collect(
+                        groupingBy(myItem -> new MyItem(myItem.getItemType(), myItem.getItemNo(), myItem.getColorId()),
+                                toList())
+                ).entrySet().stream()
+                .map(entry -> {
+                    MyItem firstItem = entry.getValue().get(0);
+
+                    MyItemGroup myItemGroup = new MyItemGroup();
+                    myItemGroup.setItemType(firstItem.getItemType());
+                    myItemGroup.setItemNo(firstItem.getItemNo());
+                    myItemGroup.setColorId(firstItem.getColorId());
+                    myItemGroup.setQty(entry.getValue().stream()
+                            .mapToInt(MyItem::getQty)
+                            .sum());
+                    myItemGroup.setMyItems(entry.getValue());
+                    myItemGroup.setColorCode(brickLinkColorService.findColorById(firstItem.getColorId()).getColorCode());
+                    myItemGroup.setRepImgOriginal(brickLinkCatalogService.findPartByPartNo(firstItem.getItemNo()).getImg());
+                    myItemGroup.setRepImg(
+                            UrlUtils.replaceLastPath(
+                                    myItemGroup.getRepImgOriginal(),
+                                    firstItem.getColorId()));
+                    return myItemGroup;
+                }).collect(toList());
     }
 
     /**

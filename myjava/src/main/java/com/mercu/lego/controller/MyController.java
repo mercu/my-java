@@ -1,6 +1,6 @@
 package com.mercu.lego.controller;
 
-import com.mercu.bricklink.model.my.MyItem;
+import com.mercu.bricklink.model.my.MyItemGroup;
 import com.mercu.bricklink.service.BrickLinkMyService;
 import com.mercu.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +21,8 @@ public class MyController {
     @RequestMapping("/admin/myParts")
     @ResponseBody
     public String myParts() {
-        List<MyItem> myItemList = brickLinkMyService.findMyItems();
-
-        return JsonUtils.toJson(myItemList);
+        List<MyItemGroup> myItemGroupList = brickLinkMyService.findMyItemsGroup();
+        return JsonUtils.toJson(myItemGroupList);
     }
 
 }

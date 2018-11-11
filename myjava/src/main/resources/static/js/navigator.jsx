@@ -42,19 +42,19 @@ class Navigator extends React.Component {
         return (
             <nav className="navbar navbar-default">
                 <div className="container-fluid">
-                    <div className="navbar-header">
-                        <button type="button" className="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <div className="navbar-header" onClick={(e) => {toggleNavi(); e.preventDefault();}}>
+                        <button type="button" className="navbar-toggle">
                             <span className="icon-bar"></span>
                             <span className="icon-bar"></span>
                             <span className="icon-bar"></span>
                         </button>
                         <a className="navbar-brand" href="#">MercuBricks!</a>
                     </div>
-                    <div className="collapse navbar-collapse" id="myNavbar">
+                    <div className="navbar-collapse" id="myNavbar">
                         <ul className="nav navbar-nav">
                             <li className="active"><a href="#">Home</a></li>
-                            <li><a href="#" onClick={(e) => {hideAll();partCategories();e.preventDefault();}}>Part Categories</a></li>
-                            <li><a className={(this.state.loginUserAdmin == true ? '' : ' hide')} href="#" onClick={(e) => {hideAll();myParts();e.preventDefault();}}>My Parts</a></li>
+                            <li id={"partCategoriesMenu"}><a href="#" onClick={(e) => {selectMenu('partCategoriesMenu');hideAll();partCategories();e.preventDefault();}}>Part Categories</a></li>
+                            <li id={"myPartsMenu"}><a className={(this.state.loginUserAdmin == true ? '' : ' hide')} href="#" onClick={(e) => {selectMenu('myPartsMenu');hideAll();myParts();e.preventDefault();}}>My Parts</a></li>
                         </ul>
                         <ul className="nav navbar-nav navbar-right">
                             <li><a href="#">{this.state.loginUser !== undefined ? "Welcome, " + this.state.loginUser + "!" : ""}</a></li>
@@ -67,10 +67,39 @@ class Navigator extends React.Component {
     }
 }
 
+function selectMenu(menuId) {
+    $("#myNavbar li").removeClass("active");
+    $("#" + menuId).addClass("active");
+}
 function hideAll() {
     $("#partCategories").addClass("hide");
     $("#myParts").addClass("hide");
 
+    collapseNavi();
+}
+
+function collapseNavi(e) {
+    if (e !== undefined) e.preventDefault();
+    if ($("#myNavbar").hasClass("collapse") == false) {
+        $("#myNavbar").toggle("collapse");
+    }
+}
+
+function expandNavi(e) {
+    if (e !== undefined) e.preventDefault();
+    if ($("#myNavbar").hasClass("collapse")) {
+        $("#myNavbar").toggle("collapse");
+        $("#myNavbar").attr("style", "");
+    }
+}
+
+function toggleNavi(e) {
+    if (e !== undefined) e.preventDefault();
+    if ($("#myNavbar").hasClass("collapse")) {
+        expandNavi();
+    } else {
+        collapseNavi();
+    }
 }
 
 function Login(props) {
@@ -99,6 +128,10 @@ function checkLogin() {
                 loginUserAdmin : undefined
             });
         } else {
+            loginUser = data.nick;
+            loginUserId = data.userId;
+            loginUserAdmin = data.isAdmin;
+
             navigatorDOM.setState({
                 loginUser : data.nick,
                 loginUserId : data.userId,

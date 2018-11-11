@@ -28,19 +28,24 @@ class PartList extends React.Component {
                         <table className="table table-bordered">
                             <thead>
                             <tr>
-                                <th>img</th>
-                                <th>partNo</th>
-                                <th>setQty</th>
+                                <th>img<br/>partNo</th>
+                                <th>setQty<br/>myQty</th>
                                 <th>partName</th>
                             </tr>
                             </thead>
                             <tbody>
                             {data.map(function(item, key) {
                                 return <tr key={key}>
-                                    <td><img src={item.img}/></td>
-                                    <td><a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + item.id + '#T=C'} target={'_blank'}>{item.partNo}</a></td>
-                                    <td>{item.setQty}</td>
-                                    <td>{item.partName}</td>
+                                    <td>
+                                        <img src={item.img}/><br/>
+                                        <a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + item.id + '#T=C'} target={'_blank'}>{item.partNo}</a>
+                                    </td>
+                                    <td>
+                                        {item.setQty}
+                                        <br/>/<br/>
+
+                                    </td>
+                                    <td>{item.partName}<br/>{item.existMyItems == true ? "true" : "false"}</td>
                                 </tr>
                             })}
                             </tbody>

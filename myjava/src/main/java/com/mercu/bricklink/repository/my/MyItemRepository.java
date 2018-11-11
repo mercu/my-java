@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface MyItemRepository extends CrudRepository<MyItem, String> {
 
-    @Query("select m from MyItem m join PartInfo p on p.partNo = m.itemNo")
+    @Query("select m from MyItem m")
     List<MyItem> findList(Pageable pageable);
 
     @Query("select m from MyItem m where m.itemType = :itemType and m.itemNo = :itemNo and m.colorId = :colorId and m.whereCode = :whereCode")
@@ -20,6 +20,9 @@ public interface MyItemRepository extends CrudRepository<MyItem, String> {
 
     @Query("select m from MyItem m where m.whereCode = :whereCode and m.whereMore = :whereMore")
     List<MyItem> findByWhere(@Param("whereCode") String whereCode, @Param("whereMore") String whereMore);
+
+    @Query("select m from MyItem m where m.itemType = 'P' and m.itemNo = :partNo")
+    List<MyItem> findByPartNo(@Param("partNo") String partNo);
 
     @Transactional
     @Modifying

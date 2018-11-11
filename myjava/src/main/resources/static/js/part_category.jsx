@@ -60,6 +60,7 @@ function PartCategoriesRoot(props) {
                 movePartCategoryIdFrom={props.movePartCategoryIdFrom}/>
             <PartCategoriesBodyTable items={props.items} />
             <PartCategoriesModal parentId={props.parentId}/>
+            <ScrollLayer/>
         </div>
     );
 }
@@ -67,14 +68,14 @@ function PartCategoriesRoot(props) {
 function PartCategoriesFloatLayer(props) {
     const isGoUp = props.parentId != 0;
     const isMovePartCategoryFrom = props.movePartCategoryIdFrom != null;
-    const isFloatLayer = isGoUp || loginUserAdmin;
+    const isFloatLayer = isGoUp || loginUserAdmin == true;
 
     return (
         <div className={'panel-heading' + (isFloatLayer ? '' : ' hide')} style={{position:'fixed'}}>
             <button name={'goUp'} className={'btn btn-primary' + (isGoUp ? '' : ' hide')} onClick={(e) => partCategories(props.parentParentId, e)}>&lt;</button>
-            <button className={'btn btn-primary' + (loginUserAdmin ? '' : ' hide')} onClick={(e) => e.preventDefault()} data-toggle="modal" data-target="#myModal">+</button>
-            <button name={'moveHere'} className={'btn btn-primary' + (loginUserAdmin && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>
-            <button name={'moveHere'} className={'btn btn-danger' + (loginUserAdmin && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>
+            <button className={'btn btn-primary' + (loginUserAdmin == true ? '' : ' hide')} onClick={(e) => e.preventDefault()} data-toggle="modal" data-target="#myModal">+</button>
+            <button name={'moveHere'} className={'btn btn-primary' + (loginUserAdmin == true && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>
+            <button name={'moveHere'} className={'btn btn-danger' + (loginUserAdmin == true && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>
         </div>
     );
 }
@@ -120,8 +121,8 @@ function PartCategoriesElement(props) {
             <td>{item.blCategoryId}</td>
             <td>
                 {item.parentId}
-                <button className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin ? '' : ' hide')} onClick={(e) => movePartCategory(item.id, e)}>GoTo</button>
-                {item.blCategoryId == null ? <button name={'moveHere'} className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin && isMovePartCategoryIdFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(item.id, e)}>Paste</button> : ''}
+                <button className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin == true ? '' : ' hide')} onClick={(e) => movePartCategory(item.id, e)}>GoTo</button>
+                {item.blCategoryId == null ? <button name={'moveHere'} className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin == true && isMovePartCategoryIdFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(item.id, e)}>Paste</button> : ''}
             </td>
             <td>
                 {item.setQty} / ({item.parts})
@@ -171,6 +172,17 @@ function PartCategoriesModal(props) {
 
         </div>
     </div>
+    );
+}
+
+function ScrollLayer() {
+    return (
+        <div className={"panel panel-default"} id={"floatMenu"} style={{position:"fixed", bottom:"30px", right:"20px"}}>
+            <div className={"panel-body"}>
+                <button className={'btn btn-block btn-default'} onClick={(e) => {$("#partCategories").scrollTop(0); e.preventDefault()}}>TOP</button>
+                <button className={'btn btn-block btn-default'} onClick={(e) => {$("#partCategories").scrollTop($("#partCategories .panel").height()); e.preventDefault()}}>BTM</button>
+            </div>
+        </div>
     );
 }
 

@@ -49,7 +49,12 @@ public class MyCategoryService {
     public List<MyPartCategory> findPartCategoriesByParentId(Integer parentCategoryId) {
         List<MyPartCategory> partCategories = myPartCategoryRepository.findByParentCategoryId(parentCategoryId);
         partCategories = partCategories.stream()
-                .map(myPartCategory -> propagateChildRepresentImageUrls(myPartCategory))
+                .map(myPartCategory -> {
+                    if (Objects.nonNull(myPartCategory.getBlCategoryId())) {
+
+                    }
+                    return propagateChildRepresentImageUrls(myPartCategory);
+                })
                 .collect(toList());
         return partCategories;
     }

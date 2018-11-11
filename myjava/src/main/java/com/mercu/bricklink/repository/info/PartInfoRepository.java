@@ -17,8 +17,8 @@ public interface PartInfoRepository extends CrudRepository<PartInfo, String> {
     @Query("select p from PartInfo p where p.categoryId = :categoryId order by p.setQty desc")
     List<PartInfo> findAllByCategoryId(@Param("categoryId") Integer categoryId, Pageable pageable);
 
-    @Query("select p from PartInfo p where p.partNo = :itemNo")
-    Optional<PartInfo> findByPartNo(@Param("itemNo") String itemNo);
+    @Query("select p from PartInfo p where p.partNo = :partNo")
+    Optional<PartInfo> findByPartNo(@Param("partNo") String partNo);
 
     @Query("select count(1) from PartInfo p where p.categoryId = :categoryId")
     Integer countPartsByCategoryId(@Param("categoryId") Integer categoryId);

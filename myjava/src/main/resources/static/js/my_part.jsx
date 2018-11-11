@@ -51,9 +51,12 @@ function MyPartsRoot(props) {
                 <table className="table table-bordered">
                     <thead>
                     <tr>
-                        <th>img</th>
-                        <th>itemNo</th>
-                        <th>colorId</th>
+                        <th rowSpan={2}>img</th>
+                        <th rowSpan={2}>itemNo</th>
+                        <th rowSpan={2}>totalQty</th>
+                        <th colSpan={3}>subItems</th>
+                    </tr>
+                    <tr>
                         <th>whereCode</th>
                         <th>whereMore</th>
                         <th>qty</th>
@@ -62,18 +65,46 @@ function MyPartsRoot(props) {
                     <tbody>
                     {props.items.map(function(item, key) {
                         return <tr key={key}>
-                            <td><img src={item.partInfo.img}/></td>
+                            <td bgcolor={item.colorCode}><img src={item.repImg} alt={item.repImgOriginal} onError={(e)=>{e.target.onerror = null; e.target.src=item.repImgOriginal}}/></td>
                             <td>{item.itemNo}</td>
-                            <td>{item.colorId}</td>
-                            <td>{item.whereCode}</td>
-                            <td>{item.whereMore}</td>
                             <td>{item.qty}</td>
+                            <td colSpan={3}><SubItems subItem={item.myItems}/></td>
                         </tr>;
                     })}
                     </tbody>
                 </table>
             </div>
+            <ScrollLayer/>
         </div>
+    );
+}
+
+function ScrollLayer() {
+    return (
+        <div className={"panel panel-default"} id={"floatMenu"} style={{position:"fixed", bottom:"30px", right:"20px"}}>
+            <div className={"panel-body"}>
+                <button className={'btn btn-block btn-default'} onClick={(e) => {$("#myParts").scrollTop(0); e.preventDefault()}}>TOP</button>
+                <button className={'btn btn-block btn-default'} onClick={(e) => {$("#myParts").scrollTop($("#myParts .panel").height()); e.preventDefault()}}>BTM</button>
+            </div>
+        </div>
+    );
+}
+
+
+function SubItems(props) {
+    const subItems = props.subItem;
+    return (
+        <table className="table table-bordered" style={{marginBottom:"0"}}>
+            <tbody>
+            {subItems.map(function(item, key) {
+                return <tr key={key}>
+                    <td>{item.whereCode}</td>
+                    <td>{item.whereMore}</td>
+                    <td>{item.qty}</td>
+                </tr>;
+            })}
+            </tbody>
+        </table>
     );
 }
 

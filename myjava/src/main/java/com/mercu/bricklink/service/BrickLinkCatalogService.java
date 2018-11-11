@@ -8,6 +8,7 @@ import com.mercu.bricklink.repository.info.MinifigInfoRepository;
 import com.mercu.bricklink.repository.info.PartInfoRepository;
 import com.mercu.bricklink.repository.info.SetInfoRepository;
 import com.mercu.bricklink.repository.map.SetItemRepository;
+import com.mercu.bricklink.repository.my.MyItemRepository;
 import com.mercu.log.LogService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,6 +35,8 @@ public class BrickLinkCatalogService {
     private ColorInfoRepository colorInfoRepository;
     @Autowired
     private SetItemRepository setItemRepository;
+    @Autowired
+    private MyItemRepository myItemRepository;
 
     @Autowired
     private LogService logService;
@@ -42,10 +45,12 @@ public class BrickLinkCatalogService {
         return partInfoRepository.findAllByCategoryId(categoryId);
     }
 
-    public List<PartInfo> findPartInfoListByCategoryIdLimit(Integer categoryId, Integer limit) {
+    public List<PartInfo> findPartInfoListByCategoryIdWithMyItems(Integer categoryId, Integer limit) {
         if (Objects.isNull(limit)) limit = Integer.MAX_VALUE;
         Pageable pageable = new PageRequest(0, limit);
-        return partInfoRepository.findAllByCategoryId(categoryId, pageable);
+        List<PartInfo> partInfoList = partInfoRepository.findAllByCategoryId(categoryId, pageable);
+
+        return partInfoList;
     }
 
     public List<SetInfo> findSetInfoListByYear(String year) {
@@ -142,4 +147,7 @@ public class BrickLinkCatalogService {
         logService.log("updatePartInfoSetQty", "=== finish !");
     }
 
+    public PartInfo findPartByPartNo(String partNo) {
+        return partInfoRepository.findByPartNo(partNo).orElse(null);
+    }
 }

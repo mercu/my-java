@@ -1,9 +1,11 @@
 package com.mercu.bricklink.model.my;
 
-import com.mercu.bricklink.model.info.PartInfo;
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.Table;
 import java.util.Objects;
 
 @Getter
@@ -29,11 +31,6 @@ public class MyItem {
     private String whereMore;
 
     private Integer qty;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "itemNo", referencedColumnName = "partNo",
-            insertable = false, updatable = false)
-    private PartInfo partInfo;
 
     public MyItem(String itemType, String itemNo, String colorId) {
         this.itemType = itemType;

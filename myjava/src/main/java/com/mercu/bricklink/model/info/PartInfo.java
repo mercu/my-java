@@ -1,12 +1,14 @@
 package com.mercu.bricklink.model.info;
 
-import com.mercu.bricklink.model.my.MyItem;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 @Getter
@@ -21,11 +23,9 @@ public class PartInfo implements AbstractInfo, Serializable {
     private String id;
     private Integer categoryId;
     private String img;
-    @Column(name="partNo")
+//    @Column(name="partNo")
     private String partNo;
     private String partName;
     private Integer setQty;
 
-    @OneToOne(mappedBy = "partInfo")
-    private MyItem myItem;
 }
