@@ -11,6 +11,8 @@ import com.mercu.bricklink.repository.match.MatchMyItemSetItemRepository;
 import com.mercu.bricklink.repository.my.MyItemRepository;
 import com.mercu.log.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -34,6 +36,14 @@ public class BrickLinkMyService {
 
     @Autowired
     private LogService logService;
+
+    /**
+     * @return
+     */
+    public List<MyItem> findMyItems() {
+        Pageable pageable = new PageRequest(0, 500);
+        return myItemRepository.findList(pageable);
+    }
 
     /**
      * @param setNo
@@ -186,4 +196,5 @@ public class BrickLinkMyService {
 
         logService.log("mapMyItemToSemtRatio", "map finish - matchId : " + matchId);
     }
+
 }

@@ -58,7 +58,7 @@ function partList(categoryId, parentId, e) {
 
     ReactDOM.render(
         <PartList categoryId={categoryId} parentId={parentId}/>
-        , document.getElementById("main")
+        , document.getElementById("partCategories")
     );
-    $("#layer_1").show();
+    $("#partCategories").removeClass("hide");
 }

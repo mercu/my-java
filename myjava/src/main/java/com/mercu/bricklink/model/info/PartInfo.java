@@ -1,13 +1,13 @@
 package com.mercu.bricklink.model.info;
 
+import com.mercu.bricklink.model.my.MyItem;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.io.Serializable;
 
 @Getter
 @Setter
@@ -15,13 +15,17 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table(name = "BL_PART_INFO")
-public class PartInfo implements AbstractInfo {
+public class PartInfo implements AbstractInfo, Serializable {
     @Id
+    @Column(name="id")
     private String id;
     private Integer categoryId;
     private String img;
+    @Column(name="partNo")
     private String partNo;
     private String partName;
     private Integer setQty;
 
+    @OneToOne(mappedBy = "partInfo")
+    private MyItem myItem;
 }

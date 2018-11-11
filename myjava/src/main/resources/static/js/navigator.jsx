@@ -43,13 +43,20 @@ class Navigator extends React.Component {
                     </div>
                     <ul className="nav navbar-nav">
                         <li className="active"><a href="#">Home</a></li>
-                        <li><a href="#" onClick={(e) => {partCategories();e.preventDefault();}}>Part Categories</a></li>
+                        <li><a href="#" onClick={(e) => {hideAll();partCategories();e.preventDefault();}}>Part Categories</a></li>
+                        <li><a className={(loginUserAdmin ? '' : ' hide')} href="#" onClick={(e) => {hideAll();myParts();e.preventDefault();}}>My Parts</a></li>
                         <Login loginUser={loginUser}/>
                     </ul>
                 </div>
             </nav>
         );
     }
+}
+
+function hideAll() {
+    $("#partCategories").addClass("hide");
+    $("#myParts").addClass("hide");
+
 }
 
 function Login(props) {

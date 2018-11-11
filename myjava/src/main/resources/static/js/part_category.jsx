@@ -7,11 +7,12 @@ function partCategories(parentId, parentParentId, e) {
     if (partCategoriesDOM == null) {
         ReactDOM.render(
             <PartCategories parentId={parentId} parentParentId={parentParentId}/>
-            , document.getElementById("main")
+            , document.getElementById("partCategories")
         );
     } else {
         partCategoriesAjax(parentId);
     }
+    $("#partCategories").removeClass("hide");
 
 }
 
@@ -40,7 +41,6 @@ class PartCategories extends React.Component {
     }
 
     render() {
-        console.log("render : " + this.state.parentParentId);
         return (
             <PartCategoriesRoot
                 parentId={this.state.parentId}
@@ -53,7 +53,6 @@ class PartCategories extends React.Component {
 }
 
 function PartCategoriesRoot(props) {
-    console.log("PartCategoriesRoot : " + props.parentParentId);
     return (
         <div className={'panel panel-default'}>
             <PartCategoriesFloatLayer parentId={props.parentId}
@@ -177,7 +176,6 @@ function PartCategoriesModal(props) {
 
 function partCategoriesAjax(parentId) {
     $.ajax({
-        cache : false,
         url:"/partCategories",
         type : "GET",
         dataType : "json",
