@@ -2,10 +2,7 @@ package com.mercu.bricklink.model.my;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Getter
@@ -31,6 +28,9 @@ public class MyItem {
     private String whereMore;
 
     private Integer qty;
+
+    @Transient
+    private String colorImgUrl;
 
     public MyItem(String itemType, String itemNo, String colorId) {
         this.itemType = itemType;

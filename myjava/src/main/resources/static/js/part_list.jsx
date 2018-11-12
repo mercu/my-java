@@ -45,7 +45,10 @@ class PartList extends React.Component {
                                         <br/>/<br/>
                                         {item.myItemsQty}
                                     </td>
-                                    <td>{item.partName}<br/>{item.existMyItems == true ? "true" : "false"}</td>
+                                    <td>
+                                        {item.partName}<br/>
+                                        {item.myItemGroups.length > 0 ? <MyItems myItemGroups={item.myItemGroups}/> : ""}
+                                    </td>
                                 </tr>
                             })}
                             </tbody>
@@ -56,6 +59,40 @@ class PartList extends React.Component {
         return element;
     }
 
+}
+
+function MyItems(props) {
+    var myItemGroups = props.myItemGroups;
+    return (
+        <table className="table table-bordered">
+            <thead>
+            <tr>
+                <th>colorId</th>
+                <th>qty</th>
+                <th>where</th>
+            </tr>
+            </thead>
+            <tbody>
+            {myItemGroups.map(function(item, key) {
+                return (
+                    <tr key={key}>
+                        <td><img src={item.repImg}/></td>
+                        <td>{item.qty}</td>
+                        <td>
+                            <ul>
+                            {item.myItems.map(function(item, key) {
+                                return (
+                                    <li>({item.qty}) {item.whereCode}-{item.whereMore}</li>
+                                );
+                            })}
+                            </ul>
+                        </td>
+                    </tr>
+                );
+            })}
+            </tbody>
+        </table>
+    );
 }
 
 function partList(categoryId, parentId, e) {

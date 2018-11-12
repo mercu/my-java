@@ -70,30 +70,36 @@ public class BrickLinkMyService {
      * @return
      */
     public List<MyItemGroup> findMyItemsGroup() {
-        return findMyItems().stream()
+        return findMyItemsGroup(findMyItems());
+    }
+    public List<MyItemGroup> findMyItemsGroup(List<MyItem> myItemList) {
+        return myItemList.stream()
                 .collect(
                         groupingBy(myItem -> new MyItem(myItem.getItemType(), myItem.getItemNo(), myItem.getColorId()),
                                 toList())
                 ).entrySet().stream()
-                .map(entry -> {
-                    MyItem firstItem = entry.getValue().get(0);
+                .map(entry -> myItemGroup(entry.getValue()))
+                .collect(toList());
+    }
 
-                    MyItemGroup myItemGroup = new MyItemGroup();
-                    myItemGroup.setItemType(firstItem.getItemType());
-                    myItemGroup.setItemNo(firstItem.getItemNo());
-                    myItemGroup.setColorId(firstItem.getColorId());
-                    myItemGroup.setQty(entry.getValue().stream()
-                            .mapToInt(MyItem::getQty)
-                            .sum());
-                    myItemGroup.setMyItems(entry.getValue());
-                    myItemGroup.setColorCode(brickLinkColorService.findColorById(firstItem.getColorId()).getColorCode());
-                    myItemGroup.setRepImgOriginal(brickLinkCatalogService.findPartByPartNo(firstItem.getItemNo()).getImg());
-                    myItemGroup.setRepImg(
-                            UrlUtils.replaceLastPath(
-                                    myItemGroup.getRepImgOriginal(),
-                                    firstItem.getColorId()));
-                    return myItemGroup;
-                }).collect(toList());
+    public MyItemGroup myItemGroup(List<MyItem> myItemList) {
+        MyItem firstItem = myItemList.get(0);
+
+        MyItemGroup myItemGroup = new MyItemGroup();
+        myItemGroup.setItemType(firstItem.getItemType());
+        myItemGroup.setItemNo(firstItem.getItemNo());
+        myItemGroup.setColorId(firstItem.getColorId());
+        myItemGroup.setQty(myItemList.stream()
+                .mapToInt(MyItem::getQty)
+                .sum());
+        myItemGroup.setMyItems(myItemList);
+        myItemGroup.setColorCode(brickLinkColorService.findColorById(firstItem.getColorId()).getColorCode());
+        myItemGroup.setRepImgOriginal(brickLinkCatalogService.findPartByPartNo(firstItem.getItemNo()).getImg());
+        myItemGroup.setRepImg(
+                UrlUtils.replaceLastPath(
+                        myItemGroup.getRepImgOriginal(),
+                        firstItem.getColorId()));
+        return myItemGroup;
     }
 
     /**

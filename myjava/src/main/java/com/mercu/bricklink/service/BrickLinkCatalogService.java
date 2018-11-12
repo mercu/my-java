@@ -3,7 +3,7 @@ package com.mercu.bricklink.service;
 import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.info.*;
 import com.mercu.bricklink.model.map.SetItem;
-import com.mercu.bricklink.model.my.MyItem;
+import com.mercu.bricklink.model.my.MyItemGroup;
 import com.mercu.bricklink.repository.info.ColorInfoRepository;
 import com.mercu.bricklink.repository.info.MinifigInfoRepository;
 import com.mercu.bricklink.repository.info.PartInfoRepository;
@@ -56,15 +56,17 @@ public class BrickLinkCatalogService {
 
         // with MyItems (itemType, itemNo)
         partInfoList.stream()
-            .forEach(partInfo -> {
-                partInfo.setMyItems(brickLinkMyService.findMyItems(partInfo.getItemType(), partInfo.getPartNo()));
-                if (Objects.nonNull(partInfo.getMyItems())) {
+                .forEach(partInfo -> {
+                    partInfo.setMyItemGroups(
+                            brickLinkMyService.findMyItemsGroup(
+                                    brickLinkMyService.findMyItems(partInfo.getItemType(), partInfo.getPartNo())
+                            ));
                     partInfo.setMyItemsQty(
-                        partInfo.getMyItems().stream()
-                            .mapToInt(MyItem::getQty)
-                            .sum());
-                }
-            });
+                            partInfo.getMyItemGroups().stream()
+                                    .mapToInt(MyItemGroup::getQty)
+                                    .sum()
+                    );
+                });
 
         return partInfoList;
     }

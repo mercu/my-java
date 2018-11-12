@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.mercu.bricklink.model.my.MyItemGroup;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +36,7 @@ public class PartInfo implements AbstractInfo, Serializable {
     private Integer setQty;
 
     @Transient
-    private List<MyItem> myItems;
+    private List<MyItemGroup> myItemGroups;
     @Transient
     private Integer myItemsQty = 0;
 
