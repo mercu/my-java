@@ -1,15 +1,21 @@
 package com.mercu.bricklink.model.info;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.io.Serializable;
+import javax.persistence.Transient;
+
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+import com.mercu.bricklink.model.CategoryType;
+import com.mercu.bricklink.model.my.MyItem;
 
 @Getter
 @Setter
@@ -27,5 +33,15 @@ public class PartInfo implements AbstractInfo, Serializable {
     private String partNo;
     private String partName;
     private Integer setQty;
+
+    @Transient
+    private List<MyItem> myItems;
+    @Transient
+    private Integer myItemsQty = 0;
+
+    @Override
+    public String getItemType() {
+        return CategoryType.P.getCode();
+    }
 
 }

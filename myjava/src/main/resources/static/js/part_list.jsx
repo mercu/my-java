@@ -43,7 +43,7 @@ class PartList extends React.Component {
                                     <td>
                                         {item.setQty}
                                         <br/>/<br/>
-
+                                        {item.myItemsQty}
                                     </td>
                                     <td>{item.partName}<br/>{item.existMyItems == true ? "true" : "false"}</td>
                                 </tr>

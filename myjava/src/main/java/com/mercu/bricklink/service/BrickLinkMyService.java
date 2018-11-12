@@ -1,5 +1,18 @@
 package com.mercu.bricklink.service;
 
+import static java.util.stream.Collectors.*;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.model.match.MatchMyItemSetItem;
@@ -12,14 +25,6 @@ import com.mercu.bricklink.repository.match.MatchMyItemSetItemRepository;
 import com.mercu.bricklink.repository.my.MyItemRepository;
 import com.mercu.log.LogService;
 import com.mercu.utils.UrlUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-
-import static java.util.stream.Collectors.*;
 
 @Service
 public class BrickLinkMyService {
@@ -49,6 +54,16 @@ public class BrickLinkMyService {
     public List<MyItem> findMyItems() {
         Pageable pageable = new PageRequest(0, 500);
         return myItemRepository.findList(pageable);
+    }
+
+    /**
+     *
+     * @param itemType
+     * @param itemNo
+     * @return
+     */
+    public List<MyItem> findMyItems(String itemType, String itemNo) {
+        return myItemRepository.findList(itemType, itemNo);
     }
 
     /**

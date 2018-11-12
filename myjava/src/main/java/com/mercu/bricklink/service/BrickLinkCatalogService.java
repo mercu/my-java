@@ -3,6 +3,7 @@ package com.mercu.bricklink.service;
 import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.info.*;
 import com.mercu.bricklink.model.map.SetItem;
+import com.mercu.bricklink.model.my.MyItem;
 import com.mercu.bricklink.repository.info.ColorInfoRepository;
 import com.mercu.bricklink.repository.info.MinifigInfoRepository;
 import com.mercu.bricklink.repository.info.PartInfoRepository;
@@ -24,6 +25,9 @@ import java.util.Objects;
 @Service
 public class BrickLinkCatalogService {
     Logger logger = LoggerFactory.getLogger(BrickLinkCatalogService.class);
+
+    @Autowired
+    private BrickLinkMyService brickLinkMyService;
 
     @Autowired
     private SetInfoRepository setInfoRepository;
@@ -49,6 +53,18 @@ public class BrickLinkCatalogService {
         if (Objects.isNull(limit)) limit = Integer.MAX_VALUE;
         Pageable pageable = new PageRequest(0, limit);
         List<PartInfo> partInfoList = partInfoRepository.findAllByCategoryId(categoryId, pageable);
+
+        // with MyItems (itemType, itemNo)
+        partInfoList.stream()
+            .forEach(partInfo -> {
+                partInfo.setMyItems(brickLinkMyService.findMyItems(partInfo.getItemType(), partInfo.getPartNo()));
+                if (Objects.nonNull(partInfo.getMyItems())) {
+                    partInfo.setMyItemsQty(
+                        partInfo.getMyItems().stream()
+                            .mapToInt(MyItem::getQty)
+                            .sum());
+                }
+            });
 
         return partInfoList;
     }
