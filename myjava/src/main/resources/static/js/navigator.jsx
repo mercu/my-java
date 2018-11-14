@@ -73,6 +73,7 @@ function selectMenu(menuId) {
 }
 function hideAll() {
     $("#partCategories").addClass("hide");
+    $("#partList").addClass("hide");
     $("#myParts").addClass("hide");
 
     collapseNavi();

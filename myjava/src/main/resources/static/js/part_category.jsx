@@ -12,8 +12,29 @@ function partCategories(parentId, parentParentId, e) {
     } else {
         partCategoriesAjax(parentId);
     }
+    $("#partList").addClass("hide");
     $("#partCategories").removeClass("hide");
 
+}
+
+function partCategoriesAjax(parentId) {
+    $.ajax({
+        url:"/partCategories",
+        type : "GET",
+        dataType : "json",
+        data : {parentId : parentId},
+        contentType: "application/json;charset=UTF-8",
+        async : true
+    }).done(function(data) {
+        if (data.parentCategory === undefined) {
+            data.parentCategory = {id : 0, parentId : 0};
+        }
+        partCategoriesDOM.setState({
+            parentId : data.parentCategory.id,
+            parentParentId : data.parentCategory.parentId,
+            items : data.partCategories
+        });
+    });
 }
 
 class PartCategories extends React.Component {
@@ -60,7 +81,7 @@ function PartCategoriesRoot(props) {
                 movePartCategoryIdFrom={props.movePartCategoryIdFrom}/>
             <PartCategoriesBodyTable items={props.items} />
             <PartCategoriesModal parentId={props.parentId}/>
-            <ScrollLayer/>
+            <ScrollLayer outerId={"#partCategories"} innerId={"#partCategories .panel"}/>
         </div>
     );
 }
@@ -173,37 +194,6 @@ function PartCategoriesModal(props) {
         </div>
     </div>
     );
-}
-
-function ScrollLayer() {
-    return (
-        <div className={"panel panel-default"} id={"floatMenu"} style={{position:"fixed", bottom:"30px", right:"20px"}}>
-            <div className={"panel-body"}>
-                <button className={'btn btn-block btn-default'} onClick={(e) => {$("#partCategories").scrollTop(0); e.preventDefault()}}>TOP</button>
-                <button className={'btn btn-block btn-default'} onClick={(e) => {$("#partCategories").scrollTop($("#partCategories .panel").height()); e.preventDefault()}}>BTM</button>
-            </div>
-        </div>
-    );
-}
-
-function partCategoriesAjax(parentId) {
-    $.ajax({
-        url:"/partCategories",
-        type : "GET",
-        dataType : "json",
-        data : {parentId : parentId},
-        contentType: "application/json;charset=UTF-8",
-        async : true
-    }).done(function(data) {
-        if (data.parentCategory === undefined) {
-            data.parentCategory = {id : 0, parentId : 0};
-        }
-        partCategoriesDOM.setState({
-            parentId : data.parentCategory.id,
-            parentParentId : data.parentCategory.parentId,
-            items : data.partCategories
-        });
-    });
 }
 
 

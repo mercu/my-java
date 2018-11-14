@@ -74,22 +74,10 @@ function MyPartsRoot(props) {
                     </tbody>
                 </table>
             </div>
-            <ScrollLayer/>
+            <ScrollLayer outerId={"#myParts"} innerId={"#myParts .panel"} />
         </div>
     );
 }
-
-function ScrollLayer() {
-    return (
-        <div className={"panel panel-default"} id={"floatMenu"} style={{position:"fixed", bottom:"30px", right:"20px"}}>
-            <div className={"panel-body"}>
-                <button className={'btn btn-block btn-default'} onClick={(e) => {$("#myParts").scrollTop(0); e.preventDefault()}}>TOP</button>
-                <button className={'btn btn-block btn-default'} onClick={(e) => {$("#myParts").scrollTop($("#myParts .panel").height()); e.preventDefault()}}>BTM</button>
-            </div>
-        </div>
-    );
-}
-
 
 function SubItems(props) {
     const subItems = props.subItem;
