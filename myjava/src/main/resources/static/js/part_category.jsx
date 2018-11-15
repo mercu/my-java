@@ -80,7 +80,6 @@ function PartCategoriesRoot(props) {
                 parentParentId={props.parentParentId}
                 movePartCategoryIdFrom={props.movePartCategoryIdFrom}/>
             <PartCategoriesBodyTable items={props.items} />
-            <PartCategoriesModal parentId={props.parentId}/>
             <ScrollLayer outerId={"#partCategories"} innerId={"#partCategories .panel"}/>
         </div>
     );
@@ -94,7 +93,7 @@ function PartCategoriesFloatLayer(props) {
     return (
         <div className={'panel-heading' + (isFloatLayer ? '' : ' hide')} style={{position:'fixed'}}>
             <button name={'goUp'} className={'btn btn-primary' + (isGoUp ? '' : ' hide')} onClick={(e) => partCategories(props.parentParentId, e)}>&lt;</button>
-            <button className={'btn btn-primary' + (loginUserAdmin == true ? '' : ' hide')} onClick={(e) => e.preventDefault()} data-toggle="modal" data-target="#myModal">+</button>
+            <button className={'btn btn-primary' + (loginUserAdmin == true ? '' : ' hide')} onClick={(e) => newPartCategoryModal(props.parentId, e)}>+</button>
             <button name={'moveHere'} className={'btn btn-primary' + (loginUserAdmin == true && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>
             <button name={'moveHere'} className={'btn btn-danger' + (loginUserAdmin == true && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>
         </div>
@@ -162,38 +161,6 @@ function PartCategoriesElement(props) {
     );
 }
 
-function PartCategoriesModal(props) {
-    const parentId = props.parentId;
-    return (
-    <div id="myModal" className="modal fade" role="dialog">
-        <div className="modal-dialog">
-
-            {/* Modal content */}
-            <div className="modal-content">
-                <div className="modal-header">
-                    <button type="button" className="close" data-dismiss="modal">&times;</button>
-                    <h4 className="modal-title">카테고리 생성하기</h4>
-                </div>
-                <div className="modal-body">
-                    <form id="partCategoryForm">
-                        <input type="hidden" name="parentId" value={parentId}/>
-                        <div className="form-group">
-                            <label htmlFor="name">카테고리명</label>
-                            <input type="text" className="form-control" name="name"/>
-                        </div>
-                    </form>
-                </div>
-                <div className="modal-footer">
-                    <button type="submit" className="btn btn-primary" onClick={(e) => newPartCategory($("#partCategoryForm"), e)}>생성하기</button>
-                    <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-    );
-}
-
 
 var movePartCategoryIdFrom = null;
 function movePartCategory(categoryId, e) {
@@ -234,23 +201,3 @@ function movePartCategoryHere(parentId, e) {
 
 }
 
-function newPartCategory(form, e) {
-    if (typeof e != "undefined") e.preventDefault();
-
-    $.ajax({
-        url:"/admin/partCategory/new",
-        type : "POST",
-        dataType : "json",
-        data : {
-            "parentId" : $("#partCategoryForm [name=parentId]").val(),
-            "name" : $("#partCategoryForm [name=name]").val()
-        },
-        ContentType: "application/json",
-        async : true
-    }).always(function(data) {
-        alert(data.responseText);
-        $("#myModal").modal("toggle");
-        partCategories($("#partCategoryForm [name=parentId]").val());
-    });
-
-}

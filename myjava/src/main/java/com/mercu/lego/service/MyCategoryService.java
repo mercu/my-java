@@ -5,6 +5,7 @@ import com.mercu.bricklink.model.CategoryType;
 import com.mercu.lego.model.MyPartCategory;
 import com.mercu.lego.repository.MyPartCategoryRepository;
 import com.mercu.utils.JsonUtils;
+import com.mercu.utils.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,8 +57,8 @@ public class MyCategoryService {
                     }
                     return propagateChildRepresentImageUrls(myPartCategory);
                 })
-                .sorted(Comparator.comparing(MyPartCategory::getSortOrder)
-                        .thenComparing(MyPartCategory::getSetQty).reversed())
+                .sorted(Comparator.comparing(myPartCategory -> NumberUtils.intValueDefault(((MyPartCategory)myPartCategory).getSortOrder(), 0))
+                        .thenComparing(myPartCategory -> NumberUtils.intValueDefault(((MyPartCategory)myPartCategory).getSetQty(), 0)).reversed())
                 .collect(toList());
         return partCategories;
     }

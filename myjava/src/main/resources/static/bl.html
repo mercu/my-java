@@ -8,10 +8,35 @@
 </head>
 
 <body style="min-width:600px; width:100%;">
+
 <div id="navi"></div>
 <div id="partCategories" style="position: fixed; overflow-y: scroll; height: 100%; width:100%;padding-bottom: 400px;"></div>
 <div id="partList" style="position: fixed; overflow-y: scroll; height: 100%; width:100%;padding-bottom: 400px;"></div>
 <div id="myParts" style="position: fixed; overflow-y: scroll; height: 100%; width:100%;padding-bottom: 400px;"></div>
+
+
+<!-- Common Modal -->
+<div id="myModal" class="modal fade" role="dialog" style="padding: 100px 0;">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Modal Header</h4>
+            </div>
+            <div class="modal-body" id="myModal-body">
+                <p>Some text in the modal.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
 
 
 <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
@@ -25,6 +50,7 @@
 <script src="/static/js/common.jsx" type="text/babel"></script>
 
 <script src="/static/js/part_category.jsx" type="text/babel"></script>
+<script src="/static/js/new_category.jsx" type="text/babel"></script>
 <script src="/static/js/part_list.jsx" type="text/babel"></script>
 <script src="/static/js/my_part.jsx" type="text/babel"></script>
 
