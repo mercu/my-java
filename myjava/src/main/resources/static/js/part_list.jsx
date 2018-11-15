@@ -10,13 +10,13 @@ function partList(categoryId, parentId, e) {
             , document.getElementById("partList")
         );
     } else {
-        partListAjax(categoryId);
+        partListAjax(categoryId, parentId);
     }
     $("#partCategories").addClass("hide");
     $("#partList").removeClass("hide");
 }
 
-function partListAjax(categoryId) {
+function partListAjax(categoryId, parentId) {
     $.ajax({
         url:"/partList",
         type : "GET",
@@ -26,7 +26,8 @@ function partListAjax(categoryId) {
         async : true
     }).done(function(data){
         partListDOM.setState({
-            items : data
+            items : data,
+            parentId: parentId
         });
     });
 }

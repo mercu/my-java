@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,6 +56,8 @@ public class MyCategoryService {
                     }
                     return propagateChildRepresentImageUrls(myPartCategory);
                 })
+                .sorted(Comparator.comparing(MyPartCategory::getSortOrder)
+                        .thenComparing(MyPartCategory::getSetQty).reversed())
                 .collect(toList());
         return partCategories;
     }

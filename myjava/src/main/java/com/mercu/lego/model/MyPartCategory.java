@@ -27,5 +27,6 @@ public class MyPartCategory implements AbstractCategory {
     private Integer parentId; // int
     private String repImgs; //
     private Integer setQty; // int
+    private Integer sortOrder; // int
 
 }

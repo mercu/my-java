@@ -107,8 +107,8 @@ function PartCategoriesBodyTable(props) {
         <table className="table table-bordered">
             <thead>
             <tr>
-                <th>ID</th>
-                <th>P_ID</th>
+                {/*<th>ID</th>*/}
+                {/*<th>P_ID</th>*/}
                 <th>NAME(QTY/PARTS)</th>
                 <th>REP_IMG</th>
             </tr>
@@ -139,12 +139,8 @@ function PartCategoriesElement(props) {
 
     return (
         <tr>
-            <td>{item.blCategoryId}</td>
-            <td>
-                {item.parentId}
-                <button className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin == true ? '' : ' hide')} onClick={(e) => movePartCategory(item.id, e)}>GoTo</button>
-                {item.blCategoryId == null ? <button name={'moveHere'} className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin == true && isMovePartCategoryIdFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(item.id, e)}>Paste</button> : ''}
-            </td>
+            {/*<td>{item.blCategoryId}</td>*/}
+            {/*<td>{item.parentId}</td>*/}
             <td>
                 {item.setQty} / ({item.parts})
                 {
@@ -152,6 +148,8 @@ function PartCategoriesElement(props) {
                         <button className={'btn btn-block btn-default'} onClick={(e) => partCategories(item.id, item.parentId, e)}>{item.name}</button> :
                         <button className={'btn btn-block btn-info'} onClick={(e) => partList(item.blCategoryId, item.parentId, e)}>{item.name}</button>
                 }
+                <button className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin == true ? '' : ' hide')} onClick={(e) => movePartCategory(item.id, e)}>GoTo</button>
+                {item.blCategoryId == null ? <button name={'moveHere'} className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin == true && isMovePartCategoryIdFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(item.id, e)}>Paste</button> : ''}
             </td>
             <td>
                 <div style={{maxWidth: 600}}>
