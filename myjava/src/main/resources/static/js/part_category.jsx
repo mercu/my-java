@@ -1,4 +1,3 @@
-var partCategoriesDOM = null;
 function partCategories(parentId, parentParentId, e) {
     if (typeof parentId == "undefined") parentId = 0;
     if (typeof parentParentId == "undefined" || typeof parentParentId == "object") parentParentId = 0;
@@ -6,9 +5,13 @@ function partCategories(parentId, parentParentId, e) {
 
     if (partCategoriesDOM == null) {
         ReactDOM.render(
-            <PartCategories parentId={parentId} parentParentId={parentParentId}/>
+            <PartCategories
+                parentId={parentId}
+                parentParentId={parentParentId}
+            />
             , document.getElementById("partCategories")
         );
+        partCategoriesAjax(parentId);
     } else {
         partCategoriesAjax(parentId);
     }
@@ -37,6 +40,7 @@ function partCategoriesAjax(parentId) {
     });
 }
 
+var partCategoriesDOM = null;
 class PartCategories extends React.Component {
     constructor(props) {
         super(props);
@@ -44,6 +48,8 @@ class PartCategories extends React.Component {
             parentId : props.parentId,
             parentParentId : props.parentParentId,
             movePartCategoryIdFrom : props.movePartCategoryIdFrom,
+            loginUserAdmin : navigatorDOM.state.loginUserAdmin,
+            categoryManageEnable : false,
             items : []
         };
     }
@@ -54,7 +60,7 @@ class PartCategories extends React.Component {
 
     componentDidMount() {
         partCategoriesDOM = this;
-        partCategoriesAjax(this.state.parentId);
+        // partCategoriesAjax(this.state.parentId);
     }
 
     componentWillUnmount() {
@@ -63,44 +69,82 @@ class PartCategories extends React.Component {
 
     render() {
         return (
-            <PartCategoriesRoot
-                parentId={this.state.parentId}
-                parentParentId={this.state.parentParentId}
-                moveParentCategoryIdFrom={this.state.movePartCategoryIdFrom}
-                items={this.state.items}
-            />
+            <PartCategoriesRoot/>
         );
     }
 }
 
-function PartCategoriesRoot(props) {
+function PartCategoriesRoot() {
+    if (partCategoriesDOM == null) return '';
+
     return (
         <div className={'panel panel-default'}>
-            <PartCategoriesFloatLayer parentId={props.parentId}
-                parentParentId={props.parentParentId}
-                movePartCategoryIdFrom={props.movePartCategoryIdFrom}/>
-            <PartCategoriesBodyTable items={props.items} />
+            <PartCategoriesFloatLayer
+                parentId={partCategoriesDOM.state.parentId}
+                parentParentId={partCategoriesDOM.state.parentParentId}
+                categoryManageEnable={partCategoriesDOM.state.categoryManageEnable}
+                movePartCategoryIdFrom={partCategoriesDOM.state.movePartCategoryIdFrom} />
+            <PartCategoriesBodyTable items={partCategoriesDOM.state.items} />
             <ScrollLayer outerId={"#partCategories"} innerId={"#partCategories .panel"}/>
         </div>
     );
 }
 
-function PartCategoriesFloatLayer(props) {
-    const isGoUp = props.parentId != 0;
-    const isMovePartCategoryFrom = props.movePartCategoryIdFrom != null;
+function PartCategoriesFloatLayer() {
+    if (partCategoriesDOM == null) return '';
+
+    const isGoUp = partCategoriesDOM.state.parentId != 0;
     const isFloatLayer = isGoUp || loginUserAdmin == true;
 
     return (
         <div className={'panel-heading' + (isFloatLayer ? '' : ' hide')} style={{position:'fixed'}}>
-            <button name={'goUp'} className={'btn btn-primary' + (isGoUp ? '' : ' hide')} onClick={(e) => partCategories(props.parentParentId, e)}>&lt;</button>
-            <button className={'btn btn-primary' + (loginUserAdmin == true ? '' : ' hide')} onClick={(e) => newPartCategoryModal(props.parentId, e)}>+</button>
-            <button name={'moveHere'} className={'btn btn-primary' + (loginUserAdmin == true && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>
-            <button name={'moveHere'} className={'btn btn-danger' + (loginUserAdmin == true && isMovePartCategoryFrom ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>
+            <button name={'goUp'} className={'btn btn-primary' + (isGoUp ? '' : ' hide')} onClick={(e) => partCategories(partCategoriesDOM.state.parentParentId, e)}>&lt;</button>
+            {/* 카테고리 관리 기능 (어드민용) */}
+            <CategoryManageFloatLayer
+                parentId={partCategoriesDOM.state.parentId}
+                categoryManageEnable={partCategoriesDOM.state.categoryManageEnable}
+                movePartCategoryIdFrom={partCategoriesDOM.state.movePartCategoryIdFrom}
+            />
         </div>
     );
 }
 
-function PartCategoriesBodyTable(props) {
+/**
+ * 카테고리 관리 기능 (어드민용)
+ */
+function CategoryManageFloatLayer() {
+    if (partCategoriesDOM == null) return '';
+
+    if (loginUserAdmin == false) return '';
+    if (partCategoriesDOM.state.categoryManageEnable) {
+        return ([
+            <button className={'btn btn-primary'} onClick={(e) => newPartCategoryModal(partCategoriesDOM.state.parentId, e)}>+</button>,
+            <button name={'moveHere'} className={'btn btn-primary' + (partCategoriesDOM.state.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryHere(partCategoriesDOM.state.parentId, e)}>Paste</button>,
+            <button name={'moveHere'} className={'btn btn-danger' + (partCategoriesDOM.state.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>,
+            <button className={'btn btn-default'} onClick={(e) => disableCategoryManage(e)}>CATE</button>
+        ]);
+    } else {
+        return <button className={'btn btn-primary'} onClick={(e) => enableCategoryManage(e)}>CATE</button>;
+    }
+}
+
+function enableCategoryManage(e) {
+    if (typeof e != "undefined") e.preventDefault();
+    if (partCategoriesDOM == null) return;
+
+    partCategoriesDOM.setState({categoryManageEnable : true});
+}
+
+function disableCategoryManage(e) {
+    if (typeof e != "undefined") e.preventDefault();
+    if (partCategoriesDOM == null) return;
+
+    partCategoriesDOM.setState({categoryManageEnable : false});
+}
+
+function PartCategoriesBodyTable() {
+    if (partCategoriesDOM == null) return '';
+
     return (
         <div className={'panel-body'}>
         <table className="table table-bordered">
@@ -113,7 +157,7 @@ function PartCategoriesBodyTable(props) {
             </tr>
             </thead>
             <tbody>
-            {props.items.map(function(item, key) {
+            {partCategoriesDOM.state.items.map(function(item, key) {
                 var repImgs = [];
                 if(typeof item.repImgs != "undefined") {
                     repImgs = JSON.parse(item.repImgs);
@@ -121,8 +165,8 @@ function PartCategoriesBodyTable(props) {
 
                 return <PartCategoriesElement key={key}
                     item={item}
-                    movePartCategoryIdFrom={movePartCategoryIdFrom}
-                    repImgs={repImgs}/>
+                    repImgs={repImgs}
+                />
             })}
             </tbody>
         </table>
@@ -131,10 +175,12 @@ function PartCategoriesBodyTable(props) {
 }
 
 function PartCategoriesElement(props) {
+    if (partCategoriesDOM == null) return '';
+
     const item = props.item;
     const repImgs = props.repImgs;
 
-    const isMovePartCategoryIdFrom = props.movePartCategoryIdFrom != null;
+    const isMovePartCategoryIdFrom = partCategoriesDOM.state.movePartCategoryIdFrom != null;
 
     return (
         <tr>
@@ -147,8 +193,8 @@ function PartCategoriesElement(props) {
                         <button className={'btn btn-block btn-default'} onClick={(e) => partCategories(item.id, item.parentId, e)}>{item.name}</button> :
                         <button className={'btn btn-block btn-info'} onClick={(e) => partList(item.blCategoryId, item.parentId, e)}>{item.name}</button>
                 }
-                <button className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin == true ? '' : ' hide')} onClick={(e) => movePartCategory(item.id, e)}>GoTo</button>
-                {item.blCategoryId == null ? <button name={'moveHere'} className={'btn btn-primary btn-sm btn-block' + (loginUserAdmin == true && isMovePartCategoryIdFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(item.id, e)}>Paste</button> : ''}
+                <button className={'btn btn-primary btn-sm btn-block' + (partCategoriesDOM.state.categoryManageEnable ? '' : ' hide')} onClick={(e) => movePartCategory(item.id, e)}>GoTo</button>
+                {item.blCategoryId == null ? <button name={'moveHere'} className={'btn btn-primary btn-sm btn-block' + (partCategoriesDOM.state.categoryManageEnable == true && isMovePartCategoryIdFrom ? '' : ' hide')} onClick={(e) => movePartCategoryHere(item.id, e)}>Paste</button> : ''}
             </td>
             <td>
                 <div style={{maxWidth: 600}}>
@@ -162,11 +208,10 @@ function PartCategoriesElement(props) {
 }
 
 
-var movePartCategoryIdFrom = null;
 function movePartCategory(categoryId, e) {
     if (typeof e != "undefined") e.preventDefault();
 
-    movePartCategoryIdFrom = categoryId;
+    partCategoriesDOM.state.movePartCategoryIdFrom = categoryId;
     $("[name=moveHere]").removeClass("hide");
     // alert("clipped!");
 }
@@ -174,7 +219,7 @@ function movePartCategory(categoryId, e) {
 function movePartCategoryCancel(e) {
     if (typeof e != "undefined") e.preventDefault();
 
-    movePartCategoryIdFrom = null;
+    partCategoriesDOM.state.movePartCategoryIdFrom = null;
     $("[name=moveHere]").addClass("hide");
 }
 
@@ -187,14 +232,14 @@ function movePartCategoryHere(parentId, e) {
         type : "POST",
         dataType : "json",
         data : {
-            "categoryIdFrom" : movePartCategoryIdFrom,
+            "categoryIdFrom" : partCategoriesDOM.state.movePartCategoryIdFrom,
             "parentIdTo" : parentId
         },
         ContentType: "application/json",
         async : true
     }).always(function(data) {
         // alert(data.responseText);
-        movePartCategoryIdFrom = null;
+        partCategoriesDOM.setState({movePartCategoryIdFrom : null});
         $("[name=moveHere]").addClass("hide");
         partCategories($("#partCategoryForm [name=parentId]").val());
     });
