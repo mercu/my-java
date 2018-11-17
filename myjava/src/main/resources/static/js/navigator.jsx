@@ -1,6 +1,6 @@
 var loginUser = undefined;
 var loginUserId = undefined;
-var loginUserAdmin = undefined;
+var loginUserAdmin = false;
 
 function showNavigator(loginUser, loginUserId, loginUserAdmin, e) {
     if (typeof e != "undefined") e.preventDefault();

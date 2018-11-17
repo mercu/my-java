@@ -1,53 +1,34 @@
-function partCategories(parentId, parentParentId, e) {
+/**
+ * 부품 카테고리 목록
+ */
+function partCategories(parentId, e) {
     if (typeof parentId == "undefined") parentId = 0;
-    if (typeof parentParentId == "undefined" || typeof parentParentId == "object") parentParentId = 0;
     if (typeof e != "undefined") e.preventDefault();
 
     if (partCategoriesDOM == null) {
         ReactDOM.render(
-            <PartCategories
-                parentId={parentId}
-                parentParentId={parentParentId}
-            />
+            <PartCategories parentId={parentId} />
             , document.getElementById("partCategories")
         );
-        partCategoriesAjax(parentId);
     } else {
-        partCategoriesAjax(parentId);
+        partCategoriesDOM.loadPartCategories(parentId);
     }
     $("#partList").addClass("hide");
     $("#partCategories").removeClass("hide");
-
 }
 
-function partCategoriesAjax(parentId) {
-    $.ajax({
-        url:"/partCategories",
-        type : "GET",
-        dataType : "json",
-        data : {parentId : parentId},
-        contentType: "application/json;charset=UTF-8",
-        async : true
-    }).done(function(data) {
-        if (data.parentCategory === undefined) {
-            data.parentCategory = {id : 0, parentId : 0};
-        }
-        partCategoriesDOM.setState({
-            parentId : data.parentCategory.id,
-            parentParentId : data.parentCategory.parentId,
-            items : data.partCategories
-        });
-    });
-}
 
+/**
+ * PartCategories React Component
+ */
 var partCategoriesDOM = null;
 class PartCategories extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             parentId : props.parentId,
-            parentParentId : props.parentParentId,
-            movePartCategoryIdFrom : props.movePartCategoryIdFrom,
+            upParentId : 0,
+            movePartCategoryIdFrom : null,
             loginUserAdmin : navigatorDOM.state.loginUserAdmin,
             categoryManageEnable : false,
             items : []
@@ -60,86 +41,46 @@ class PartCategories extends React.Component {
 
     componentDidMount() {
         partCategoriesDOM = this;
-        // partCategoriesAjax(this.state.parentId);
+        this.loadPartCategories(this.state.parentId);
     }
 
     componentWillUnmount() {
         partCategoriesDOM = null;
     }
 
+    loadPartCategories(parentId) {
+        $.ajax({
+            url:"/partCategories",
+            type : "GET",
+            dataType : "json",
+            data : {parentId : parentId},
+            contentType: "application/json;charset=UTF-8",
+            async : true
+        }).done(function(data) {
+            if (data.parentCategory === undefined) {
+                data.parentCategory = {id : 0, parentId : 0};
+            }
+            this.setState({
+                parentId : data.parentCategory.id,
+                upParentId : data.parentCategory.parentId,
+                items : data.partCategories
+            });
+        }.bind(this));
+    }
+
     render() {
         return (
-            <PartCategoriesRoot/>
+            <div className={'panel panel-default'}>
+                <PartCategoriesFloatMenuLayer
+                    parentId={this.state.parentId}
+                    upParentId={this.state.upParentId}
+                    categoryManageEnable={this.state.categoryManageEnable}
+                    movePartCategoryIdFrom={this.state.movePartCategoryIdFrom} />
+                <PartCategoriesBodyTable items={this.state.items} />
+                <ScrollLayer outerId={"#partCategories"} innerId={"#partCategories .panel"}/>
+            </div>
         );
     }
-}
-
-function PartCategoriesRoot() {
-    if (partCategoriesDOM == null) return '';
-
-    return (
-        <div className={'panel panel-default'}>
-            <PartCategoriesFloatLayer
-                parentId={partCategoriesDOM.state.parentId}
-                parentParentId={partCategoriesDOM.state.parentParentId}
-                categoryManageEnable={partCategoriesDOM.state.categoryManageEnable}
-                movePartCategoryIdFrom={partCategoriesDOM.state.movePartCategoryIdFrom} />
-            <PartCategoriesBodyTable items={partCategoriesDOM.state.items} />
-            <ScrollLayer outerId={"#partCategories"} innerId={"#partCategories .panel"}/>
-        </div>
-    );
-}
-
-function PartCategoriesFloatLayer() {
-    if (partCategoriesDOM == null) return '';
-
-    const isGoUp = partCategoriesDOM.state.parentId != 0;
-    const isFloatLayer = isGoUp || loginUserAdmin == true;
-
-    return (
-        <div className={'panel-heading' + (isFloatLayer ? '' : ' hide')} style={{position:'fixed'}}>
-            <button name={'goUp'} className={'btn btn-primary' + (isGoUp ? '' : ' hide')} onClick={(e) => partCategories(partCategoriesDOM.state.parentParentId, e)}>&lt;</button>
-            {/* 카테고리 관리 기능 (어드민용) */}
-            <CategoryManageFloatLayer
-                parentId={partCategoriesDOM.state.parentId}
-                categoryManageEnable={partCategoriesDOM.state.categoryManageEnable}
-                movePartCategoryIdFrom={partCategoriesDOM.state.movePartCategoryIdFrom}
-            />
-        </div>
-    );
-}
-
-/**
- * 카테고리 관리 기능 (어드민용)
- */
-function CategoryManageFloatLayer() {
-    if (partCategoriesDOM == null) return '';
-
-    if (loginUserAdmin == false) return '';
-    if (partCategoriesDOM.state.categoryManageEnable) {
-        return ([
-            <button className={'btn btn-primary'} onClick={(e) => newPartCategoryModal(partCategoriesDOM.state.parentId, e)}>+</button>,
-            <button name={'moveHere'} className={'btn btn-primary' + (partCategoriesDOM.state.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryHere(partCategoriesDOM.state.parentId, e)}>Paste</button>,
-            <button name={'moveHere'} className={'btn btn-danger' + (partCategoriesDOM.state.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>,
-            <button className={'btn btn-default'} onClick={(e) => disableCategoryManage(e)}>CATE</button>
-        ]);
-    } else {
-        return <button className={'btn btn-primary'} onClick={(e) => enableCategoryManage(e)}>CATE</button>;
-    }
-}
-
-function enableCategoryManage(e) {
-    if (typeof e != "undefined") e.preventDefault();
-    if (partCategoriesDOM == null) return;
-
-    partCategoriesDOM.setState({categoryManageEnable : true});
-}
-
-function disableCategoryManage(e) {
-    if (typeof e != "undefined") e.preventDefault();
-    if (partCategoriesDOM == null) return;
-
-    partCategoriesDOM.setState({categoryManageEnable : false});
 }
 
 function PartCategoriesBodyTable() {
@@ -190,7 +131,7 @@ function PartCategoriesElement(props) {
                 {item.setQty} / ({item.parts})
                 {
                     item.blCategoryId == null ?
-                        <button className={'btn btn-block btn-default'} onClick={(e) => partCategories(item.id, item.parentId, e)}>{item.name}</button> :
+                        <button className={'btn btn-block btn-default'} onClick={(e) => partCategories(item.id, e)}>{item.name}</button> :
                         <button className={'btn btn-block btn-info'} onClick={(e) => partList(item.blCategoryId, item.parentId, e)}>{item.name}</button>
                 }
                 <button className={'btn btn-primary btn-sm btn-block' + (partCategoriesDOM.state.categoryManageEnable ? '' : ' hide')} onClick={(e) => movePartCategory(item.id, e)}>GoTo</button>
@@ -207,6 +148,56 @@ function PartCategoriesElement(props) {
     );
 }
 
+
+
+
+/**
+ * 카테고리 플로팅 메뉴
+ */
+function PartCategoriesFloatMenuLayer(props) {
+    const isGoUp = props.parentId != 0;
+    const isFloatLayer = isGoUp || navigatorDOM.state.loginUserAdmin == true;
+
+    return (
+        <div id={'partCategoriesFloatMenuLayer'} className={'panel-heading ' + (isFloatLayer ? '' : 'hide')} style={{position:'fixed', margin:'20px'}}>
+            <button name={'goUp'} className={'btn btn-primary' + (isGoUp ? '' : ' hide')} onClick={(e) => partCategories(props.upParentId, e)}>&lt;</button>
+            {/* 카테고리 관리 기능 (어드민용) */}
+            <CategoryManageFloatMenus
+                parentId={props.parentId}
+                categoryManageEnable={props.categoryManageEnable}
+                movePartCategoryIdFrom={props.movePartCategoryIdFrom}
+            />
+        </div>
+    );
+
+}
+
+/**
+ * 카테고리 관리 기능 (어드민용)
+ */
+function CategoryManageFloatMenus(props) {
+    if (navigatorDOM.state.loginUserAdmin == false) return '';
+    if (props.categoryManageEnable) {
+        return ([
+            <button className={'btn btn-primary'} onClick={(e) => newPartCategoryModal(props.parentId, e)}>+</button>,
+            <button name={'moveHere'} className={'btn btn-primary' + (props.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>,
+            <button name={'moveHere'} className={'btn btn-danger' + (props.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>,
+            <button className={'btn btn-default'} onClick={(e) => disableCategoryManage(e)}>::</button>
+        ]);
+    } else {
+        return <button className={'btn btn-primary'} onClick={(e) => enableCategoryManage(e)}>::</button>;
+    }
+}
+
+function enableCategoryManage(e) {
+    if (typeof e != "undefined") e.preventDefault();
+    partCategoriesDOM.setState({categoryManageEnable : true});
+}
+
+function disableCategoryManage(e) {
+    if (typeof e != "undefined") e.preventDefault();
+    partCategoriesDOM.setState({categoryManageEnable : false});
+}
 
 function movePartCategory(categoryId, e) {
     if (typeof e != "undefined") e.preventDefault();
