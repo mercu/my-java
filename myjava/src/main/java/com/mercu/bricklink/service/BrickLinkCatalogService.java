@@ -49,10 +49,10 @@ public class BrickLinkCatalogService {
         return partInfoRepository.findAllByCategoryId(categoryId);
     }
 
-    public List<PartInfo> findPartInfoListByCategoryIdWithMyItems(Integer categoryId, Integer limit) {
+    public List<PartInfo> findPartInfoListByCategoryIdWithMyItems(Integer blCategoryId, Integer limit) {
         if (Objects.isNull(limit)) limit = Integer.MAX_VALUE;
         Pageable pageable = new PageRequest(0, limit);
-        List<PartInfo> partInfoList = partInfoRepository.findAllByCategoryId(categoryId, pageable);
+        List<PartInfo> partInfoList = partInfoRepository.findAllByCategoryId(blCategoryId, pageable);
 
         // with MyItems (itemType, itemNo)
         partInfoList.stream()

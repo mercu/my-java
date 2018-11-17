@@ -1,24 +1,34 @@
-var myPartsDOM = null;
-function myParts(e) {
+function newMyPartModal(blCategoryId, partNo, e) {
     if (typeof e != "undefined") e.preventDefault();
 
-    if (myPartsDOM == null) {
+    $('#myModal .modal-title').html("부품 등록하기")
+    $('#myModal').modal('toggle');
+
+    if (myPartDOM == null) {
         ReactDOM.render(
-            <MyParts/>
-            , document.getElementById("myParts")
+            <MyPartModalBody blCategoryId={blCategoryId} partNo={partNo}/>
+            , document.getElementById("myModal-body")
         );
     } else {
-        myPartsAjax();
+        myPartDOM.setState({
+            blCategoryId : blCategoryId,
+            partNo : partNo
+        });
+        myPartDOM.loadPartCategoryInfo(blCategoryId);
     }
-    $("#myParts").removeClass("hide");
-
 }
 
-class MyParts extends React.Component {
+var myPartDOM = null;
+class MyPartModalBody extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            items : []
+            blCategoryId : props.blCategoryId,
+            partNo : props.partNo,
+            categoryInfo : null,
+            partInfo : null,
+            allColorPartImgUrls : null,
+            colorId : null
         };
     }
 
@@ -27,87 +37,138 @@ class MyParts extends React.Component {
     }
 
     componentDidMount() {
-        myPartsDOM = this;
-        myPartsAjax(this.state.parentId);
+        myPartDOM = this;
+        this.loadPartCategoryInfo(this.state.blCategoryId);
+        this.loadPartInfo(this.state.partNo);
     }
 
     componentWillUnmount() {
-        myPartsDOM = null;
+        myPartDOM = null;
+    }
+
+    loadPartCategoryInfo(blCategoryId) {
+        $.ajax({
+            url:"/partCategory",
+            type : "GET",
+            dataType : "json",
+            data : {blCategoryId : blCategoryId},
+            contentType: "application/json;charset=UTF-8",
+            async : true
+        }).done(function(data) {
+            this.setState({
+                categoryInfo : data
+            });
+        }.bind(this));
+    }
+
+    loadPartInfo(partNo) {
+        $.ajax({
+            url:"/partByNo",
+            type : "GET",
+            dataType : "json",
+            data : {partNo : partNo},
+            contentType: "application/json;charset=UTF-8",
+            async : true
+        }).done(function(data) {
+            this.setState({
+                partInfo : data
+            });
+            this.loadColorIds(this.state.partNo);
+        }.bind(this));
+    }
+
+    loadColorIds(partNo) {
+        $.ajax({
+            url:"/allColorPartImgUrlsByPartNo",
+            type : "GET",
+            dataType : "json",
+            data : {partNo : partNo},
+            contentType: "application/json;charset=UTF-8",
+            async : true
+        }).done(function(data) {
+            this.setState({
+                allColorPartImgUrls : data
+            });
+        }.bind(this));
     }
 
     render() {
         return (
-            <MyPartsRoot
-                items={this.state.items}
-            />
+            <div>
+                <form id={"partCategoryForm"}>
+                    <div className={"form-group"}>
+                        <MyPartCategoryInfo categoryInfo={this.state.categoryInfo} />
+                        <MyPartInfo partInfo={this.state.partInfo} />
+                        <ColorInfos partInfo={this.state.partInfo} allColorPartImgUrls={this.state.allColorPartImgUrls} />
+                        <WhereInfos partInfo={this.state.partInfo} colorId={this.state.colorId} />
+                    </div>
+                </form>
+                <button type={"submit"} className={"btn btn-primary"} onClick={(e) => newPartCategory($("#partCategoryForm"), e)}>생성하기</button>
+            </div>
         );
     }
 }
 
-function MyPartsRoot(props) {
+function MyPartCategoryInfo(props) {
+    if (props.categoryInfo == null) return '';
+
+    var repImgs = null;
+    if (props.categoryInfo.repImgs !== undefined) {
+        repImgs = JSON.parse(props.categoryInfo.repImgs);
+    }
+    // {"id":8,"blCategoryId":8,"type":"P","name":"Brick, Round","parts":50,"depth":1,"parentId":217,"repImgs":"[\"http://img.bricklink.com/ItemImage/PT/5/3062b.t1.png\",\"http://img.bricklink.com/ItemImage/PT/7/3941.t1.png\",\"http://img.bricklink.com/ItemImage/PT/48/85080.t1.png\",\"http://img.bricklink.com/ItemImage/PT/88/92947.t1.png\",\"http://img.bricklink.com/ItemImage/PT/1/3063.t1.png\",\"http://img.bricklink.com/ItemImage/PT/153/48092.t1.png\",\"http://img.bricklink.com/ItemImage/PT/1/3062a.t1.png\"]","setQty":23051,"sortOrder":0}
     return (
-        <div className={'panel panel-default'}>
-            <div className={'panel-body'}>
-                <table className="table table-bordered">
-                    <thead>
-                    <tr>
-                        <th rowSpan={2}>img</th>
-                        <th rowSpan={2}>itemNo</th>
-                        <th rowSpan={2}>totalQty</th>
-                        <th colSpan={3}>subItems</th>
-                    </tr>
-                    <tr>
-                        <th>whereCode</th>
-                        <th>whereMore</th>
-                        <th>qty</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {props.items.map(function(item, key) {
-                        return <tr key={key}>
-                            <td bgcolor={item.colorCode}><img src={item.repImg} alt={item.repImgOriginal} onError={(e)=>{e.target.onerror = null; e.target.src=item.repImgOriginal}}/></td>
-                            <td>{item.itemNo}</td>
-                            <td>{item.qty}</td>
-                            <td colSpan={3}><SubItems subItem={item.myItems}/></td>
-                        </tr>;
-                    })}
-                    </tbody>
-                </table>
-            </div>
-            <ScrollLayer outerId={"#myParts"} innerId={"#myParts .panel"} />
+        <div>
+            <label>카테고리 - blCategoryId : {props.categoryInfo.blCategoryId}, name : {props.categoryInfo.name}</label><br/>
+            {repImgs != null ? repImgs.map(function(repImg, imgKey) {
+                return <img src={repImg} key={imgKey}/>
+            }) : ''}
         </div>
     );
 }
 
-function SubItems(props) {
-    const subItems = props.subItem;
+function MyPartInfo(props) {
+    if (props.partInfo == null) return '';
+
+    // {"id":"444","categoryId":8,"img":"http://img.bricklink.com/ItemImage/PT/5/3062b.t1.png","partNo":"3062b","partName":"Brick, Round 1 x 1 Open Stud","setQty":9841,"myItemsQty":0}
     return (
-        <table className="table table-bordered" style={{marginBottom:"0"}}>
-            <tbody>
-            {subItems.map(function(item, key) {
-                return <tr key={key}>
-                    <td>{item.whereCode}</td>
-                    <td>{item.whereMore}</td>
-                    <td>{item.qty}</td>
-                </tr>;
-            })}
-            </tbody>
-        </table>
+        <div>
+            <label>부품 - partNo : {props.partInfo.partNo}, partName : {props.partInfo.partName}</label><br/>
+            {/*<img src={props.partInfo.img}/>*/}
+        </div>
     );
 }
 
-function myPartsAjax() {
-    $.ajax({
-        url:"/admin/myParts",
-        type : "GET",
-        dataType : "json",
-        data : {},
-        contentType: "application/json;charset=UTF-8",
-        async : true
-    }).done(function(data) {
-        myPartsDOM.setState({
-            items : data
-        });
-    });
+function ColorInfos(props) {
+    if (props.partInfo == null || props.allColorPartImgUrls == null) return '';
+
+    return (
+        <div>
+            <label>색상 선택</label><br/>
+            {props.allColorPartImgUrls.map(function(colorPartImgUrl, key) {
+                return <img key={key} name="colorPartImgUrl" id={'colorPartImgUrl_' + colorPartImgUrl.colorId} src={colorPartImgUrl.imgUrl} onClick={(e) => pickMyPartColor(colorPartImgUrl.colorId, e)}/>
+            })}
+        </div>
+    );
+}
+
+function pickMyPartColor(colorId, e) {
+    if (typeof e != "undefined") e.preventDefault();
+
+    console.log("pickMyPartColor : " + colorId);
+    $("[name=colorPartImgUrl]").css("border", "")
+    $("#colorPartImgUrl_" + colorId).css("border", "2px solid rgb(255,0,0)");
+    myPartDOM.setState({colorId : colorId});
+}
+
+function WhereInfos(props) {
+    if (props.partInfo == null || props.colorId == null) return '';
+
+    return (
+        <div>
+            <label>보관 위치</label><br/>
+            colorId : {props.colorId}
+        </div>
+    );
 }
 

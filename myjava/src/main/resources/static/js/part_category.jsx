@@ -71,6 +71,7 @@ class PartCategories extends React.Component {
     render() {
         return (
             <div className={'panel panel-default'}>
+                upParentId : {this.state.upParentId}, parentId : {this.state.parentId}
                 <PartCategoriesFloatMenuLayer
                     parentId={this.state.parentId}
                     upParentId={this.state.upParentId}
@@ -159,8 +160,8 @@ function PartCategoriesFloatMenuLayer(props) {
     const isFloatLayer = isGoUp || navigatorDOM.state.loginUserAdmin == true;
 
     return (
-        <div id={'partCategoriesFloatMenuLayer'} className={'panel-heading ' + (isFloatLayer ? '' : 'hide')} style={{position:'fixed', margin:'20px'}}>
-            <button name={'goUp'} className={'btn btn-primary' + (isGoUp ? '' : ' hide')} onClick={(e) => partCategories(props.upParentId, e)}>&lt;</button>
+        <div className={'panel-heading ' + (isFloatLayer ? '' : 'hide')} style={{position:'fixed', margin:'20px', top:'200px'}}>
+            <button name={'goUp'} className={'btn btn-primary' + (isGoUp ? '' : ' hide')} onClick={(e) => partCategories(props.upParentId, e)}>상위</button>
             {/* 카테고리 관리 기능 (어드민용) */}
             <CategoryManageFloatMenus
                 parentId={props.parentId}
@@ -179,10 +180,11 @@ function CategoryManageFloatMenus(props) {
     if (navigatorDOM.state.loginUserAdmin == false) return '';
     if (props.categoryManageEnable) {
         return ([
-            <button className={'btn btn-primary'} onClick={(e) => newPartCategoryModal(props.parentId, e)}>+</button>,
-            <button name={'moveHere'} className={'btn btn-primary' + (props.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>,
-            <button name={'moveHere'} className={'btn btn-danger' + (props.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>,
-            <button className={'btn btn-default'} onClick={(e) => disableCategoryManage(e)}>::</button>
+            <button key={'CategoryManageFloatMenus_1'} className={'btn btn-info'} onClick={(e) => disableCategoryManage(e)}>::</button>,
+            <button key={'CategoryManageFloatMenus_2'} className={'btn btn-primary'} onClick={(e) => newMyPartModal(props.parentId, null, e)}>P[+]</button>,
+            <button key={'CategoryManageFloatMenus_3'} className={'btn btn-primary'} onClick={(e) => newPartCategoryModal(props.parentId, e)}>C[+]</button>,
+            <button key={'CategoryManageFloatMenus_4'} name={'moveHere'} className={'btn btn-primary' + (props.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>,
+            <button key={'CategoryManageFloatMenus_5'} name={'moveHere'} className={'btn btn-danger' + (props.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>
         ]);
     } else {
         return <button className={'btn btn-primary'} onClick={(e) => enableCategoryManage(e)}>::</button>;

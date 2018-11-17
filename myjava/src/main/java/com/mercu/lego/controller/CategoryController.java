@@ -29,6 +29,14 @@ public class CategoryController {
         return JsonUtils.toJson(resultMap);
     }
 
+    @RequestMapping("/partCategory")
+    @ResponseBody
+    public String partCategory(@RequestParam(value = "blCategoryId", required = false) Integer blCategoryId) {
+        if (Objects.isNull(blCategoryId)) return null;
+
+        return JsonUtils.toJson(myCategoryService.findByBlCategoryId(blCategoryId));
+    }
+
     @RequestMapping(path = "/admin/partCategory/new", method = RequestMethod.POST)
     @ResponseBody
     public String newPartCategory(@RequestParam("parentId") Integer parentId, @RequestParam("name") String name) {

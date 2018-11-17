@@ -68,7 +68,19 @@ public class MyCategoryService {
      * @return
      */
     public MyPartCategory findById(Integer id) {
-        return myPartCategoryRepository.findById(id).orElse(null);
+        MyPartCategory myPartCategory = myPartCategoryRepository.findById(id).orElse(null);
+        return myPartCategory;
+    }
+
+    private String repImg(MyPartCategory myPartCategory) {
+        if (StringUtils.isBlank(myPartCategory.getRepImgs())) return null;
+
+        List<String> repImgs = JsonUtils.toObject(myPartCategory.getRepImgs(), new TypeToken<ArrayList<String>>(){}.getType());
+        if (repImgs.isEmpty()) {
+            return null;
+        } else {
+            return repImgs.get(0);
+        }
     }
 
     /**

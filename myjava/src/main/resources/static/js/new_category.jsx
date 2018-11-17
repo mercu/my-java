@@ -1,17 +1,17 @@
-var newCategoryDOM = null;
+var newPartCategoryDOM = null;
 function newPartCategoryModal(parentId, e) {
     if (typeof e != "undefined") e.preventDefault();
 
     $('#myModal .modal-title').html("카테고리 생성하기")
     $('#myModal').modal('toggle');
 
-    if (newCategoryDOM == null) {
+    if (newPartCategoryDOM == null) {
         ReactDOM.render(
             <NewCategoryModalBody parentId={parentId}/>
             , document.getElementById("myModal-body")
         );
     } else {
-        newCategoryDOM.setState({
+        newPartCategoryDOM.setState({
             parentId : parentId
         });
     }
@@ -30,11 +30,11 @@ class NewCategoryModalBody extends React.Component {
     }
 
     componentDidMount() {
-        newCategoryDOM = this;
+        newPartCategoryDOM = this;
     }
 
     componentWillUnmount() {
-        newCategoryDOM = null;
+        newPartCategoryDOM = null;
     }
 
     render() {

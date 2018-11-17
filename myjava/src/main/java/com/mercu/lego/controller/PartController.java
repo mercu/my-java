@@ -21,8 +21,15 @@ public class PartController {
 
     @RequestMapping("/partList")
     @ResponseBody
-    public String partCategories(@RequestParam("categoryId") Integer categoryId, @RequestParam(value = "limit", required = false) Integer limit) {
-        List<PartInfo> partInfoList = brickLinkCatalogService.findPartInfoListByCategoryIdWithMyItems(categoryId, limit);
+    public String partCategories(@RequestParam("blCategoryId") Integer blCategoryId, @RequestParam(value = "limit", required = false) Integer limit) {
+        List<PartInfo> partInfoList = brickLinkCatalogService.findPartInfoListByCategoryIdWithMyItems(blCategoryId, limit);
         return JsonUtils.toJson(partInfoList);
     }
+
+    @RequestMapping("/partByNo")
+    @ResponseBody
+    public String partByNo(@RequestParam("partNo") String partNo) {
+        return JsonUtils.toJson(brickLinkCatalogService.findPartByPartNo(partNo));
+    }
+
 }

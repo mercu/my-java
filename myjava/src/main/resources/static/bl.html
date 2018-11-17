@@ -16,7 +16,7 @@
 
 
 <!-- Common Modal -->
-<div id="myModal" class="modal fade" role="dialog" style="padding: 100px 0;">
+<div id="myModal" class="modal fade" role="dialog" style="padding: 100px 0; postion:fixed; height:100%;">
     <div class="modal-dialog">
 
         <!-- Modal content-->
@@ -25,7 +25,7 @@
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Modal Header</h4>
             </div>
-            <div class="modal-body" id="myModal-body">
+            <div class="modal-body" id="myModal-body" style="overflow-y: scroll">
                 <p>Some text in the modal.</p>
             </div>
             <div class="modal-footer">
@@ -52,6 +52,7 @@
 <script src="/static/js/part_category.jsx" type="text/babel"></script>
 <script src="/static/js/new_category.jsx" type="text/babel"></script>
 <script src="/static/js/part_list.jsx" type="text/babel"></script>
+<script src="/static/js/my_parts.jsx" type="text/babel"></script>
 <script src="/static/js/my_part.jsx" type="text/babel"></script>
 
 <script src="/static/js/navigator.jsx" type="text/babel"></script>
@@ -61,6 +62,7 @@
 </script>
 
 <script type="text/javascript">
+
     function handleClick(e) {
         e.preventDefault();
         e.stopPropagation();
