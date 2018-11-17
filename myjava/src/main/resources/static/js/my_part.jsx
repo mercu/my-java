@@ -12,9 +12,17 @@ function newMyPartModal(blCategoryId, partNo, e) {
     } else {
         myPartDOM.setState({
             blCategoryId : blCategoryId,
-            partNo : partNo
+            partNo : partNo,
+            categoryInfo : null,
+            partInfo : null,
+            allColorPartImgUrls : null,
+            colorId : null,
+            whereInfos : null,
+            whereCode : null,
+            whereMore : null,
+            qty : null
         });
-        myPartDOM.loadPartCategoryInfo(blCategoryId);
+        myPartDOM.componentDidMount();
     }
 }
 
@@ -28,7 +36,11 @@ class MyPartModalBody extends React.Component {
             categoryInfo : null,
             partInfo : null,
             allColorPartImgUrls : null,
-            colorId : null
+            colorId : null,
+            whereInfos : null,
+            whereCode : null,
+            whereMore : null,
+            qty : null
         };
     }
 
@@ -92,6 +104,63 @@ class MyPartModalBody extends React.Component {
         }.bind(this));
     }
 
+    loadWhereInfos(partNo, colorId) {
+        $.ajax({
+            url:"/admin/myPartWhereInfos",
+            type : "GET",
+            dataType : "json",
+            data : {
+                partNo : partNo,
+                colorId : colorId
+            },
+            contentType: "application/json;charset=UTF-8",
+            async : true
+        }).done(function(data) {
+            this.setState({
+                whereInfos : data
+            });
+        }.bind(this));
+    }
+
+    increaseQty() {
+        var qty = this.state.qty + 1;
+        this.setState({qty : qty});
+    }
+
+    decreaseQty() {
+        var qty = this.state.qty - 1;
+        if (qty <= 0) qty = 0;
+        this.setState({qty : qty});
+    }
+
+    saveQty() {
+        $.ajax({
+            url:"/admin/myPartQty",
+            type : "POST",
+            dataType : "json",
+            data : {
+                partNo : this.state.partNo,
+                colorId : this.state.colorId,
+                whereCode : this.state.whereCode,
+                whereMore : this.state.whereMore,
+                qty : this.state.qty
+            },
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            async : true
+        }).done(function(data) {
+            this.setState({
+                partNo : data.itemNo,
+                colorId : data.colorId,
+                whereCode : data.whereCode,
+                whereMore : data.whereMore,
+                whereQty : data.whereQty
+            });
+            $("#saveMyPartQtyBtn").removeClass("btn-danger");
+            $("#saveMyPartQtyBtn").addClass("btn-default");
+        }.bind(this));
+
+    }
+
     render() {
         return (
             <div>
@@ -100,10 +169,10 @@ class MyPartModalBody extends React.Component {
                         <MyPartCategoryInfo categoryInfo={this.state.categoryInfo} />
                         <MyPartInfo partInfo={this.state.partInfo} />
                         <ColorInfos partInfo={this.state.partInfo} allColorPartImgUrls={this.state.allColorPartImgUrls} />
-                        <WhereInfos partInfo={this.state.partInfo} colorId={this.state.colorId} />
+                        <WhereInfos partInfo={this.state.partInfo} colorId={this.state.colorId} whereInfos={this.state.whereInfos} />
+                        <MyPartQty partInfo={this.state.partInfo} colorId={this.state.colorId} whereCode={this.state.whereCode} whereMore={this.state.whereMore} qty={this.state.qty} />
                     </div>
                 </form>
-                <button type={"submit"} className={"btn btn-primary"} onClick={(e) => newPartCategory($("#partCategoryForm"), e)}>생성하기</button>
             </div>
         );
     }
@@ -146,29 +215,83 @@ function ColorInfos(props) {
         <div>
             <label>색상 선택</label><br/>
             {props.allColorPartImgUrls.map(function(colorPartImgUrl, key) {
-                return <img key={key} name="colorPartImgUrl" id={'colorPartImgUrl_' + colorPartImgUrl.colorId} src={colorPartImgUrl.imgUrl} onClick={(e) => pickMyPartColor(colorPartImgUrl.colorId, e)}/>
+                return <img key={key} name="colorPartImgUrl" id={'colorPartImgUrl_' + colorPartImgUrl.colorId} src={colorPartImgUrl.imgUrl}
+                            onClick={(e) => pickMyPartColor(props.partInfo.partNo, colorPartImgUrl.colorId, e)}/>
             })}
         </div>
     );
 }
 
-function pickMyPartColor(colorId, e) {
+function pickMyPartColor(partNo, colorId, e) {
     if (typeof e != "undefined") e.preventDefault();
 
-    console.log("pickMyPartColor : " + colorId);
     $("[name=colorPartImgUrl]").css("border", "")
     $("#colorPartImgUrl_" + colorId).css("border", "2px solid rgb(255,0,0)");
     myPartDOM.setState({colorId : colorId});
+    myPartDOM.loadWhereInfos(partNo, colorId);
 }
 
 function WhereInfos(props) {
-    if (props.partInfo == null || props.colorId == null) return '';
+    if (props.partInfo == null || props.colorId == null || props.whereInfos == null) return '';
 
+    // [{"itemType":"P","itemNo":"3062b","colorId":"1","whereCode":"storage","whereMore":"storage","qty":0},{"itemType":"P","itemNo":"3062b","colorId":"1","whereCode":"wanted","whereMore":"11902","qty":4},{"itemType":"P","itemNo":"3062b","colorId":"1","whereCode":"wanted","whereMore":"2505","qty":15},{"itemType":"P","itemNo":"3062b","colorId":"1","whereCode":"wanted","whereMore":"3187","qty":4},{"itemType":"P","itemNo":"3062b","colorId":"1","whereCode":"wanted","whereMore":"60047","qty":2},{"itemType":"P","itemNo":"3062b","colorId":"1","whereCode":"wanted","whereMore":"7498","qty":2},{"itemType":"P","itemNo":"3062b","colorId":"1","whereCode":"wanted","whereMore":"75149","qty":1},{"itemType":"P","itemNo":"3062b","colorId":"1","whereCode":"wanted","whereMore":"7744","qty":10},{"itemType":"P","itemNo":"3062b","colorId":"1","whereCode":"wanted","whereMore":"8781","qty":2}]
     return (
         <div>
             <label>보관 위치</label><br/>
-            colorId : {props.colorId}
+            {props.whereInfos.map(function(whereInfo, key) {
+                return (
+                    <button key={key} name="partWhereInfo" id={'partWhereInfo_' + whereInfo.whereCode + "_" + whereInfo.whereMore}
+                            className={'btn btn-info'} onClick={(e) => pickMyPartWhere(whereInfo, e)}>{whereInfo.whereCode} - {whereInfo.whereMore} ({whereInfo.qty})</button>
+                );
+            })}
+
         </div>
     );
+}
+
+function pickMyPartWhere(whereInfo, e) {
+    if (typeof e != "undefined") e.preventDefault();
+
+    $("[name=partWhereInfo]").removeClass("btn-primary");
+    $("[name=partWhereInfo]").addClass("btn-info");
+    $("#partWhereInfo_" + whereInfo.whereCode + "_" + whereInfo.whereMore).addClass("btn-primary");
+    myPartDOM.setState({
+        whereCode : whereInfo.whereCode,
+        whereMore : whereInfo.whereMore,
+        qty : whereInfo.qty
+    });
+}
+
+function MyPartQty(props) {
+    if (props.partInfo == null || props.colorId == null || props.qty == null) return '';
+
+    return (
+        <div>
+            <label>수량</label><br/>
+            <input id={'myPartQty'} type={'text'} value={props.qty}/>
+            <button className={'btn btn-default'} onClick={(e) => increaseMyPartQty(e)}>+</button>
+            <button className={'btn btn-default'} onClick={(e) => decreaseMyPartQty(e)}>-</button>
+            <button id={'saveMyPartQtyBtn'} className={'btn btn-default'} onClick={(e) => saveMyPartQty(e)}>SAVE</button>
+        </div>
+    );
+}
+
+function increaseMyPartQty(e) {
+    if (typeof e != "undefined") e.preventDefault();
+    myPartDOM.increaseQty();
+    $("#saveMyPartQtyBtn").removeClass("btn-default");
+    $("#saveMyPartQtyBtn").addClass("btn-danger");
+}
+
+function decreaseMyPartQty(e) {
+    if (typeof e != "undefined") e.preventDefault();
+    myPartDOM.decreaseQty();
+    $("#saveMyPartQtyBtn").removeClass("btn-default");
+    $("#saveMyPartQtyBtn").addClass("btn-danger");
+}
+
+function saveMyPartQty(e) {
+    if (typeof e != "undefined") e.preventDefault();
+    myPartDOM.saveQty();
 }
 

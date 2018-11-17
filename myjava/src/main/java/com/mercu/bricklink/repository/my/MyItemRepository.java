@@ -18,6 +18,9 @@ public interface MyItemRepository extends CrudRepository<MyItem, String> {
     @Query("select m from MyItem m where m.itemType = :itemType and m.itemNo = :itemNo")
     List<MyItem> findList(@Param("itemType") String itemType, @Param("itemNo") String itemNo);
 
+    @Query("select m from MyItem m where m.itemType = :itemType and m.itemNo = :itemNo and m.colorId = :colorId order by m.whereCode, m.whereMore")
+    List<MyItem> findList(@Param("itemType") String itemType, @Param("itemNo") String itemNo, @Param("colorId") String colorId);
+
     @Query("select m from MyItem m where m.itemType = :itemType and m.itemNo = :itemNo and m.colorId = :colorId and m.whereCode = :whereCode")
     MyItem findById(@Param("itemType") String itemType, @Param("itemNo") String itemNo, @Param("colorId") String colorId, @Param("whereCode") String whereCode);
 

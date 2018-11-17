@@ -1,18 +1,5 @@
 package com.mercu.bricklink.service;
 
-import static java.util.stream.Collectors.*;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.model.match.MatchMyItemSetItem;
@@ -25,6 +12,16 @@ import com.mercu.bricklink.repository.match.MatchMyItemSetItemRepository;
 import com.mercu.bricklink.repository.my.MyItemRepository;
 import com.mercu.log.LogService;
 import com.mercu.utils.UrlUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+import static com.mercu.bricklink.model.my.MyItem.WHERE_CODE_STORAGE;
+import static java.util.stream.Collectors.*;
 
 @Service
 public class BrickLinkMyService {
@@ -100,6 +97,60 @@ public class BrickLinkMyService {
                         myItemGroup.getRepImgOriginal(),
                         firstItem.getColorId()));
         return myItemGroup;
+    }
+
+    /**
+     * @param itemType
+     * @param itemNo
+     * @param colorId
+     * @return
+     */
+    public List<MyItem> findMyItemWheres(String itemType, String itemNo, String colorId) {
+        List<MyItem> myItemList = myItemRepository.findList(itemType, itemNo, colorId);
+
+        // 기본 보관소(storage) 값 추가하기
+        if (containsWhere(myItemList, WHERE_CODE_STORAGE) == false) {
+            myItemList = addWhereStorageFirst(itemType, itemNo, colorId, myItemList);
+        }
+
+        return myItemList;
+    }
+
+    private List<MyItem> addWhereStorageFirst(String itemType, String itemNo, String colorId, List<MyItem> myItemList) {
+        List<MyItem> newMyItemList = new ArrayList<>();
+
+        MyItem storageMyItem = new MyItem();
+        storageMyItem.setItemType(itemType);
+        storageMyItem.setItemNo(itemNo);
+        storageMyItem.setColorId(colorId);
+        storageMyItem.setWhereCode(WHERE_CODE_STORAGE);
+        storageMyItem.setWhereMore(WHERE_CODE_STORAGE);
+        storageMyItem.setQty(0);
+
+        newMyItemList.add(storageMyItem);
+        newMyItemList.addAll(myItemList);
+
+        return newMyItemList;
+    }
+
+    private boolean containsWhere(List<MyItem> myItemList, String whereCode) {
+        for (MyItem myItem : myItemList) {
+            if (StringUtils.equals(myItem.getWhereCode(), whereCode)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param itemType
+     * @param itemNo
+     * @param colorId
+     * @param whereCode
+     * @param whereMore
+     * @param qty
+     * @return
+     */
+    public MyItem addMyItem(String itemType, String itemNo, String colorId, String whereCode, String whereMore, Integer qty) {
+        return myItemRepository.save(new MyItem(itemType, itemNo, colorId, whereCode, whereMore, qty));
     }
 
     /**
