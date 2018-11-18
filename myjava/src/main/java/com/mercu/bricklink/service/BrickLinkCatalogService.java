@@ -49,10 +49,26 @@ public class BrickLinkCatalogService {
         return partInfoRepository.findAllByCategoryId(categoryId);
     }
 
-    public List<PartInfo> findPartInfoListByCategoryIdWithMyItems(Integer blCategoryId, Integer limit) {
+    /**
+     * @param blCategoryId
+     * @param limit
+     * @return
+     */
+    public List<PartInfo> findPartInfoListByCategoryId(Integer blCategoryId, Integer limit) {
         if (Objects.isNull(limit)) limit = Integer.MAX_VALUE;
         Pageable pageable = new PageRequest(0, limit);
         List<PartInfo> partInfoList = partInfoRepository.findAllByCategoryId(blCategoryId, pageable);
+
+        return partInfoList;
+    }
+
+    /**
+     * @param blCategoryId
+     * @param limit
+     * @return
+     */
+    public List<PartInfo> findPartInfoListByCategoryIdWithMyItems(Integer blCategoryId, Integer limit) {
+        List<PartInfo> partInfoList = findPartInfoListByCategoryId(blCategoryId, limit);
 
         // with MyItems (itemType, itemNo)
         partInfoList.stream()
@@ -168,4 +184,5 @@ public class BrickLinkCatalogService {
     public PartInfo findPartByPartNo(String partNo) {
         return partInfoRepository.findByPartNo(partNo).orElse(null);
     }
+
 }

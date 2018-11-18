@@ -18,11 +18,12 @@ function newMyPartModal(blCategoryId, partNo, e) {
             allColorPartImgUrls : null,
             colorId : null,
             whereInfos : null,
-            whereCode : null,
-            whereMore : null,
+            whereCode : "storage",
+            whereMore : "storage",
             qty : null
         });
-        myPartDOM.componentDidMount();
+        myPartDOM.loadPartCategoryInfo(blCategoryId);
+        myPartDOM.loadPartInfo(partNo);
     }
 }
 
@@ -38,8 +39,8 @@ class MyPartModalBody extends React.Component {
             allColorPartImgUrls : null,
             colorId : null,
             whereInfos : null,
-            whereCode : null,
-            whereMore : null,
+            whereCode : "storage",
+            whereMore : "storage",
             qty : null
         };
     }
@@ -119,17 +120,21 @@ class MyPartModalBody extends React.Component {
             this.setState({
                 whereInfos : data
             });
+            data.forEach(function(whereInfo) {
+                if (whereInfo.whereCode == "storage") {
+                    pickMyPartWhere(whereInfo);
+                }
+            });
         }.bind(this));
     }
 
-    increaseQty() {
-        var qty = this.state.qty + 1;
+    increaseQty(val) {
+        var qty = this.state.qty + val;
+        if (qty <= 0) qty = 0;
         this.setState({qty : qty});
     }
 
-    decreaseQty() {
-        var qty = this.state.qty - 1;
-        if (qty <= 0) qty = 0;
+    onchangeQty(qty) {
         this.setState({qty : qty});
     }
 
@@ -157,6 +162,7 @@ class MyPartModalBody extends React.Component {
             });
             $("#saveMyPartQtyBtn").removeClass("btn-danger");
             $("#saveMyPartQtyBtn").addClass("btn-default");
+            this.loadWhereInfos(data.itemNo, data.colorId);
         }.bind(this));
 
     }
@@ -215,8 +221,12 @@ function ColorInfos(props) {
         <div>
             <label>색상 선택</label><br/>
             {props.allColorPartImgUrls.map(function(colorPartImgUrl, key) {
-                return <img key={key} name="colorPartImgUrl" id={'colorPartImgUrl_' + colorPartImgUrl.colorId} src={colorPartImgUrl.imgUrl}
-                            onClick={(e) => pickMyPartColor(props.partInfo.partNo, colorPartImgUrl.colorId, e)}/>
+                return (
+                <a onClick={(e) => pickMyPartColor(props.partInfo.partNo, colorPartImgUrl.colorId, e)}>
+                    <img key={key} name="colorPartImgUrl" id={'colorPartImgUrl_' + colorPartImgUrl.colorId} src={colorPartImgUrl.imgUrl} />
+                    <span>{colorPartImgUrl.colorName}</span>
+                </a>
+                );
             })}
         </div>
     );
@@ -241,7 +251,7 @@ function WhereInfos(props) {
             {props.whereInfos.map(function(whereInfo, key) {
                 return (
                     <button key={key} name="partWhereInfo" id={'partWhereInfo_' + whereInfo.whereCode + "_" + whereInfo.whereMore}
-                            className={'btn btn-info'} onClick={(e) => pickMyPartWhere(whereInfo, e)}>{whereInfo.whereCode} - {whereInfo.whereMore} ({whereInfo.qty})</button>
+                            className={'btn btn-default'} onClick={(e) => pickMyPartWhere(whereInfo, e)}>{whereInfo.whereCode} - {whereInfo.whereMore} ({whereInfo.qty})</button>
                 );
             })}
 
@@ -251,10 +261,12 @@ function WhereInfos(props) {
 
 function pickMyPartWhere(whereInfo, e) {
     if (typeof e != "undefined") e.preventDefault();
+    console.log("pickMyPartWhere - whereInfo : " + whereInfo);
+    console.log("#partWhereInfo_" + whereInfo.whereCode + "_" + whereInfo.whereMore);
 
-    $("[name=partWhereInfo]").removeClass("btn-primary");
-    $("[name=partWhereInfo]").addClass("btn-info");
-    $("#partWhereInfo_" + whereInfo.whereCode + "_" + whereInfo.whereMore).addClass("btn-primary");
+    $("[name=partWhereInfo]").removeClass("btn-info");
+    $("[name=partWhereInfo]").addClass("btn-default");
+    $("#partWhereInfo_" + whereInfo.whereCode + "_" + whereInfo.whereMore).addClass("btn-info");
     myPartDOM.setState({
         whereCode : whereInfo.whereCode,
         whereMore : whereInfo.whereMore,
@@ -268,24 +280,39 @@ function MyPartQty(props) {
     return (
         <div>
             <label>수량</label><br/>
-            <input id={'myPartQty'} type={'text'} value={props.qty}/>
-            <button className={'btn btn-default'} onClick={(e) => increaseMyPartQty(e)}>+</button>
-            <button className={'btn btn-default'} onClick={(e) => decreaseMyPartQty(e)}>-</button>
-            <button id={'saveMyPartQtyBtn'} className={'btn btn-default'} onClick={(e) => saveMyPartQty(e)}>SAVE</button>
+            <input id={'myPartQty'} type={'text'} value={props.qty} onChange={(e) => onchangeMyPartQty(e.target.value, e)}/>&nbsp;&nbsp;
+            <button className={'btn btn-lg btn-default'} onClick={(e) => increaseMyPartQty(e)}>+</button>&nbsp;&nbsp;
+            <button className={'btn btn-lg btn-default'} onClick={(e) => increaseMyPartQtyX5(e)}>+5</button>&nbsp;&nbsp;
+            <button className={'btn btn-lg btn-default'} onClick={(e) => decreaseMyPartQty(e)}>-</button>&nbsp;&nbsp;
+            <button id={'saveMyPartQtyBtn'} className={'btn btn-lg btn-default'} onClick={(e) => saveMyPartQty(e)}>SAVE</button>
         </div>
     );
 }
 
+function onchangeMyPartQty(qty, e) {
+    if (typeof e != "undefined") e.preventDefault();
+    myPartDOM.onchangeQty(qty);
+    $("#saveMyPartQtyBtn").removeClass("btn-default");
+    $("#saveMyPartQtyBtn").addClass("btn-danger");
+}
+
 function increaseMyPartQty(e) {
     if (typeof e != "undefined") e.preventDefault();
-    myPartDOM.increaseQty();
+    myPartDOM.increaseQty(1);
+    $("#saveMyPartQtyBtn").removeClass("btn-default");
+    $("#saveMyPartQtyBtn").addClass("btn-danger");
+}
+
+function increaseMyPartQtyX5(e) {
+    if (typeof e != "undefined") e.preventDefault();
+    myPartDOM.increaseQty(5);
     $("#saveMyPartQtyBtn").removeClass("btn-default");
     $("#saveMyPartQtyBtn").addClass("btn-danger");
 }
 
 function decreaseMyPartQty(e) {
     if (typeof e != "undefined") e.preventDefault();
-    myPartDOM.decreaseQty();
+    myPartDOM.increaseQty(-1);
     $("#saveMyPartQtyBtn").removeClass("btn-default");
     $("#saveMyPartQtyBtn").addClass("btn-danger");
 }

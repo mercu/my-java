@@ -55,7 +55,9 @@ public class BrickLinkColorService {
         String partImgUrl = brickLinkCatalogService.findPartByPartNo(partNo).getImg();
 
         return colorIds.stream()
-                .map(colorId -> new ColorPartImageUrl(colorId, UrlUtils.replaceLastPath(partImgUrl, colorId)))
+                .map(colorId -> new ColorPartImageUrl(colorId,
+                        UrlUtils.replaceLastPath(partImgUrl, colorId),
+                        colorInfoRepository.findById(colorId).get().getName()))
                 .collect(toList());
     }
 
@@ -66,5 +68,6 @@ public class BrickLinkColorService {
     public class ColorPartImageUrl {
         private String colorId;
         private String imgUrl;
+        private String colorName;
     }
 }

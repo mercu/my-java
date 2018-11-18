@@ -159,7 +159,7 @@ function PartInfo(props) {
             </td>
             <td>
                 {item.partName}<br/>
-                {item.myItemGroups.length > 0 ? <MyItemGroups myItemGroups={item.myItemGroups}/> : ""}
+                {item.myItemGroups != null && item.myItemGroups.length > 0 ? <MyItemGroups myItemGroups={item.myItemGroups}/> : ""}
             </td>
         </tr>
     );
@@ -169,6 +169,7 @@ function MyItemGroups(props) {
     const myItemGroups = props.myItemGroups;
 
     return (
+        <div style={{maxHeight:'200px', overflowY:'scroll'}}>
         <table className="table table-bordered">
             <thead>
             <tr>
@@ -183,6 +184,7 @@ function MyItemGroups(props) {
             })}
             </tbody>
         </table>
+        </div>
     );
 }
 
