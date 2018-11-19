@@ -228,6 +228,7 @@ function ColorInfos(props) {
                 </a>
                 );
             })}
+            <input id={'myPartColorId'} type={'text'} value={myPartDOM.state.colorId} onChange={(e) => pickMyPartColor(props.partInfo.partNo, e.target.value, e)}/>&nbsp;&nbsp;
         </div>
     );
 }

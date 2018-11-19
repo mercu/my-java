@@ -10,11 +10,23 @@ import java.util.List;
 public interface ColorInfoRepository extends CrudRepository<ColorInfo, String> {
 
     // {/* 색상 : allColorPartImgUrls from bl_set_item where itemNo = partNo*/}
-    @Query("select si.colorId " +
-            "from SetItem si " +
-            "where si.itemNo = :partNo " +
-            "  and si.categoryType = 'P' " +
-            "group by si.colorId " +
-            "order by sum(si.qty) desc")
+    @Query(value = "select colorId " +
+            "from ( " +
+            "select colorId, sum(qty) qty " +
+            "from bl_set_item " +
+            "where itemNo = :partNo " +
+            "  and categoryType = 'P' " +
+            "group by colorId " +
+            " " +
+            "union  " +
+            " " +
+            "select colorId, sum(qty) qty " +
+            "from bl_my_item " +
+            "where itemType = 'P' " +
+            "  and itemNo = :partNo " +
+            "group by colorId " +
+            ") a " +
+            "group by colorId " +
+            "order by sum(qty) desc ", nativeQuery = true)
     List<String> findByPartNo(@Param("partNo") String partNo);
 }
