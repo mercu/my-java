@@ -125,9 +125,8 @@ function PartInfosBody(props) {
         <table className="table table-bordered">
             <thead>
             <tr>
-                <th>img<br/>partNo</th>
+                <th>img</th>
                 <th>info</th>
-                <th>partName</th>
             </tr>
             </thead>
             <tbody>
@@ -149,15 +148,12 @@ function PartInfo(props) {
         <tr>
             <td>
                 <img src={item.img}/><br/>
-                <a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + item.id + '#T=C'} target={'_blank'}>{item.partNo}</a>
             </td>
             <td>
-                itemId : {item.id}<br/>
-                setQty : {item.setQty}<br/>
-                myItemsQty : {item.myItemsQty}<br/>
-                <button className={'btn btn-primary btn-sm btn-block' + (partListDOM.state.partManageEnable ? '' : ' hide')} onClick={(e) => newMyPartModal(item.categoryId, item.partNo, e)}>P[+]</button>
-            </td>
-            <td>
+                <a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + item.id + '#T=C'} target={'_blank'}>{item.partNo}</a>&nbsp;
+                {/*(itemId : {item.id}) (setQty : {item.setQty}) (myItemsQty : {item.myItemsQty})*/}
+                <button className={'btn btn-primary ' + (partListDOM.state.partManageEnable ? '' : ' hide')} onClick={(e) => newMyPartModal(item.categoryId, item.partNo, e)}>P[+]</button>
+                <br/>
                 {item.partName}<br/>
                 {item.myItemGroups != null && item.myItemGroups.length > 0 ? <MyItemGroups myItemGroups={item.myItemGroups}/> : ""}
             </td>

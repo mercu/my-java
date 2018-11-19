@@ -22,8 +22,8 @@ public class PartController {
     @RequestMapping("/partList")
     @ResponseBody
     public String partCategories(@RequestParam("blCategoryId") Integer blCategoryId, @RequestParam(value = "limit", required = false) Integer limit) {
-        List<PartInfo> partInfoList = brickLinkCatalogService.findPartInfoListByCategoryIdWithMyItems(blCategoryId, limit);
-//        List<PartInfo> partInfoList = brickLinkCatalogService.findPartInfoListByCategoryId(blCategoryId, limit);
+//        List<PartInfo> partInfoList = brickLinkCatalogService.findPartInfoListByCategoryIdWithMyItems(blCategoryId, limit);
+        List<PartInfo> partInfoList = brickLinkCatalogService.findPartInfoListByCategoryId(blCategoryId, limit);
         return JsonUtils.toJson(partInfoList);
     }
 

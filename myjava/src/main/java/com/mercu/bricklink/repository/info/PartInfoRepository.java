@@ -11,10 +11,10 @@ import java.util.Optional;
 
 public interface PartInfoRepository extends CrudRepository<PartInfo, String> {
 
-    @Query("select p from PartInfo p where p.categoryId = :categoryId order by p.setQty desc")
+    @Query("select p from PartInfo p where p.categoryId = :categoryId order by p.setQty desc, p.partName asc")
     List<PartInfo> findAllByCategoryId(@Param("categoryId") Integer categoryId);
 
-    @Query("select p from PartInfo p where p.categoryId = :categoryId order by p.setQty desc")
+    @Query("select p from PartInfo p where p.categoryId = :categoryId order by p.setQty desc, p.partName asc")
     List<PartInfo> findAllByCategoryId(@Param("categoryId") Integer categoryId, Pageable pageable);
 
     @Query("select p from PartInfo p where p.partNo = :partNo")
