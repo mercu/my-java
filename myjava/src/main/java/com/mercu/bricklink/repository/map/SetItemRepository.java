@@ -1,6 +1,5 @@
 package com.mercu.bricklink.repository.map;
 
-import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.map.SetItem;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -12,6 +11,9 @@ public interface SetItemRepository extends CrudRepository<SetItem, String> {
 
     @Query("select case when count(s) > 0 then true else false end from SetItem s where s.setId = :setId")
     boolean existsBySetId(@Param("setId") String setId);
+
+    @Query("select s from SetItem s where s.setId = :setId")
+    List<SetItem> findBySetId(@Param("setId") String setId);
 
     @Query("select s from SetItem s where s.setNo = :setNo")
     List<SetItem> findBySetNo(@Param("setNo") String setNo);

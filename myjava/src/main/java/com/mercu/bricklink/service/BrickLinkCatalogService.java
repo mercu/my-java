@@ -100,6 +100,14 @@ public class BrickLinkCatalogService {
     }
 
     /**
+     * @param setId
+     * @return
+     */
+    public SetInfo findSetInfo(String setId) {
+        return setInfoRepository.findById(setId).orElse(null);
+    }
+
+    /**
      * @param setInfoList
      */
     public void saveSetInfoList(List<SetInfo> setInfoList) {

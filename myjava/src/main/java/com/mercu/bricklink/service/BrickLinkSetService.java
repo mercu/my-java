@@ -16,6 +16,10 @@ public class BrickLinkSetService {
     @Autowired
     private SetItemRepository setItemRepository;
 
+    public List<SetItem> findBySetId(String setId) {
+        return setItemRepository.findBySetId(setId);
+    }
+
     public void saveSetItemList(List<SetItem> setItemList) {
         setItemRepository.saveAll(setItemList);
     }
