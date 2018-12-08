@@ -57,6 +57,7 @@ function MatchSetPartsRoot(props) {
                     <tr>
                         <th>img</th>
                         <th>itemNo</th>
+                        <th>partName</th>
                         <th>qty</th>
                     </tr>
                     </thead>
@@ -67,6 +68,7 @@ function MatchSetPartsRoot(props) {
                                 <img src={item.partInfo != null ? item.partInfo.img : ''}/>
                             </td>
                             <td>{item.itemNo}</td>
+                            <td>{item.partInfo != null ? item.partInfo.partName : ''}</td>
                             <td>{item.qty}</td>
                         </tr>;
                     })}
