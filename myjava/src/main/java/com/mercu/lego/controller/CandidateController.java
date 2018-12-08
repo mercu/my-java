@@ -1,14 +1,11 @@
 package com.mercu.lego.controller;
 
-import com.mercu.bricklink.model.CategoryType;
-import com.mercu.bricklink.model.my.MyItem;
-import com.mercu.bricklink.model.my.MyItemGroup;
-import com.mercu.bricklink.service.BrickLinkMyService;
+import com.mercu.lego.service.MatchMyItemService;
 import com.mercu.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author 고종봉 (jongbong.ko@navercorp.com)
@@ -16,14 +13,12 @@ import java.util.List;
 @RestController
 public class CandidateController {
     @Autowired
-//    private BrickLinkMyService brickLinkMyService;
+    private MatchMyItemService matchMyItemService;
 
     @RequestMapping("/admin/candidate")
     @ResponseBody
     public String candidate() {
-//        List<MyItemGroup> myItemGroupList = brickLinkMyService.findMyItemsGroup();
-//        return JsonUtils.toJson(myItemGroupList);
-        return null;
+        return JsonUtils.toJson(matchMyItemService.findMatchIds());
     }
 
 }

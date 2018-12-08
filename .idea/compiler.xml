@@ -13,7 +13,6 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="my-java" target="1.8" />
-      <module name="myjava" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

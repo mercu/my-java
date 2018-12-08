@@ -6,7 +6,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.Table;
 
 @Getter
 @Setter
@@ -14,6 +17,7 @@ import javax.persistence.*;
 @Data
 @Entity
 @Table(name = "MATCH_MY_ITEM_SET_ITEM_RATIO")
+@IdClass(MatchMyItemSetItemRatioId.class)
 public class MatchMyItemSetItemRatio implements AbstractCategory {
     @Id
     private String matchId; // vchar(12)
