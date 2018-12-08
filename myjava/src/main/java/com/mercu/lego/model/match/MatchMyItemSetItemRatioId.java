@@ -1,10 +1,10 @@
-package com.mercu.bricklink.model.match;
-
-import java.io.Serializable;
+package com.mercu.lego.model.match;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 @NoArgsConstructor
 @AllArgsConstructor

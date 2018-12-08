@@ -65,7 +65,7 @@ function MatchSetListRoot(props) {
                                 <img src={'https://img.bricklink.com/ItemImage/ST/0/' + item.setNo + '-1.t1.png'} alt={item.setNo}/>
                             </td>
                             <td>
-                                <button className={'btn btn-default btn-block'} onClick={(e) => matchSetParts(item.setId, e)}>{item.setNo}</button>
+                                <button className={'btn btn-default btn-block'} onClick={(e) => matchSetParts(item.matchId, item.setId, e)}>{item.setNo}</button>
                             </td>
                             <td>{item.matched} / {item.total}</td>
                             <td>{item.ratio}</td>

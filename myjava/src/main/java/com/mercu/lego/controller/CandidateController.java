@@ -30,8 +30,8 @@ public class CandidateController {
 
     @RequestMapping("/admin/matchSetParts")
     @ResponseBody
-    public String matchSetParts(@RequestParam(value = "setId") String setId) {
-        return JsonUtils.toJson(matchMyItemService.findMatchSetParts(setId));
+    public String matchSetParts(@RequestParam(value = "matchId") String matchId, @RequestParam(value = "setId") String setId) {
+        return JsonUtils.toJson(matchMyItemService.findMatchSetParts(matchId, setId));
     }
 
 }

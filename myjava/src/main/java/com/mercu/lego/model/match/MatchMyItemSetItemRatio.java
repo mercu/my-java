@@ -1,6 +1,5 @@
-package com.mercu.lego.model;
+package com.mercu.lego.model.match;
 
-import com.mercu.bricklink.model.category.AbstractCategory;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +17,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "MATCH_MY_ITEM_SET_ITEM_RATIO")
 @IdClass(MatchMyItemSetItemRatioId.class)
-public class MatchMyItemSetItemRatio implements AbstractCategory {
+public class MatchMyItemSetItemRatio {
     @Id
     private String matchId; // vchar(12)
     @Id

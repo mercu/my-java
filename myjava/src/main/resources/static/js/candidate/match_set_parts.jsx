@@ -1,14 +1,16 @@
 var matchSetPartsDOM = null;
-function matchSetParts(setId, e) {
+function matchSetParts(matchId, setId, e) {
     if (typeof e != "undefined") e.preventDefault();
 
     if (matchSetPartsDOM == null) {
         ReactDOM.render(
-            <MatchSetParts setId={setId}/>
+            <MatchSetParts
+                matchId={matchId}
+                setId={setId}/>
             , document.getElementById("candidate")
         );
     } else {
-        matchSetPartsAjax(setId);
+        matchSetPartsAjax(matchId, setId);
     }
     $("#candidate").removeClass("hide");
 
@@ -18,6 +20,7 @@ class MatchSetParts extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            matchId : props.matchId,
             setId : props.setId,
             items : []
         };
@@ -29,7 +32,7 @@ class MatchSetParts extends React.Component {
 
     componentDidMount() {
         matchSetPartsDOM = this;
-        matchSetPartsAjax(this.state.setId);
+        matchSetPartsAjax(this.state.matchId, this.state.setId);
     }
 
     componentWillUnmount() {
@@ -52,13 +55,19 @@ function MatchSetPartsRoot(props) {
                 <table className="table table-bordered">
                     <thead>
                     <tr>
-                        <th>item</th>
+                        <th>img</th>
+                        <th>itemNo</th>
+                        <th>qty</th>
                     </tr>
                     </thead>
                     <tbody>
                     {props.items.map(function(item, key) {
                         return <tr key={key}>
-                            <td>{item.setId}</td>
+                            <td bgcolor={item.colorInfo != null ? item.colorInfo.colorCode : ''}>
+                                <img src={item.partInfo != null ? item.partInfo.img : ''}/>
+                            </td>
+                            <td>{item.itemNo}</td>
+                            <td>{item.qty}</td>
                         </tr>;
                     })}
                     </tbody>
@@ -68,12 +77,15 @@ function MatchSetPartsRoot(props) {
     );
 }
 
-function matchSetPartsAjax(setId) {
+function matchSetPartsAjax(matchId, setId) {
     $.ajax({
         url:"/admin/matchSetParts",
         type : "GET",
         dataType : "json",
-        data : {setId : setId},
+        data : {
+            matchId : matchId,
+            setId : setId
+        },
         contentType: "application/json;charset=UTF-8",
         async : true
     }).done(function(data) {
