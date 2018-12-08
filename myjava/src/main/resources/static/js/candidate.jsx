@@ -37,62 +37,33 @@ class MyParts extends React.Component {
 
     render() {
         return (
-            <MyPartsRoot
+            <CandidateRoot
                 items={this.state.items}
             />
         );
     }
 }
 
-function MyPartsRoot(props) {
+function CandidateRoot(props) {
     return (
         <div className={'panel panel-default'}>
             <div className={'panel-body'}>
                 <table className="table table-bordered">
                     <thead>
                     <tr>
-                        <th rowSpan={2}>img</th>
-                        <th rowSpan={2}>itemNo</th>
-                        <th rowSpan={2}>totalQty</th>
-                        <th colSpan={3}>subItems</th>
-                    </tr>
-                    <tr>
-                        <th>whereCode</th>
-                        <th>whereMore</th>
-                        <th>qty</th>
+                        <th>matchId</th>
                     </tr>
                     </thead>
                     <tbody>
                     {props.items.map(function(item, key) {
                         return <tr key={key}>
-                            <td bgcolor={item.colorCode}><img src={item.repImg} alt={item.repImgOriginal} onError={(e)=>{e.target.onerror = null; e.target.src=item.repImgOriginal}}/></td>
-                            <td>{item.itemNo}</td>
-                            <td>{item.qty}</td>
-                            <td colSpan={3}><SubItems subItem={item.myItems}/></td>
+                            <td>{item}</td>
                         </tr>;
                     })}
                     </tbody>
                 </table>
             </div>
-            <ScrollLayer outerId={"#candidate"} innerId={"#candidate .panel"} />
         </div>
-    );
-}
-
-function SubItems(props) {
-    const subItems = props.subItem;
-    return (
-        <table className="table table-bordered" style={{marginBottom:"0"}}>
-            <tbody>
-            {subItems.map(function(item, key) {
-                return <tr key={key}>
-                    <td>{item.whereCode}</td>
-                    <td>{item.whereMore}</td>
-                    <td>{item.qty}</td>
-                </tr>;
-            })}
-            </tbody>
-        </table>
     );
 }
 
