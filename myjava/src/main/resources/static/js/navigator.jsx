@@ -55,6 +55,7 @@ class Navigator extends React.Component {
                             <li className="active"><a href="#">Home</a></li>
                             <li id={"partCategoriesMenu"}><a href="#" onClick={(e) => {selectMenu('partCategoriesMenu');hideAll();partCategories();e.preventDefault();}}>Part Categories</a></li>
                             <li id={"myPartsMenu"}><a className={(this.state.loginUserAdmin == true ? '' : ' hide')} href="#" onClick={(e) => {selectMenu('myPartsMenu');hideAll();myParts();e.preventDefault();}}>My Parts</a></li>
+                            <li id={"candidateMenu"}><a className={(this.state.loginUserAdmin == true ? '' : ' hide')} href="#" onClick={(e) => {selectMenu('candidateMenu');hideAll();candidate();e.preventDefault();}}>Candidate</a></li>
                         </ul>
                         <ul className="nav navbar-nav navbar-right">
                             <li><a href="#">{this.state.loginUser !== undefined ? "Welcome, " + this.state.loginUser + "!" : ""}</a></li>
@@ -72,9 +73,7 @@ function selectMenu(menuId) {
     $("#" + menuId).addClass("active");
 }
 function hideAll() {
-    $("#partCategories").addClass("hide");
-    $("#partList").addClass("hide");
-    $("#myParts").addClass("hide");
+    $(".root_div").addClass("hide");
 
     collapseNavi();
 }

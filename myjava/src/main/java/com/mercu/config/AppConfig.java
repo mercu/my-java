@@ -34,8 +34,8 @@ public class AppConfig {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://mercu.ipdisk.co.kr:13306/mercu?autoReconnect=true&useSSL=false&characterEncoding=utf8");
-        dataSource.setUsername( "" );
-        dataSource.setPassword( "" );
+        dataSource.setUsername( "mercujjang" );
+        dataSource.setPassword( "roqkfwnd!" );
         return dataSource;
     }
 
