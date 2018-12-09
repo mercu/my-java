@@ -1,10 +1,10 @@
 package com.mercu.lego.service;
 
-import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
 import com.mercu.bricklink.service.BrickLinkColorService;
 import com.mercu.bricklink.service.BrickLinkSetService;
+import com.mercu.bricklink.service.BrickLinkSimilarService;
 import com.mercu.lego.model.match.MatchMyItemSetItem;
 import com.mercu.lego.model.match.MatchMyItemSetItemRatio;
 import com.mercu.lego.repository.MatchMyItemSetItemRatioRepository;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,6 +30,8 @@ public class MatchMyItemService {
     private BrickLinkSetService brickLinkSetService;
     @Autowired
     private BrickLinkColorService brickLinkColorService;
+    @Autowired
+    private BrickLinkSimilarService brickLinkSimilarService;
 
     public List<String> findMatchIds() {
         return matchMyItemSetItemRatioRepository.findMatchIds();
@@ -91,7 +92,7 @@ public class MatchMyItemService {
 
     private boolean existsMatched(SetItem part, List<MatchMyItemSetItem> matchItems) {
         return matchItems.stream()
-                .anyMatch(matchItem -> matchItem.getItemNo().equals(part.getItemNo())
+                .anyMatch(matchItem -> brickLinkSimilarService.compareWithSimilarPartNos(matchItem.getItemNo(), part.getItemNo())
                         && matchItem.getColorId().equals(part.getColorId())
                 );
     }
