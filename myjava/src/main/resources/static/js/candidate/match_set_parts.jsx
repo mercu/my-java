@@ -56,9 +56,9 @@ function MatchSetPartsRoot(props) {
                     <thead>
                     <tr>
                         <th>img</th>
-                        <th>itemNo</th>
-                        <th>partName</th>
+                        <th>itemNo<br/>partName</th>
                         <th>qty</th>
+                        <th>where</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -67,15 +67,52 @@ function MatchSetPartsRoot(props) {
                             <td bgcolor={item.colorInfo != null ? item.colorInfo.colorCode : ''}>
                                 <img src={item.imgUrl} onError={(e)=>{e.target.onerror = null; item.partInfo != null ? e.target.src=item.partInfo.img : ''}}/>
                             </td>
-                            <td>{item.itemNo}</td>
-                            <td>{item.partInfo != null ? item.partInfo.partName : ''}</td>
+                            <td>
+                                <a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + (item.partInfo != null ? item.partInfo.id : '') + '#T=C'} target={'_blank'}>{item.itemNo}</a>
+                                <br/>
+                                {item.partInfo != null ? item.partInfo.partName : ''}
+                            </td>
                             <td>{item.qty}</td>
+                            <td>
+                                <MyItemsWhere myItems={item.myItems} />
+                            </td>
                         </tr>;
                     })}
                     </tbody>
                 </table>
             </div>
         </div>
+    );
+}
+
+function MyItemsWhere(props) {
+    return (
+        <table className="table table-bordered">
+            <thead>
+            <tr>
+                <th>where</th>
+                <th>qty</th>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {props.myItems.map(function(item, key) {
+                return <tr key={key}>
+                    <td>{item.whereCode}-{item.whereMore}</td>
+                    <td>
+                        {item.qty}
+                    </td>
+                    <td>
+                        <button className={'btn btn-block btn-info'} >+</button>
+                    </td>
+                    <td>
+                        <button className={'btn btn-block btn-info'} >-</button>
+                    </td>
+                </tr>;
+            })}
+            </tbody>
+        </table>
     );
 }
 

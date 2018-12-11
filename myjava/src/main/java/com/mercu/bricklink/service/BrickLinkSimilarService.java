@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +66,12 @@ public class BrickLinkSimilarService {
      * @return
      */
     public List<String> findPartNos(String partNo) {
-        return getSimilarPartNosMap().get(partNo);
+        List<String> partNos = getSimilarPartNosMap().get(partNo);
+        if (CollectionUtils.isEmpty(partNos)) {
+            return Arrays.asList(new String[]{partNo});
+        } else {
+            return partNos;
+        }
 //        return similarPartRepository.findPartNos(partNo);
     }
 

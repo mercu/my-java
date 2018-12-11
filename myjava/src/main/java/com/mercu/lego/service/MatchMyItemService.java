@@ -8,6 +8,7 @@ import com.mercu.bricklink.service.BrickLinkSetService;
 import com.mercu.bricklink.service.BrickLinkSimilarService;
 import com.mercu.lego.model.match.MatchMyItemSetItem;
 import com.mercu.lego.model.match.MatchMyItemSetItemRatio;
+import com.mercu.lego.model.my.MyItem;
 import com.mercu.lego.repository.MatchMyItemSetItemRatioRepository;
 import com.mercu.lego.repository.MatchMyItemSetItemRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -15,8 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class MatchMyItemService {
@@ -33,6 +37,8 @@ public class MatchMyItemService {
     private BrickLinkColorService brickLinkColorService;
     @Autowired
     private BrickLinkSimilarService brickLinkSimilarService;
+    @Autowired
+    private MyItemService myItemService;
 
     public List<String> findMatchIds() {
         return matchMyItemSetItemRatioRepository.findMatchIds();
@@ -68,15 +74,25 @@ public class MatchMyItemService {
                     try {
                         if (Objects.nonNull(matchItem.getColorId()))
                             matchItem.setColorInfo(brickLinkColorService.findColorById(matchItem.getColorId()));
-                        if (Objects.nonNull(matchItem.getItemNo()))
+                        if (Objects.nonNull(matchItem.getItemNo())) {
                             matchItem.setPartInfo(brickLinkCatalogService.findPartByPartNo(matchItem.getItemNo()));
+                            matchItem.setMyItems(findMyItemsWithSimilar(matchItem));
+                        }
                         matchItem.setImgUrl(BrickLinkUrlUtils.partImageUrl(matchItem.getItemNo(), matchItem.getColorId()));
+
                     } catch (Exception e) {
                         System.out.println("exception! - matchItem : " + matchItem);
                     }
                 });
 
         return matchItems;
+    }
+
+    private List<MyItem> findMyItemsWithSimilar(MatchMyItemSetItem matchItem) {
+        List<MyItem> myItems = new ArrayList<>();
+        brickLinkSimilarService.findPartNos(matchItem.getItemNo()).stream()
+                .forEach(partNo -> myItems.addAll(myItemService.findList(matchItem.getItemType(), partNo, matchItem.getColorId())));
+        return myItems;
     }
 
     private MatchMyItemSetItem newMatchMyItemSetItem(SetItem part, String matchId) {

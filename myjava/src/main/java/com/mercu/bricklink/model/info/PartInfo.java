@@ -9,14 +9,13 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import com.mercu.bricklink.model.my.MyItemGroup;
+import com.mercu.lego.model.my.MyItemGroup;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import com.mercu.bricklink.model.CategoryType;
-import com.mercu.bricklink.model.my.MyItem;
 
 @Getter
 @Setter

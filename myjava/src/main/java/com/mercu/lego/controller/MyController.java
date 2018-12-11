@@ -1,8 +1,8 @@
 package com.mercu.lego.controller;
 
 import com.mercu.bricklink.model.CategoryType;
-import com.mercu.bricklink.model.my.MyItem;
-import com.mercu.bricklink.model.my.MyItemGroup;
+import com.mercu.lego.model.my.MyItem;
+import com.mercu.lego.model.my.MyItemGroup;
 import com.mercu.bricklink.service.BrickLinkMyService;
 import com.mercu.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,10 +2,10 @@ package com.mercu.bricklink.service;
 
 import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.map.SetItem;
-import com.mercu.bricklink.model.my.MyItem;
-import com.mercu.bricklink.model.my.MyItemGroup;
+import com.mercu.lego.model.my.MyItem;
+import com.mercu.lego.model.my.MyItemGroup;
 import com.mercu.bricklink.repository.map.SetItemRepository;
-import com.mercu.bricklink.repository.my.MyItemRepository;
+import com.mercu.lego.repository.my.MyItemRepository;
 import com.mercu.lego.model.match.MatchMyItemSetItem;
 import com.mercu.lego.model.match.MatchMyItemSetItemRatio;
 import com.mercu.lego.repository.MatchMyItemSetItemRatioRepository;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static com.mercu.bricklink.model.my.MyItem.WHERE_CODE_STORAGE;
+import static com.mercu.lego.model.my.MyItem.WHERE_CODE_STORAGE;
 import static java.util.stream.Collectors.*;
 
 @Service

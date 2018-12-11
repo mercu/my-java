@@ -2,12 +2,14 @@ package com.mercu.lego.model.match;
 
 import com.mercu.bricklink.model.info.ColorInfo;
 import com.mercu.bricklink.model.info.PartInfo;
+import com.mercu.lego.model.my.MyItem;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,5 +37,7 @@ public class MatchMyItemSetItem {
     private PartInfo partInfo;
     @Transient
     private String imgUrl;
+    @Transient
+    private List<MyItem> myItems;
 
 }

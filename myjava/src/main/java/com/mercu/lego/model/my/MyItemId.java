@@ -1,4 +1,4 @@
-package com.mercu.bricklink.model.my;
+package com.mercu.lego.model.my;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

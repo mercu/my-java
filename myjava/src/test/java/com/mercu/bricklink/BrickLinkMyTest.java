@@ -1,7 +1,7 @@
 package com.mercu.bricklink;
 
-import com.mercu.bricklink.model.my.MyItem;
-import com.mercu.bricklink.repository.my.MyItemRepository;
+import com.mercu.lego.model.my.MyItem;
+import com.mercu.lego.repository.my.MyItemRepository;
 import com.mercu.bricklink.service.BrickLinkMyService;
 import com.mercu.config.AppConfig;
 import org.junit.Test;

@@ -1,6 +1,6 @@
-package com.mercu.bricklink.repository.my;
+package com.mercu.lego.repository.my;
 
-import com.mercu.bricklink.model.my.MyItem;
+import com.mercu.lego.model.my.MyItem;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
