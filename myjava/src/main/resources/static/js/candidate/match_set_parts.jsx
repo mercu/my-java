@@ -65,7 +65,7 @@ function MatchSetPartsRoot(props) {
                     {props.items.map(function(item, key) {
                         return <tr key={key}>
                             <td bgcolor={item.colorInfo != null ? item.colorInfo.colorCode : ''}>
-                                <img src={item.partInfo != null ? item.partInfo.img : ''}/>
+                                <img src={item.imgUrl} onError={(e)=>{e.target.onerror = null; item.partInfo != null ? e.target.src=item.partInfo.img : ''}}/>
                             </td>
                             <td>{item.itemNo}</td>
                             <td>{item.partInfo != null ? item.partInfo.partName : ''}</td>

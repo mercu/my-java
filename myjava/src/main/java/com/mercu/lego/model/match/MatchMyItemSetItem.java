@@ -33,5 +33,7 @@ public class MatchMyItemSetItem {
     private ColorInfo colorInfo;
     @Transient
     private PartInfo partInfo;
+    @Transient
+    private String imgUrl;
 
 }

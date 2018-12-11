@@ -1,5 +1,6 @@
 package com.mercu.lego.service;
 
+import com.mercu.bricklink.BrickLinkUrlUtils;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
 import com.mercu.bricklink.service.BrickLinkColorService;
@@ -69,6 +70,7 @@ public class MatchMyItemService {
                             matchItem.setColorInfo(brickLinkColorService.findColorById(matchItem.getColorId()));
                         if (Objects.nonNull(matchItem.getItemNo()))
                             matchItem.setPartInfo(brickLinkCatalogService.findPartByPartNo(matchItem.getItemNo()));
+                        matchItem.setImgUrl(BrickLinkUrlUtils.partImageUrl(matchItem.getItemNo(), matchItem.getColorId()));
                     } catch (Exception e) {
                         System.out.println("exception! - matchItem : " + matchItem);
                     }
