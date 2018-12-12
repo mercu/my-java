@@ -39,5 +39,9 @@ public class MatchMyItemSetItem {
     private String imgUrl;
     @Transient
     private List<MyItem> myItems;
+    @Transient
+    private Integer partQty;
+    @Transient
+    private boolean matched;
 
 }

@@ -22,6 +22,7 @@ class MatchSetParts extends React.Component {
         this.state = {
             matchId : props.matchId,
             setId : props.setId,
+            setInfo : null,
             items : []
         };
     }
@@ -42,6 +43,7 @@ class MatchSetParts extends React.Component {
     render() {
         return (
             <MatchSetPartsRoot
+                setInfo={this.state.setInfo}
                 items={this.state.items}
             />
         );
@@ -49,9 +51,11 @@ class MatchSetParts extends React.Component {
 }
 
 function MatchSetPartsRoot(props) {
+    var setNo = props.setInfo != null && props.setInfo.setNo;
     return (
         <div className={'panel panel-default'}>
             <div className={'panel-body'}>
+                setNo : {setNo}
                 <table className="table table-bordered">
                     <thead>
                     <tr>
@@ -72,9 +76,15 @@ function MatchSetPartsRoot(props) {
                                 <br/>
                                 {item.partInfo != null ? item.partInfo.partName : ''}
                             </td>
-                            <td>{item.qty}</td>
+                            <td>{item.qty} / {item.partQty}</td>
                             <td>
-                                <MyItemsWhere myItems={item.myItems} />
+                                {item.matched && 'matched'}
+
+                                <MyItemsWhere
+                                    setNo={setNo}
+                                    myItems={item.myItems}
+                                    matched={item.matched}
+                                />
                             </td>
                         </tr>;
                     })}
@@ -86,6 +96,9 @@ function MatchSetPartsRoot(props) {
 }
 
 function MyItemsWhere(props) {
+    if (props.matched) return '';
+
+    var setNo = props.setNo;
     return (
         <table className="table table-bordered">
             <thead>
@@ -129,7 +142,8 @@ function matchSetPartsAjax(matchId, setId) {
         async : true
     }).done(function(data) {
         matchSetPartsDOM.setState({
-            items : data
+            setInfo : data.setInfo,
+            items : data.matchItems
         });
     });
 }

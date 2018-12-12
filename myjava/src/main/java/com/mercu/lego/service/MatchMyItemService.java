@@ -1,6 +1,7 @@
 package com.mercu.lego.service;
 
 import com.mercu.bricklink.BrickLinkUrlUtils;
+import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
 import com.mercu.bricklink.service.BrickLinkColorService;
@@ -16,11 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import static java.util.stream.Collectors.toList;
+import java.util.*;
 
 @Service
 public class MatchMyItemService {
@@ -52,9 +49,13 @@ public class MatchMyItemService {
         return matchMyItemSetItemRatioRepository.findMatchSetList(matchId, new PageRequest(0, 500));
     }
 
-    public List<MatchMyItemSetItem> findMatchSetParts(String matchId, String setId) {
-//        SetInfo setInfo = brickLinkCatalogService.findSetInfo(setId);
-//        System.out.println("*** setInfo : " + setInfo);
+    public Map<String, Object> findMatchSetParts(String matchId, String setId) {
+        Map<String, Object> resultMap = new HashMap<>();
+
+        SetInfo setInfo = brickLinkCatalogService.findSetInfo(setId);
+        System.out.println("*** setInfo : " + setInfo);
+        resultMap.put("setInfo", setInfo);
+        String setNo = setInfo.getSetNo();
 
         List<SetItem> partList = brickLinkSetService.findBySetId(setId);
         System.out.println("*** partList : " + partList);
@@ -64,9 +65,12 @@ public class MatchMyItemService {
 
         partList.stream()
                 .forEach(part -> {
-                    if (!existsMatched(part, matchItems)) {
-                        matchItems.add(newMatchMyItemSetItem(part, matchId));
+                    MatchMyItemSetItem matchItem = findMatched(part, matchItems);
+                    if (Objects.isNull(matchItem)) {
+                        matchItem = newMatchMyItemSetItem(part, matchId);
+                        matchItems.add(matchItem);
                     }
+                    matchItem.setPartQty(part.getQty());
                 });
 
         matchItems.stream()
@@ -77,6 +81,8 @@ public class MatchMyItemService {
                         if (Objects.nonNull(matchItem.getItemNo())) {
                             matchItem.setPartInfo(brickLinkCatalogService.findPartByPartNo(matchItem.getItemNo()));
                             matchItem.setMyItems(findMyItemsWithSimilar(matchItem));
+                            matchItem.setMatched(hasMatchedWhere(matchItem.getMyItems(), setNo)
+                                    && matchItem.getQty() >= matchItem.getPartQty());
                         }
                         matchItem.setImgUrl(BrickLinkUrlUtils.partImageUrl(matchItem.getItemNo(), matchItem.getColorId()));
 
@@ -85,7 +91,16 @@ public class MatchMyItemService {
                     }
                 });
 
-        return matchItems;
+        resultMap.put("matchItems", matchItems);
+
+        return resultMap;
+    }
+
+    private boolean hasMatchedWhere(List<MyItem> myItems, String setNo) {
+        return myItems.stream()
+                .filter(myItem -> StringUtils.equals(myItem.getWhereMore(), setNo))
+                .findAny()
+                .isPresent();
     }
 
     private List<MyItem> findMyItemsWithSimilar(MatchMyItemSetItem matchItem) {
@@ -108,10 +123,12 @@ public class MatchMyItemService {
         return matchMyItemSetItem;
     }
 
-    private boolean existsMatched(SetItem part, List<MatchMyItemSetItem> matchItems) {
+    private MatchMyItemSetItem findMatched(SetItem part, List<MatchMyItemSetItem> matchItems) {
         return matchItems.stream()
-                .anyMatch(matchItem -> brickLinkSimilarService.compareWithSimilarPartNos(matchItem.getItemNo(), part.getItemNo())
-                        && matchItem.getColorId().equals(part.getColorId())
-                );
+                .filter(matchItem -> brickLinkSimilarService.compareWithSimilarPartNos(matchItem.getItemNo(), part.getItemNo())
+                        && matchItem.getColorId().equals(part.getColorId()))
+                .findFirst()
+                .orElse(null);
     }
+
 }
