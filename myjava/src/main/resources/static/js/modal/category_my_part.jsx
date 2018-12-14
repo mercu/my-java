@@ -1,7 +1,7 @@
-function newMyPartModal(blCategoryId, partNo, e) {
+function addMyPartInCategoryModal(blCategoryId, partNo, e) {
     if (typeof e != "undefined") e.preventDefault();
 
-    $('#myModal .modal-title').html("부품 등록하기")
+    $('#myModal .modal-title').html("카테고리 부품 등록하기")
     $('#myModal').modal('toggle');
 
     if (myPartDOM == null) {

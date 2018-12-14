@@ -45,6 +45,7 @@ class MatchSetParts extends React.Component {
             <MatchSetPartsRoot
                 setInfo={this.state.setInfo}
                 items={this.state.items}
+                matchId={this.state.matchId}
             />
         );
     }
@@ -54,6 +55,8 @@ function MatchSetPartsRoot(props) {
     var setNo = props.setInfo != null && props.setInfo.setNo;
     return (
         <div className={'panel panel-default'}>
+            <PartsFloatMenuLayer
+                matchId={props.matchId} />
             <div className={'panel-body'}>
                 setNo : {setNo}
                 <table className="table table-bordered">
@@ -76,21 +79,25 @@ function MatchSetPartsRoot(props) {
                                 <br/>
                                 {item.partInfo != null ? item.partInfo.partName : ''}
                             </td>
-                            <td>{item.qty} / {item.partQty}</td>
-                            <td>
+                            <td bgcolor={!item.matched && 'f7d117'}>{item.qty} / {item.partQty}</td>
+                            <td bgcolor={!item.matched && 'f7d117'}>
                                 {item.matched && 'matched'}
 
-                                <MyItemsWhere
-                                    setNo={setNo}
-                                    myItems={item.myItems}
-                                    matched={item.matched}
-                                />
+                                {/* 부품 단건에 대해 보유 목록 리스팅하고(유사포함), 증감 메뉴 레이어 노출하기 */}
+                                <button name={'myItemManipulate'} className={'btn btn-primary'} onClick={(e) => myPartWheresModal(item.itemNo, item.colorId, e)}>조회/증감</button>
+
+                                {/*<MyItemsWhere*/}
+                                    {/*setNo={setNo}*/}
+                                    {/*myItems={item.myItems}*/}
+                                    {/*matched={item.matched}*/}
+                                {/*/>*/}
                             </td>
                         </tr>;
                     })}
                     </tbody>
                 </table>
             </div>
+            <ScrollLayer outerId={"#candidate"} innerId={"#candidate .panel"} />
         </div>
     );
 }
@@ -146,5 +153,17 @@ function matchSetPartsAjax(matchId, setId) {
             items : data.matchItems
         });
     });
+}
+
+/**
+ * 플로팅 메뉴
+ */
+function PartsFloatMenuLayer(props) {
+    return (
+        <div className={'panel-heading'} style={{position:'fixed', margin:'20px', top:'200px'}}>
+            <button name={'goUp'} className={'btn btn-primary'} onClick={(e) => matchSetList(props.matchId, e)}>상위</button>
+        </div>
+    );
+
 }
 

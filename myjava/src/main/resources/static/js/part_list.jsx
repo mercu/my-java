@@ -100,7 +100,7 @@ function PartManageFloatMenus(props) {
     if (navigatorDOM.state.loginUserAdmin == false) return '';
     if (props.partManageEnable) {
         return <button key={'PartManageFloatMenus_1'} className={'btn btn-info'} onClick={(e) => disablePartManage(e)}>::</button>;
-        {/*<button key={'PartManageFloatMenus_2'} className={'btn btn-primary'} onClick={(e) => newMyPartModal(props.blCategoryId, null, e)}>P[+]</button>*/}
+        {/*<button key={'PartManageFloatMenus_2'} className={'btn btn-primary'} onClick={(e) => addMyPartInCategoryModal(props.blCategoryId, null, e)}>P[+]</button>*/}
     } else {
         return <button className={'btn btn-primary'} onClick={(e) => enablePartManage(e)}>::</button>;
     }
@@ -152,7 +152,7 @@ function PartInfo(props) {
             <td>
                 <a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + item.id + '#T=C'} target={'_blank'}>{item.partNo}</a>&nbsp;
                 {/*(itemId : {item.id}) (setQty : {item.setQty}) (myItemsQty : {item.myItemsQty})*/}
-                <button className={'btn btn-primary ' + (partListDOM.state.partManageEnable ? '' : ' hide')} onClick={(e) => newMyPartModal(item.categoryId, item.partNo, e)}>P[+]</button>
+                <button className={'btn btn-primary ' + (partListDOM.state.partManageEnable ? '' : ' hide')} onClick={(e) => addMyPartInCategoryModal(item.categoryId, item.partNo, e)}>P[+]</button>
                 <br/>
                 {item.partName}<br/>
                 {item.myItemGroups != null && item.myItemGroups.length > 0 ? <MyItemGroups myItemGroups={item.myItemGroups}/> : ""}

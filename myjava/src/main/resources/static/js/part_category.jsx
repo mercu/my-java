@@ -181,7 +181,7 @@ function CategoryManageFloatMenus(props) {
     if (props.categoryManageEnable) {
         return ([
             <button key={'CategoryManageFloatMenus_1'} className={'btn btn-info'} onClick={(e) => disableCategoryManage(e)}>::</button>,
-            <button key={'CategoryManageFloatMenus_2'} className={'btn btn-primary'} onClick={(e) => newMyPartModal(props.parentId, null, e)}>P[+]</button>,
+            <button key={'CategoryManageFloatMenus_2'} className={'btn btn-primary'} onClick={(e) => addMyPartInCategoryModal(props.parentId, null, e)}>P[+]</button>,
             <button key={'CategoryManageFloatMenus_3'} className={'btn btn-primary'} onClick={(e) => newPartCategoryModal(props.parentId, e)}>C[+]</button>,
             <button key={'CategoryManageFloatMenus_4'} name={'moveHere'} className={'btn btn-primary' + (props.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryHere(props.parentId, e)}>Paste</button>,
             <button key={'CategoryManageFloatMenus_5'} name={'moveHere'} className={'btn btn-danger' + (props.movePartCategoryIdFrom != null ? '' : ' hide')} onClick={(e) => movePartCategoryCancel(e)}>Cancel</button>

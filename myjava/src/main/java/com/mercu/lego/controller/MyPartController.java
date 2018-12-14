@@ -14,15 +14,22 @@ import java.util.List;
  * @author 고종봉 (jongbong.ko@navercorp.com)
  */
 @RestController
-public class MyController {
+public class MyPartController {
     @Autowired
     private BrickLinkMyService brickLinkMyService;
 
-    @RequestMapping("/admin/myParts")
+    @RequestMapping("/admin/myPartsByGroup")
     @ResponseBody
-    public String myParts() {
+    public String myPartsByGroup() {
         List<MyItemGroup> myItemGroupList = brickLinkMyService.findMyItemsGroup();
         return JsonUtils.toJson(myItemGroupList);
+    }
+
+    @RequestMapping("/admin/myPartWheresSimilar")
+    @ResponseBody
+    public String myPartWheresSimilar(@RequestParam String partNo, @RequestParam String colorId) {
+        List<MyItem> myPartWhereInfos = brickLinkMyService.findMyItemWheres(CategoryType.P.getCode(), partNo, colorId);
+        return JsonUtils.toJson(myPartWhereInfos);
     }
 
     @RequestMapping("/admin/myPartWhereInfos")

@@ -98,7 +98,7 @@ function SubItems(props) {
 
 function myPartsAjax() {
     $.ajax({
-        url:"/admin/myParts",
+        url:"/admin/myPartsByGroup",
         type : "GET",
         dataType : "json",
         data : {},
