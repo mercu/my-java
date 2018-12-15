@@ -36,6 +36,24 @@ class MatchSetList extends React.Component {
         matchSetListDOM = null;
     }
 
+    removeAllSetMyParts(setNo) {
+        if (confirm(setNo + "-WANTED 부품 목록을, 정말 삭제하시겠습니까?") == false) return;
+
+        $.ajax({
+            url:"/admin/removeAllSetMyParts",
+            type : "POST",
+            dataType : "json",
+            data : {
+                setNo : setNo
+            },
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            async : true
+        }).done(function(result) {
+            console.log(result);
+            alert(result.message);
+        }.bind(this));
+    }
+
     render() {
         return (
             <MatchSetListRoot
@@ -56,6 +74,7 @@ function MatchSetListRoot(props) {
                         <th>setNo</th>
                         <th>matched</th>
                         <th>ratio</th>
+                        <th></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -69,6 +88,9 @@ function MatchSetListRoot(props) {
                             </td>
                             <td>{item.matched} / {item.total}</td>
                             <td>{item.ratio}</td>
+                            <td>
+                                <button className={'btn btn-sm btn-danger'} onClick={(e) => removeAllSetMyParts(item.setNo, e)}>CLEAR</button>&nbsp;&nbsp;
+                            </td>
                         </tr>;
                     })}
                     </tbody>
@@ -91,5 +113,10 @@ function matchSetListAjax(matchId) {
             items : data
         });
     });
+}
+
+function removeAllSetMyParts(setNo, e) {
+    if (typeof e != "undefined") e.preventDefault();
+    matchSetListDOM.removeAllSetMyParts(setNo);
 }
 

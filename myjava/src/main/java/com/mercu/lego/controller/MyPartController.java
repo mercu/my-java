@@ -49,9 +49,17 @@ public class MyPartController {
     @RequestMapping(value = "/admin/myPartWhereIncrease", method = RequestMethod.POST)
     @ResponseBody
     public String myPartWhereIncrease(@RequestParam String partNo, @RequestParam String colorId, @RequestParam String whereCode, @RequestParam String whereMore, @RequestParam Integer val, @RequestParam(required = false) String setNo) {
-        // 부품-단건 보유 수량(양수/음수) 변경 후 갱신된 목록 리스트 반환
+        // 부품-단건 보유 수량(양수/음수) 변경 후, 갱신된 목록 리스트 반환
         List<MyItem> myPartWhereInfos = brickLinkMyService.increaseMyPartWhere(CategoryType.P.getCode(), partNo, colorId, whereCode, whereMore, val, setNo);
         return JsonUtils.toJson(myPartWhereInfos);
+    }
+
+    @RequestMapping(value = "/admin/removeAllSetMyParts", method = RequestMethod.POST)
+    @ResponseBody
+    public String removeAllSetMyParts(@RequestParam String setNo) {
+        // 해당 wanted-setNo의 부품 목록을 모두 제거
+        brickLinkMyService.removeAllSetMyPartsWhereWanted(setNo);
+        return "{\"message\":\"삭제 완료\"}";
     }
 
 }

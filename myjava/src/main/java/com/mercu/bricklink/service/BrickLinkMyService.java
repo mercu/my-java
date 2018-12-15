@@ -383,4 +383,12 @@ public class BrickLinkMyService {
         logService.log("mapMyItemToSemtRatio", "map finish - matchId : " + matchId);
     }
 
+    /**
+     * 해당 wanted-setNo의 부품 목록을 모두 제거
+     * @param setNo
+     */
+    public void removeAllSetMyPartsWhereWanted(String setNo) {
+        myItemRepository.findByWhere(WHERE_CODE_WANTED, setNo).stream()
+            .forEach(myItem -> myItemRepository.delete(myItem));
+    }
 }
