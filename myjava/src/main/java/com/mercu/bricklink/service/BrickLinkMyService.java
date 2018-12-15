@@ -116,6 +116,26 @@ public class BrickLinkMyService {
         return myItemList;
     }
 
+    /**
+     * 부품 단건에 대해 보유 목록 리스팅하고(유사포함)
+     * @param itemType
+     * @param itemNo
+     * @param colorId
+     * @return
+     */
+    public List<MyItem> findMyItemWheresSimilar(String itemType, String itemNo, String colorId) {
+        List<MyItem> myItemList = new ArrayList<>();
+
+        // 유사 아이템 목록
+        brickLinkSimilarService.findPartNos(itemNo).stream()
+                .forEach(partNo -> {
+                    myItemList.addAll(findMyItemWheres(itemType, partNo, colorId));
+                });
+
+
+        return myItemList;
+    }
+
     private List<MyItem> addWhereStorageFirst(String itemType, String itemNo, String colorId, List<MyItem> myItemList) {
         List<MyItem> newMyItemList = new ArrayList<>();
 

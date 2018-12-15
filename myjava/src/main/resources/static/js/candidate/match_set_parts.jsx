@@ -84,7 +84,7 @@ function MatchSetPartsRoot(props) {
                                 {item.matched && 'matched'}
 
                                 {/* 부품 단건에 대해 보유 목록 리스팅하고(유사포함), 증감 메뉴 레이어 노출하기 */}
-                                <button name={'myItemManipulate'} className={'btn btn-primary'} onClick={(e) => myPartWheresModal(item.itemNo, item.colorId, e)}>조회/증감</button>
+                                <button name={'myItemManipulate'} className={'btn btn-primary'} onClick={(e) => myPartWheresModal(item.itemNo, item.colorId, setNo, e)}>조회/증감</button>
 
                                 {/*<MyItemsWhere*/}
                                     {/*setNo={setNo}*/}

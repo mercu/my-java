@@ -28,7 +28,7 @@ public class MyPartController {
     @RequestMapping("/admin/myPartWheresSimilar")
     @ResponseBody
     public String myPartWheresSimilar(@RequestParam String partNo, @RequestParam String colorId) {
-        List<MyItem> myPartWhereInfos = brickLinkMyService.findMyItemWheres(CategoryType.P.getCode(), partNo, colorId);
+        List<MyItem> myPartWhereInfos = brickLinkMyService.findMyItemWheresSimilar(CategoryType.P.getCode(), partNo, colorId);
         return JsonUtils.toJson(myPartWhereInfos);
     }
 

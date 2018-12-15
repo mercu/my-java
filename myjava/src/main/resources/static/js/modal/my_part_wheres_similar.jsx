@@ -1,6 +1,8 @@
 // 부품 단건에 대해 보유 목록 리스팅하고(유사포함), 증감 메뉴 레이어 노출하기
-function myPartWheresModal(partNo, colorId, e) {
+function myPartWheresModal(partNo, colorId, setNo, e) {
     if (typeof e != "undefined") e.preventDefault();
+    console.log("setNo : " + setNo);
+    console.log(setNo);
 
     $('#myModal .modal-title').html("부품-단건 보유 목록 리스팅 및 증감")
     $('#myModal').modal('toggle');
@@ -10,15 +12,17 @@ function myPartWheresModal(partNo, colorId, e) {
             <MyPartWheresModalBody
                 partNo={partNo}
                 colorId={colorId}
+                setNo={setNo}
             />
             , document.getElementById("myModal-body")
         );
     } else {
         myPartWheresDOM.setState({
             partNo : partNo,
-            colorId : colorId
+            colorId : colorId,
+            setNo : setNo
         });
-        myPartWheresDOM.loadMyPartWheresSimilar(partType, partNo, colorId);
+        myPartWheresDOM.loadMyPartWheresSimilar(partNo, colorId);
     }
 }
 
@@ -29,8 +33,10 @@ class MyPartWheresModalBody extends React.Component {
         this.state = {
             partNo : props.partNo,
             colorId : props.colorId,
+            setNo : props.setNo,
             myItemWheres : null
         };
+        console.log(props);
     }
 
     setState(state) {
@@ -66,13 +72,34 @@ class MyPartWheresModalBody extends React.Component {
     }
 
     render() {
+        var setNo = this.state.setNo;
         return (
-            <div>
-                <form id={"partCategoryForm"}>
-                    <div className={"form-group"}>
-                        myItemWheresSimilar
-                    </div>
-                </form>
+            <div className={'panel panel-default'}>
+                <div className={'panel-body'}>
+                    partNo : {this.state.partNo}, colorId : {this.state.colorId}, setNo : {this.state.setNo}
+                    <table className="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>img</th>
+                            <th>itemNo</th>
+                            <th>where</th>
+                            <th>qty</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {this.state.myItemWheres != null && this.state.myItemWheres.map(function(whereInfo, key) {
+                            return <tr key={key}>
+                                <td></td>
+                                <td>
+                                    {whereInfo.itemNo}
+                                </td>
+                                <td bgcolor={setNo == whereInfo.whereMore && 'f7d117'}>{whereInfo.whereCode} - {whereInfo.whereMore}</td>
+                                <td>{whereInfo.qty}</td>
+                            </tr>;
+                        })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     }
