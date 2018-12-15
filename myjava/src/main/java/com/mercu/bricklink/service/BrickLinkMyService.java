@@ -1,5 +1,6 @@
 package com.mercu.bricklink.service;
 
+import com.mercu.bricklink.BrickLinkUrlUtils;
 import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.lego.model.my.MyItem;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 import static com.mercu.lego.model.my.MyItem.WHERE_CODE_STORAGE;
+import static com.mercu.lego.model.my.MyItem.WHERE_CODE_WANTED;
 import static java.util.stream.Collectors.*;
 
 @Service
@@ -99,19 +101,38 @@ public class BrickLinkMyService {
         return myItemGroup;
     }
 
+    public List<MyItem> findMyItemWheres(String itemType, String itemNo, String colorId) {
+        return findMyItemWheres(itemType, itemNo, colorId, null);
+    }
+
     /**
      * @param itemType
      * @param itemNo
      * @param colorId
+     * @param setNo nullable
      * @return
      */
-    public List<MyItem> findMyItemWheres(String itemType, String itemNo, String colorId) {
+    public List<MyItem> findMyItemWheres(String itemType, String itemNo, String colorId, String setNo) {
         List<MyItem> myItemList = myItemRepository.findList(itemType, itemNo, colorId);
 
+        // wanted 보관소(whereMore-setNo) 값 추가하기
+        if (Objects.nonNull(setNo) && containsWhere(myItemList, WHERE_CODE_WANTED, setNo) == false) {
+            myItemList = addMyItemWhereForward(itemType, itemNo, colorId, WHERE_CODE_WANTED, setNo, myItemList);
+        }
         // 기본 보관소(storage) 값 추가하기
         if (containsWhere(myItemList, WHERE_CODE_STORAGE) == false) {
-            myItemList = addWhereStorageFirst(itemType, itemNo, colorId, myItemList);
+            myItemList = addMyItemWhereForward(itemType, itemNo, colorId, WHERE_CODE_STORAGE, WHERE_CODE_STORAGE, myItemList);
         }
+
+        myItemList.stream()
+                .forEach(myItem -> {
+                    // 부품 정보
+                    myItem.setPartInfo(brickLinkCatalogService.findPartByPartNo(myItem.getItemNo()));
+                    // 색상 정보
+                    myItem.setColorInfo(brickLinkColorService.findColorById(myItem.getColorId()));
+                    // 이미지URL
+                    myItem.setImgUrl(BrickLinkUrlUtils.partImageUrl(myItem.getItemNo(), myItem.getColorId()));
+                });
 
         return myItemList;
     }
@@ -121,33 +142,33 @@ public class BrickLinkMyService {
      * @param itemType
      * @param itemNo
      * @param colorId
+     * @param setNo nullable
      * @return
      */
-    public List<MyItem> findMyItemWheresSimilar(String itemType, String itemNo, String colorId) {
+    public List<MyItem> findMyItemWheresSimilar(String itemType, String itemNo, String colorId, String setNo) {
         List<MyItem> myItemList = new ArrayList<>();
 
         // 유사 아이템 목록
         brickLinkSimilarService.findPartNos(itemNo).stream()
                 .forEach(partNo -> {
-                    myItemList.addAll(findMyItemWheres(itemType, partNo, colorId));
+                    myItemList.addAll(findMyItemWheres(itemType, partNo, colorId, setNo));
                 });
-
 
         return myItemList;
     }
 
-    private List<MyItem> addWhereStorageFirst(String itemType, String itemNo, String colorId, List<MyItem> myItemList) {
+    private List<MyItem> addMyItemWhereForward(String itemType, String itemNo, String colorId, String whereCode, String whereMore, List<MyItem> myItemList) {
         List<MyItem> newMyItemList = new ArrayList<>();
 
-        MyItem storageMyItem = new MyItem();
-        storageMyItem.setItemType(itemType);
-        storageMyItem.setItemNo(itemNo);
-        storageMyItem.setColorId(colorId);
-        storageMyItem.setWhereCode(WHERE_CODE_STORAGE);
-        storageMyItem.setWhereMore(WHERE_CODE_STORAGE);
-        storageMyItem.setQty(0);
+        MyItem newMyItem = new MyItem();
+        newMyItem.setItemType(itemType);
+        newMyItem.setItemNo(itemNo);
+        newMyItem.setColorId(colorId);
+        newMyItem.setWhereCode(whereCode);
+        newMyItem.setWhereMore(whereMore);
+        newMyItem.setQty(0);
 
-        newMyItemList.add(storageMyItem);
+        newMyItemList.add(newMyItem);
         newMyItemList.addAll(myItemList);
 
         return newMyItemList;
@@ -156,6 +177,14 @@ public class BrickLinkMyService {
     private boolean containsWhere(List<MyItem> myItemList, String whereCode) {
         for (MyItem myItem : myItemList) {
             if (StringUtils.equals(myItem.getWhereCode(), whereCode)) return true;
+        }
+        return false;
+    }
+
+    private boolean containsWhere(List<MyItem> myItemList, String whereCode, String whereMore) {
+        for (MyItem myItem : myItemList) {
+            if (StringUtils.equals(myItem.getWhereCode(), whereCode)
+                    && StringUtils.equals(myItem.getWhereMore(), whereMore)) return true;
         }
         return false;
     }
@@ -171,6 +200,33 @@ public class BrickLinkMyService {
      */
     public MyItem addMyItem(String itemType, String itemNo, String colorId, String whereCode, String whereMore, Integer qty) {
         return myItemRepository.save(new MyItem(itemType, itemNo, colorId, whereCode, whereMore, qty));
+    }
+
+    /**
+     * 부품-단건 보유 수량(양수/음수) 변경 후 갱신된 목록 리스트 반환
+     * @param itemType
+     * @param itemNo
+     * @param colorId
+     * @param whereCode
+     * @param whereMore
+     * @param val
+     * @return
+     */
+    public List<MyItem> increaseMyPartWhere(String itemType, String itemNo, String colorId, String whereCode, String whereMore, Integer val, String setNo) {
+        // 부품-단건 보유 수량(양수/음수) 변경
+        MyItem myItem = myItemRepository.findByIdWhere(itemType, itemNo, colorId, whereCode, whereMore);
+        // 값이 없을 시 초기화
+        if (Objects.isNull(myItem)) {
+            myItem = new MyItem(itemType, itemNo, colorId, whereCode, whereMore, 0);
+        }
+        // 수량 변경 - 음수인 경우엔 통과
+        if (myItem.getQty() + val >= 0) {
+            myItem.setQty(myItem.getQty() + val);
+            myItemRepository.save(myItem);
+        }
+
+        // 목록 리스트 반환
+        return findMyItemWheresSimilar(itemType, itemNo, colorId, setNo);
     }
 
     /**

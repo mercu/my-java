@@ -1,5 +1,7 @@
 package com.mercu.lego.model.my;
 
+import com.mercu.bricklink.model.info.ColorInfo;
+import com.mercu.bricklink.model.info.PartInfo;
 import lombok.*;
 
 import javax.persistence.*;
@@ -31,7 +33,11 @@ public class MyItem {
     private Integer qty;
 
     @Transient
-    private String colorImgUrl;
+    private ColorInfo colorInfo;
+    @Transient
+    private PartInfo partInfo;
+    @Transient
+    private String imgUrl;
 
     public MyItem(String itemType, String itemNo, String colorId) {
         this.itemType = itemType;

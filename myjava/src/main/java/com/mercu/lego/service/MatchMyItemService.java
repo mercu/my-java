@@ -53,15 +53,12 @@ public class MatchMyItemService {
         Map<String, Object> resultMap = new HashMap<>();
 
         SetInfo setInfo = brickLinkCatalogService.findSetInfo(setId);
-        System.out.println("*** setInfo : " + setInfo);
         resultMap.put("setInfo", setInfo);
         String setNo = setInfo.getSetNo();
 
         List<SetItem> partList = brickLinkSetService.findBySetId(setId);
-        System.out.println("*** partList : " + partList);
 
         List<MatchMyItemSetItem> matchItems = matchMyItemSetItemRepository.findMatchSetParts(matchId, setId);
-        System.out.println("*** matchItems : " + matchItems);
 
         partList.stream()
                 .forEach(part -> {

@@ -22,7 +22,7 @@ function myPartWheresModal(partNo, colorId, setNo, e) {
             colorId : colorId,
             setNo : setNo
         });
-        myPartWheresDOM.loadMyPartWheresSimilar(partNo, colorId);
+        myPartWheresDOM.loadMyPartWheresSimilar(partNo, colorId, setNo);
     }
 }
 
@@ -46,23 +46,46 @@ class MyPartWheresModalBody extends React.Component {
 
     componentDidMount() {
         myPartWheresDOM = this;
-        this.loadMyPartWheresSimilar(this.state.partNo, this.state.colorId);
+        this.loadMyPartWheresSimilar(this.state.partNo, this.state.colorId, this.state.setNo);
     }
 
     componentWillUnmount() {
         myPartWheresDOM = null;
     }
 
-    loadMyPartWheresSimilar(partNo, colorId) {
+    loadMyPartWheresSimilar(partNo, colorId, setNo) {
         $.ajax({
             url:"/admin/myPartWheresSimilar",
             type : "GET",
             dataType : "json",
             data : {
                 partNo : partNo,
-                colorId : colorId
+                colorId : colorId,
+                setNo : setNo
             },
             contentType: "application/json;charset=UTF-8",
+            async : true
+        }).done(function(data) {
+            this.setState({
+                myItemWheres : data
+            });
+        }.bind(this));
+    }
+
+    increaseMyPartWhereQty(partNo, colorId, whereCode, whereMore, val) {
+        $.ajax({
+            url:"/admin/myPartWhereIncrease",
+            type : "POST",
+            dataType : "json",
+            data : {
+                partNo : partNo,
+                colorId : colorId,
+                whereCode : whereCode,
+                whereMore : whereMore,
+                val : val,
+                setNo : this.state.setNo
+            },
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
             async : true
         }).done(function(data) {
             this.setState({
@@ -84,17 +107,24 @@ class MyPartWheresModalBody extends React.Component {
                             <th>itemNo</th>
                             <th>where</th>
                             <th>qty</th>
+                            <th>set</th>
                         </tr>
                         </thead>
                         <tbody>
                         {this.state.myItemWheres != null && this.state.myItemWheres.map(function(whereInfo, key) {
                             return <tr key={key}>
-                                <td></td>
+                                <td bgcolor={whereInfo.colorInfo != null && whereInfo.colorInfo.colorCode}>
+                                    <img src={whereInfo.imgUrl} onError={(e)=>{e.target.onerror = null; whereInfo.partInfo != null ? e.target.src=whereInfo.partInfo.img : ''}}/>
+                                </td>
                                 <td>
                                     {whereInfo.itemNo}
                                 </td>
                                 <td bgcolor={setNo == whereInfo.whereMore && 'f7d117'}>{whereInfo.whereCode} - {whereInfo.whereMore}</td>
                                 <td>{whereInfo.qty}</td>
+                                <td>
+                                    <button className={'btn btn-lg btn-primary'} onClick={(e) => increaseMyPartWhereQty(whereInfo.itemNo, whereInfo.colorId, whereInfo.whereCode, whereInfo.whereMore, e)}>+</button>&nbsp;&nbsp;
+                                    <button className={'btn btn-lg btn-primary'} onClick={(e) => decreaseMyPartWhereQty(whereInfo.itemNo, whereInfo.colorId, whereInfo.whereCode, whereInfo.whereMore, e)}> - </button>&nbsp;&nbsp;
+                                </td>
                             </tr>;
                         })}
                         </tbody>
@@ -103,6 +133,16 @@ class MyPartWheresModalBody extends React.Component {
             </div>
         );
     }
+}
+
+function increaseMyPartWhereQty(partNo, colorId, whereCode, whereMore, e) {
+    if (typeof e != "undefined") e.preventDefault();
+    myPartWheresDOM.increaseMyPartWhereQty(partNo, colorId, whereCode, whereMore, 1);
+}
+
+function decreaseMyPartWhereQty(partNo, colorId, whereCode, whereMore, e) {
+    if (typeof e != "undefined") e.preventDefault();
+    myPartWheresDOM.increaseMyPartWhereQty(partNo, colorId, whereCode, whereMore, -1);
 }
 
 
