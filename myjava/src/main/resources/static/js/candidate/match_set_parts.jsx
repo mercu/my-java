@@ -55,7 +55,7 @@ function MatchSetPartsRoot(props) {
     var setNo = props.setInfo != null && props.setInfo.setNo;
     return (
         <div className={'panel panel-default'}>
-            <PartsFloatMenuLayer
+            <MatchSetPartsFloatMenuLayer
                 matchId={props.matchId} />
             <div className={'panel-body'}>
                 setNo : {setNo}
@@ -156,7 +156,7 @@ function matchSetPartsAjax(matchId, setId) {
 /**
  * 플로팅 메뉴
  */
-function PartsFloatMenuLayer(props) {
+function MatchSetPartsFloatMenuLayer(props) {
     return (
         <div className={'panel-heading'} style={{position:'fixed', margin:'20px', top:'200px'}}>
             <button name={'goUp'} className={'btn btn-primary'} onClick={(e) => matchSetList(props.matchId, e)}>상위</button>
