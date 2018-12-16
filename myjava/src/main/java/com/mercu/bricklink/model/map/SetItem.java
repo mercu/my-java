@@ -22,12 +22,13 @@ public class SetItem {
     private String setId;
     @Id
     private String itemNo;
+    @Id
+    private String colorId = "0";
 
     private String setNo;
     private String categoryType;
     private String image;
     private Integer qty;
     private String description;
-    private String colorId;
 
 }

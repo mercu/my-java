@@ -12,5 +12,6 @@ import java.io.Serializable;
 public class SetItemId implements Serializable {
     private String setId;
     private String itemNo;
+    private String colorId;
 
 }

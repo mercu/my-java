@@ -34,7 +34,7 @@ public class BrickLinkSetTest {
     @Test
     public void crawlSetInventory() {
         brickLinkSetService.saveSetItemList(
-                brickLinkService.crawlSetInventoryBySetNo("71020"));
+                brickLinkService.crawlSetInventoryBySetNo("6243"));
     }
 
     @Test
