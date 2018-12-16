@@ -1,6 +1,7 @@
 package com.mercu.lego.service;
 
 import com.mercu.bricklink.BrickLinkUrlUtils;
+import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
@@ -18,6 +19,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class MatchMyItemService {
@@ -46,7 +49,7 @@ public class MatchMyItemService {
             matchId = findMatchIds().stream()
                     .findFirst().get();
         }
-        return matchMyItemSetItemRatioRepository.findMatchSetList(matchId, new PageRequest(0, 500));
+        return matchMyItemSetItemRatioRepository.findMatchSetList(matchId, new PageRequest(0, 1000));
     }
 
     public Map<String, Object> findMatchSetParts(String matchId, String setId) {
@@ -126,6 +129,143 @@ public class MatchMyItemService {
                         && matchItem.getColorId().equals(part.getColorId()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * 매칭 정보 갱신 (매칭 부품, 매칭율)
+     * @param partNo
+     * @param colorId
+     * @param setNo
+     * @param matchId
+     */
+    public void updateMatchSetPart(String partNo, String colorId, String setNo, String matchId) {
+        // 매칭 부품 갱신
+        updateMatchSetParts(partNo, colorId, setNo, matchId);
+
+        // 매칭율 갱신
+        updateMatchSetRatio(setNo, matchId);
+    }
+
+    /**
+     * 매칭 정보 갱신 (세트전체 - 매칭 부품, 매칭율)
+     * @param setNo
+     * @param matchId
+     */
+    public void updateMatchSet(String setNo, String matchId) {
+        // 매칭 부품 갱신
+        updateMatchSetParts(setNo, matchId);
+
+        // 매칭율 갱신
+        updateMatchSetRatio(setNo, matchId);
+    }
+
+    /**
+     * 매칭율 갱신
+     * @param setNo
+     * @param matchId
+     */
+    public void updateMatchSetRatio(String setNo, String matchId) {
+        // 세트ID
+        String setId = brickLinkCatalogService.findSetInfoBySetNo(setNo).getId();
+
+        // 매칭 부품 수
+        int matched = matchMyItemSetItemRepository.countBySetId(setId, matchId);
+
+        // 전체 부품 수
+        int total = brickLinkSetService.countItemsBySetId(setId, CategoryType.P.getCode());
+
+        MatchMyItemSetItemRatio itemRatio = new MatchMyItemSetItemRatio();
+        itemRatio.setMatchId(matchId);
+        itemRatio.setSetId(setId);
+        itemRatio.setSetNo(setNo);
+        itemRatio.setMatched(matched);
+        itemRatio.setTotal(total);
+        itemRatio.setRatio((float)matched / total);
+
+        matchMyItemSetItemRatioRepository.save(itemRatio);
+    }
+
+    /**
+     * 매칭 부품 갱신
+     * @param partNo
+     * @param colorId
+     * @param setNo
+     * @param matchId
+     */
+    public void updateMatchSetParts(String partNo, String colorId, String setNo, String matchId) {
+        // 세트ID
+        String setId = brickLinkCatalogService.findSetInfoBySetNo(setNo).getId();
+
+        // 세트 부품 정보
+        SetItem setItem = brickLinkSetService.findSetPart(setId, partNo, colorId);
+
+        // 보유 부품 목록(유사부품 포함)
+        List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
+        List<MyItem> myItems = brickLinkSimilarService.findPartNos(setItem.getItemNo()).stream()
+                .map(itemNo -> myItemService.findList(setItem.getCategoryType(), itemNo, setItem.getColorId()))
+                .flatMap(List::stream)
+                .collect(toList());
+        // 수량 조건 만족하면 matched
+        if (setItem.getQty() <= myItems.stream().mapToInt(MyItem::getQty).sum()) {
+            MatchMyItemSetItem matchMyItemSetItem = getMatchMyItemSetItem(matchId, setItem);
+
+            // 매칭 업데이트 (기존 데이터 삭제 후)
+            matchMyItemSetItemRepository.save(matchMyItemSetItem);
+        } else {
+            MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
+            matchMyItemSetItem.setItemNo(setItem.getItemNo());
+            matchMyItemSetItem.setSetId(setItem.getSetId());
+            matchMyItemSetItem.setMatchId(matchId);
+            matchMyItemSetItem.setColorId(setItem.getColorId());
+            matchMyItemSetItemRepository.delete(matchMyItemSetItem);
+        }
+
+    }
+
+    private MatchMyItemSetItem getMatchMyItemSetItem(String matchId, SetItem setItem) {
+        MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
+        matchMyItemSetItem.setItemNo(setItem.getItemNo());
+        matchMyItemSetItem.setColorId(setItem.getColorId());
+        matchMyItemSetItem.setSetId(setItem.getSetId());
+        matchMyItemSetItem.setSetNo(setItem.getSetNo());
+        matchMyItemSetItem.setQty(setItem.getQty());
+        matchMyItemSetItem.setItemType(setItem.getCategoryType());
+        matchMyItemSetItem.setMatchId(matchId);
+        return matchMyItemSetItem;
+    }
+
+    /**
+     * 매칭 부품 갱신
+     * @param setNo
+     * @param matchId
+     */
+    public void updateMatchSetParts(String setNo, String matchId) {
+        // 세트ID
+        String setId = brickLinkCatalogService.findSetInfoBySetNo(setNo).getId();
+
+        // 세트 부품 목록
+        List<SetItem> setItemList = brickLinkSetService.findBySetId(setId);
+
+        // 보유 부품 목록(유사부품 포함)
+        List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
+        setItemList.stream()
+                .forEach(setItem -> {
+                    List<MyItem> myItems = brickLinkSimilarService.findPartNos(setItem.getItemNo()).stream()
+                            .map(partNo -> myItemService.findList(setItem.getCategoryType(), partNo, setItem.getColorId()))
+                            .flatMap(List::stream)
+                            .collect(toList());
+                    // 수량 조건 만족하면 matched
+                    if (setItem.getQty() <= myItems.stream().mapToInt(MyItem::getQty).sum()) {
+                        MatchMyItemSetItem matchMyItemSetItem = getMatchMyItemSetItem(matchId, setItem);
+
+                        matchMyItemSetItemList.add(matchMyItemSetItem);
+                    }
+
+                });
+
+        // 매칭 업데이트 (기존 데이터 삭제 후)
+        matchMyItemSetItemRepository.deleteAllBySetIdMatchId(setId, matchId);
+        matchMyItemSetItemRepository.saveAll(matchMyItemSetItemList);
     }
 
 }

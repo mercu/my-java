@@ -1,8 +1,6 @@
 // 부품 단건에 대해 보유 목록 리스팅하고(유사포함), 증감 메뉴 레이어 노출하기
-function myPartWheresModal(partNo, colorId, setNo, e) {
+function myPartWheresModal(partNo, colorId, setNo, matchId, e) {
     if (typeof e != "undefined") e.preventDefault();
-    console.log("setNo : " + setNo);
-    console.log(setNo);
 
     $('#myModal .modal-title').html("부품-단건 보유 목록 리스팅 및 증감")
     $('#myModal').modal('toggle');
@@ -13,6 +11,7 @@ function myPartWheresModal(partNo, colorId, setNo, e) {
                 partNo={partNo}
                 colorId={colorId}
                 setNo={setNo}
+                matchId={matchId}
             />
             , document.getElementById("myModal-body")
         );
@@ -20,7 +19,8 @@ function myPartWheresModal(partNo, colorId, setNo, e) {
         myPartWheresDOM.setState({
             partNo : partNo,
             colorId : colorId,
-            setNo : setNo
+            setNo : setNo,
+            matchId : matchId
         });
         myPartWheresDOM.loadMyPartWheresSimilar(partNo, colorId, setNo);
     }
@@ -34,6 +34,7 @@ class MyPartWheresModalBody extends React.Component {
             partNo : props.partNo,
             colorId : props.colorId,
             setNo : props.setNo,
+            matchId : props.matchId,
             myItemWheres : null
         };
         console.log(props);
@@ -83,7 +84,8 @@ class MyPartWheresModalBody extends React.Component {
                 whereCode : whereCode,
                 whereMore : whereMore,
                 val : val,
-                setNo : this.state.setNo
+                setNo : this.state.setNo,
+                matchId : this.state.matchId
             },
             contentType: "application/x-www-form-urlencoded; charset=UTF-8",
             async : true

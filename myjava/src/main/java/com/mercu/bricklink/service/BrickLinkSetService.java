@@ -20,6 +20,17 @@ public class BrickLinkSetService {
         return setItemRepository.findBySetId(setId);
     }
 
+    /**
+     * 세트 부품 정보
+     * @param setId
+     * @param itemNo
+     * @param colorId
+     * @return
+     */
+    public SetItem findSetPart(String setId, String itemNo, String colorId) {
+        return setItemRepository.findSetPart(setId, itemNo, colorId);
+    }
+
     public void saveSetItemList(List<SetItem> setItemList) {
         setItemRepository.saveAll(setItemList);
     }
@@ -27,4 +38,15 @@ public class BrickLinkSetService {
     public boolean existsSetItem(String setId) {
         return setItemRepository.existsBySetId(setId);
     }
+
+    /**
+     * 세트 전체 부품 종류 수
+     * @param setId
+     * @param itemType
+     * @return
+     */
+    public int countItemsBySetId(String setId, String itemType) {
+        return setItemRepository.countItemsBySetId(setId, itemType);
+    }
+
 }

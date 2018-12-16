@@ -3,9 +3,12 @@ package com.mercu.lego.repository;
 import java.util.List;
 
 import com.mercu.lego.model.match.MatchMyItemSetItem;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+
+import javax.transaction.Transactional;
 
 
 public interface MatchMyItemSetItemRepository extends CrudRepository<MatchMyItemSetItem, String> {
@@ -22,4 +25,8 @@ public interface MatchMyItemSetItemRepository extends CrudRepository<MatchMyItem
     @Query("select count(1) from MatchMyItemSetItem f where f.setId = :setId and f.matchId = :matchId")
     int countBySetId(@Param("setId") String setId, @Param("matchId") String matchId);
 
+    @Transactional
+    @Modifying
+    @Query("delete from MatchMyItemSetItem f where f.setId = :setId and f.matchId = :matchId")
+    void deleteAllBySetIdMatchId(@Param("setId") String setId, @Param("matchId") String matchId);
 }

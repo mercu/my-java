@@ -4,11 +4,14 @@ import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.service.BrickLinkMyService;
 import com.mercu.lego.model.my.MyItem;
 import com.mercu.lego.model.my.MyItemGroup;
+import com.mercu.lego.service.MatchMyItemService;
 import com.mercu.utils.JsonUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author 고종봉 (jongbong.ko@navercorp.com)
@@ -17,6 +20,8 @@ import java.util.List;
 public class MyPartController {
     @Autowired
     private BrickLinkMyService brickLinkMyService;
+    @Autowired
+    private MatchMyItemService matchMyItemService;
 
     @RequestMapping("/admin/myPartsByGroup")
     @ResponseBody
@@ -48,9 +53,13 @@ public class MyPartController {
 
     @RequestMapping(value = "/admin/myPartWhereIncrease", method = RequestMethod.POST)
     @ResponseBody
-    public String myPartWhereIncrease(@RequestParam String partNo, @RequestParam String colorId, @RequestParam String whereCode, @RequestParam String whereMore, @RequestParam Integer val, @RequestParam(required = false) String setNo) {
+    public String myPartWhereIncrease(@RequestParam String partNo, @RequestParam String colorId, @RequestParam String whereCode, @RequestParam String whereMore, @RequestParam Integer val, @RequestParam(required = false) String setNo, @RequestParam(required = false) String matchId) {
         // 부품-단건 보유 수량(양수/음수) 변경 후, 갱신된 목록 리스트 반환
         List<MyItem> myPartWhereInfos = brickLinkMyService.increaseMyPartWhere(CategoryType.P.getCode(), partNo, colorId, whereCode, whereMore, val, setNo);
+        // 매칭 정보도 갱신 (매칭 부품, 매칭율)
+        if (StringUtils.isNotBlank(setNo) & StringUtils.isNotBlank(matchId)) {
+            matchMyItemService.updateMatchSetPart(partNo, colorId, setNo, matchId);
+        }
         return JsonUtils.toJson(myPartWhereInfos);
     }
 
