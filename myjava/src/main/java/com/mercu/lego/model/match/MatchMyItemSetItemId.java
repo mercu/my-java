@@ -13,5 +13,6 @@ public class MatchMyItemSetItemId implements Serializable {
     private String itemNo; // vchar(24)
     private String setId; // vchar(12)
     private String matchId; // vchar(12)
+    private String colorId; // vchar(12)
 
 }

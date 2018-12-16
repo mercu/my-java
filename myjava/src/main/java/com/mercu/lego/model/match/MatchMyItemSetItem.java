@@ -25,9 +25,10 @@ public class MatchMyItemSetItem {
     private String setId; // vchar(12)
     @Id
     private String matchId; // vchar(12)
+    @Id
+    private String colorId = "0"; // vchar(12)
 
     private String itemType; // vchar(1)
-    private String colorId; // vchar(12)
     private Integer qty; // int
     private String setNo; // vchar(64)
 
