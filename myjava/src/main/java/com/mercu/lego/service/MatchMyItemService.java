@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import static com.mercu.lego.model.my.MyItem.WHERE_CODE_WANTED;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -71,6 +72,7 @@ public class MatchMyItemService {
                         matchItems.add(matchItem);
                     }
                     matchItem.setPartQty(part.getQty());
+                    matchItem.setQty(Optional.ofNullable(myItemService.findByIdWhere(part.getCategoryType(), part.getItemNo(), part.getColorId(), setNo)).map(MyItem::getQty).orElse(0));
                 });
 
         matchItems.stream()
