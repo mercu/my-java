@@ -49,8 +49,8 @@ public class BrickLinkMyTest {
 
     @Test
     public void mapMyItemToSetAndRatio() {
-        brickLinkMyService.mapMyItemToSet("181204-3");
-        brickLinkMyService.mapMyItemToSetRatio("181204-3");
+        brickLinkMyService.mapMyItemToSet("181218-2");
+        brickLinkMyService.mapMyItemToSetRatio("181218-2");
 
     }
 

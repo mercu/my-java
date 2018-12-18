@@ -321,7 +321,7 @@ public class BrickLinkMyService {
             matchMyItemSetItem.setColorId(myItem.getColorId());
             matchMyItemSetItem.setSetId(setItem.getSetId());
             matchMyItemSetItem.setSetNo(setItem.getSetNo());
-            matchMyItemSetItem.setQty(myItem.getQty());
+            matchMyItemSetItem.setQty(Math.min(myItem.getQty(), setItem.getQty()));
             matchMyItemSetItem.setMatchId(matchId);
             matchMyItemSetItem.setItemType(CategoryType.P.getCode());
 

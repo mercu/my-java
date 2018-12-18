@@ -29,7 +29,7 @@ public class MatchMyItemSetItem {
     private String colorId = "0"; // vchar(12)
 
     private String itemType; // vchar(1)
-    private Integer qty; // int
+    private Integer qty = 0; // int
     private String setNo; // vchar(64)
 
     @Transient

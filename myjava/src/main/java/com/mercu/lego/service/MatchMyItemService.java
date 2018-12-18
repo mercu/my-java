@@ -212,7 +212,7 @@ public class MatchMyItemService {
         // 수량 1건이라도 있으면 등록, 없으면 삭제
         if (myItems.stream().mapToInt(MyItem::getQty).sum() > 0) {
             // 매칭 업데이트 (기존 데이터 삭제 후)
-            matchMyItemSetItem.setQty(Optional.ofNullable(myItemService.findByIdWhere(setItem.getCategoryType(), partNo, colorId, setNo)).orElse(new MyItem()).getQty());
+            matchMyItemSetItem.setQty(Math.min(myItems.stream().mapToInt(MyItem::getQty).sum(), setItem.getQty()));
             matchMyItemSetItemRepository.save(matchMyItemSetItem);
         } else {
             matchMyItemSetItemRepository.delete(matchMyItemSetItem);
@@ -226,7 +226,6 @@ public class MatchMyItemService {
         matchMyItemSetItem.setColorId(setItem.getColorId());
         matchMyItemSetItem.setSetId(setItem.getSetId());
         matchMyItemSetItem.setSetNo(setItem.getSetNo());
-        matchMyItemSetItem.setQty(setItem.getQty());
         matchMyItemSetItem.setItemType(setItem.getCategoryType());
         matchMyItemSetItem.setMatchId(matchId);
         return matchMyItemSetItem;
@@ -255,7 +254,7 @@ public class MatchMyItemService {
                     // 수량 1건이라도 있으면 등록
                     if (myItems.stream().mapToInt(MyItem::getQty).sum() > 0) {
                         MatchMyItemSetItem matchMyItemSetItem = getMatchMyItemSetItem(matchId, setItem);
-                        matchMyItemSetItem.setQty(Optional.ofNullable(myItemService.findByIdWhere(setItem.getCategoryType(), setItem.getItemNo(), setItem.getColorId(), setNo)).orElse(new MyItem()).getQty());
+                        matchMyItemSetItem.setQty(Math.min(myItems.stream().mapToInt(MyItem::getQty).sum(), setItem.getQty()));
 
                         matchMyItemSetItemList.add(matchMyItemSetItem);
                     }
