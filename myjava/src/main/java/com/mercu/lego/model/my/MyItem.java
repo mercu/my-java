@@ -30,7 +30,7 @@ public class MyItem {
     @Id
     private String whereMore;
 
-    private Integer qty;
+    private Integer qty = 0;
 
     @Transient
     private ColorInfo colorInfo;

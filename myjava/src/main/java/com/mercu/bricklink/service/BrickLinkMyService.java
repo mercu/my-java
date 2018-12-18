@@ -314,14 +314,14 @@ public class BrickLinkMyService {
         List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
         for (SetItem setItem : setItemList) {
             // 수량 적용
-            if (myItem.getQty() < setItem.getQty()) continue;
+            if (myItem.getQty() <= 0) continue;
 
             MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
             matchMyItemSetItem.setItemNo(itemNo);
             matchMyItemSetItem.setColorId(myItem.getColorId());
             matchMyItemSetItem.setSetId(setItem.getSetId());
             matchMyItemSetItem.setSetNo(setItem.getSetNo());
-            matchMyItemSetItem.setQty(setItem.getQty());
+            matchMyItemSetItem.setQty(myItem.getQty());
             matchMyItemSetItem.setMatchId(matchId);
             matchMyItemSetItem.setItemType(CategoryType.P.getCode());
 
@@ -360,20 +360,21 @@ public class BrickLinkMyService {
         int index = 0;
         for (MatchMyItemSetItem match : matchList) {
             index++;
-            // 매칭 부품 수
-            int matched = matchMyItemSetItemRepository.countBySetId(match.getSetId(), matchId);
+            // 매칭 부품 수량
+            int matchedQty = matchMyItemSetItemRepository.findMatchSetParts(matchId, match.getSetId()).stream()
+                .mapToInt(MatchMyItemSetItem::getQty).sum();
 
             // 전체 부품 수
-            int total = setItemRepository.countItemsBySetId(match.getSetId(), CategoryType.P.getCode());
-            System.out.println("total : " + total);
+            int totalQty = setItemRepository.findBySetId(match.getSetId()).stream()
+                .mapToInt(SetItem::getQty).sum();
 
             MatchMyItemSetItemRatio itemRatio = new MatchMyItemSetItemRatio();
             itemRatio.setMatchId(matchId);
             itemRatio.setSetId(match.getSetId());
             itemRatio.setSetNo(match.getSetNo());
-            itemRatio.setMatched(matched);
-            itemRatio.setTotal(total);
-            itemRatio.setRatio((float)matched / total);
+            itemRatio.setMatched(matchedQty);
+            itemRatio.setTotal(totalQty);
+            itemRatio.setRatio((float)matchedQty / totalQty);
 
             logService.log("mapMyItemToSemtRatio", index + "/" + matchList.size() + " - itemRatio : " + itemRatio);
             matchMyItemSetItemRatioRepository.save(itemRatio);

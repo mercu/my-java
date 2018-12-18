@@ -168,19 +168,21 @@ public class MatchMyItemService {
         // 세트ID
         String setId = brickLinkCatalogService.findSetInfoBySetNo(setNo).getId();
 
-        // 매칭 부품 수
-        int matched = matchMyItemSetItemRepository.countBySetId(setId, matchId);
+        // 매칭 부품 수량
+        int matchedQty = matchMyItemSetItemRepository.findMatchSetParts(matchId, setId).stream()
+            .mapToInt(MatchMyItemSetItem::getQty).sum();
 
-        // 전체 부품 수
-        int total = brickLinkSetService.countItemsBySetId(setId, CategoryType.P.getCode());
+        // 전체 부품 수량
+        int totalQty = brickLinkSetService.findBySetId(setId).stream()
+            .mapToInt(SetItem::getQty).sum();
 
         MatchMyItemSetItemRatio itemRatio = new MatchMyItemSetItemRatio();
         itemRatio.setMatchId(matchId);
         itemRatio.setSetId(setId);
         itemRatio.setSetNo(setNo);
-        itemRatio.setMatched(matched);
-        itemRatio.setTotal(total);
-        itemRatio.setRatio((float)matched / total);
+        itemRatio.setMatched(matchedQty);
+        itemRatio.setTotal(totalQty);
+        itemRatio.setRatio((float)matchedQty / totalQty);
 
         matchMyItemSetItemRatioRepository.save(itemRatio);
     }
@@ -200,23 +202,19 @@ public class MatchMyItemService {
         SetItem setItem = brickLinkSetService.findSetPart(setId, partNo, colorId);
 
         // 보유 부품 목록(유사부품 포함)
-        List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
         List<MyItem> myItems = brickLinkSimilarService.findPartNos(setItem.getItemNo()).stream()
                 .map(itemNo -> myItemService.findList(setItem.getCategoryType(), itemNo, setItem.getColorId()))
                 .flatMap(List::stream)
                 .collect(toList());
-        // 수량 조건 만족하면 matched
-        if (setItem.getQty() <= myItems.stream().mapToInt(MyItem::getQty).sum()) {
-            MatchMyItemSetItem matchMyItemSetItem = getMatchMyItemSetItem(matchId, setItem);
 
+        // 부품별 매칭정보
+        MatchMyItemSetItem matchMyItemSetItem = getMatchMyItemSetItem(matchId, setItem);
+        // 수량 1건이라도 있으면 등록, 없으면 삭제
+        if (myItems.stream().mapToInt(MyItem::getQty).sum() > 0) {
             // 매칭 업데이트 (기존 데이터 삭제 후)
+            matchMyItemSetItem.setQty(Optional.ofNullable(myItemService.findByIdWhere(setItem.getCategoryType(), partNo, colorId, setNo)).orElse(new MyItem()).getQty());
             matchMyItemSetItemRepository.save(matchMyItemSetItem);
         } else {
-            MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
-            matchMyItemSetItem.setItemNo(setItem.getItemNo());
-            matchMyItemSetItem.setSetId(setItem.getSetId());
-            matchMyItemSetItem.setMatchId(matchId);
-            matchMyItemSetItem.setColorId(setItem.getColorId());
             matchMyItemSetItemRepository.delete(matchMyItemSetItem);
         }
 
@@ -257,6 +255,7 @@ public class MatchMyItemService {
                     // 수량 조건 만족하면 matched
                     if (setItem.getQty() <= myItems.stream().mapToInt(MyItem::getQty).sum()) {
                         MatchMyItemSetItem matchMyItemSetItem = getMatchMyItemSetItem(matchId, setItem);
+                        matchMyItemSetItem.setQty(Optional.ofNullable(myItemService.findByIdWhere(setItem.getCategoryType(), setItem.getItemNo(), setItem.getColorId(), setNo)).orElse(new MyItem()).getQty());
 
                         matchMyItemSetItemList.add(matchMyItemSetItem);
                     }
