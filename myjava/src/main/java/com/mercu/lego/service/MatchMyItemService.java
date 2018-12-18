@@ -252,8 +252,8 @@ public class MatchMyItemService {
                             .map(partNo -> myItemService.findList(setItem.getCategoryType(), partNo, setItem.getColorId()))
                             .flatMap(List::stream)
                             .collect(toList());
-                    // 수량 조건 만족하면 matched
-                    if (setItem.getQty() <= myItems.stream().mapToInt(MyItem::getQty).sum()) {
+                    // 수량 1건이라도 있으면 등록
+                    if (myItems.stream().mapToInt(MyItem::getQty).sum() > 0) {
                         MatchMyItemSetItem matchMyItemSetItem = getMatchMyItemSetItem(matchId, setItem);
                         matchMyItemSetItem.setQty(Optional.ofNullable(myItemService.findByIdWhere(setItem.getCategoryType(), setItem.getItemNo(), setItem.getColorId(), setNo)).orElse(new MyItem()).getQty());
 
