@@ -268,4 +268,14 @@ public class MatchMyItemService {
         matchMyItemSetItemRepository.saveAll(matchMyItemSetItemList);
     }
 
+    /**
+     * 해당 setNo의 match 목록을 모두 제거
+     * @param matchId
+     * @param setId
+     */
+    public void removeMatchSetParts(String matchId, String setId) {
+        matchMyItemSetItemRepository.deleteAllBySetIdMatchId(setId, matchId);
+        matchMyItemSetItemRatioRepository.deleteAllBySetIdMatchId(setId, matchId);
+    }
+
 }

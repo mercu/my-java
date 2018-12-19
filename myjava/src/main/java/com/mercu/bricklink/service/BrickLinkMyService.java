@@ -306,10 +306,10 @@ public class BrickLinkMyService {
         logService.log("addMatchSetItemWithSimilarAll", "setItemList.size : " + setItemList.size());
 
         // 대표 itemNo
-        String itemNo = myItem.getItemNo();
-        if (itemNosWithSimilarAll.size() > 1) {
-            itemNo = brickLinkSimilarService.findRepresentPartNo(itemNo);
-        }
+//        String itemNo = myItem.getItemNo();
+//        if (itemNosWithSimilarAll.size() > 1) {
+//            itemNo = brickLinkSimilarService.findRepresentPartNo(itemNo);
+//        }
 
         List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
         for (SetItem setItem : setItemList) {
@@ -317,8 +317,8 @@ public class BrickLinkMyService {
             if (myItem.getQty() <= 0) continue;
 
             MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
-            matchMyItemSetItem.setItemNo(itemNo);
-            matchMyItemSetItem.setColorId(myItem.getColorId());
+            matchMyItemSetItem.setItemNo(setItem.getItemNo());
+            matchMyItemSetItem.setColorId(setItem.getColorId());
             matchMyItemSetItem.setSetId(setItem.getSetId());
             matchMyItemSetItem.setSetNo(setItem.getSetNo());
             matchMyItemSetItem.setQty(Math.min(myItem.getQty(), setItem.getQty()));
@@ -333,7 +333,6 @@ public class BrickLinkMyService {
 
     private Set<String> itemNosWithSimilarAll(String itemNo) {
         Set<String> itemNos = new HashSet<>();
-        itemNos.add(itemNo);
         itemNos.addAll(brickLinkSimilarService.findPartNos(itemNo));
 
         return itemNos;

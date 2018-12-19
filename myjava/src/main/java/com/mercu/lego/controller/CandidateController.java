@@ -3,10 +3,7 @@ package com.mercu.lego.controller;
 import com.mercu.lego.service.MatchMyItemService;
 import com.mercu.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author 고종봉 (jongbong.ko@navercorp.com)
@@ -32,6 +29,14 @@ public class CandidateController {
     @ResponseBody
     public String matchSetParts(@RequestParam(value = "matchId") String matchId, @RequestParam(value = "setId") String setId) {
         return JsonUtils.toJson(matchMyItemService.findMatchSetParts(matchId, setId));
+    }
+
+    @RequestMapping(value = "/admin/hideMatchSet", method = RequestMethod.POST)
+    @ResponseBody
+    public String hideMatchSet(@RequestParam String matchId, @RequestParam String setId) {
+        // 해당 setNo의 match 목록을 모두 제거
+        matchMyItemService.removeMatchSetParts(matchId, setId);
+        return "{\"message\":\"삭제 완료\"}";
     }
 
 }

@@ -51,10 +51,12 @@ public class BrickLinkSetTest {
             for (SetInfo setInfo : setInfoList) {
                 index++;
                 try {
-                    if (brickLinkSetService.existsSetItem(setInfo.getId())) {
-                        logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - exists - skipped!");
-                        continue;
-                    } else if (setInfo.getSetNo().contains("-")) {
+                    // 전체 갱신하기
+//                    if (brickLinkSetService.existsSetItem(setInfo.getId())) {
+//                        logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - exists - skipped!");
+//                        continue;
+//                    } else
+                    if (setInfo.getSetNo().contains("-")) {
                         logService.log("crawlSetInventories", "- invalid setNo : " + setInfo.getSetNo() + " - skipped!", "invalid");
                         continue;
                     }

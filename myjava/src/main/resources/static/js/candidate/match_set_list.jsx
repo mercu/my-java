@@ -37,7 +37,7 @@ class MatchSetList extends React.Component {
     }
 
     removeAllSetMyParts(setNo) {
-        if (confirm(setNo + "-WANTED 부품 목록을, 정말 삭제하시겠습니까?") == false) return;
+        if (confirm(setNo + "-WANTED My부품 목록을, 정말 삭제하시겠습니까?") == false) return;
 
         $.ajax({
             url:"/admin/removeAllSetMyParts",
@@ -51,6 +51,26 @@ class MatchSetList extends React.Component {
         }).done(function(result) {
             console.log(result);
             alert(result.message);
+        }.bind(this));
+    }
+
+    hideMatchSet(matchId, setId) {
+        if (confirm(setId + "(setId)-Match 목록을, 정말 삭제하시겠습니까?") == false) return;
+
+        $.ajax({
+            url:"/admin/hideMatchSet",
+            type : "POST",
+            dataType : "json",
+            data : {
+                matchId : matchId,
+                setId : setId
+            },
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            async : true
+        }).done(function(result) {
+            console.log(result);
+            alert(result.message);
+            matchSetListAjax(matchId);
         }.bind(this));
     }
 
@@ -81,7 +101,9 @@ function MatchSetListRoot(props) {
                     {props.items.map(function(item, key) {
                         return <tr key={key}>
                             <td>
+                                <a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + item.setId + '#T=I'} target={'_blank'}>
                                 <img src={'https://img.bricklink.com/ItemImage/ST/0/' + item.setNo + '-1.t1.png'} alt={item.setNo}/>
+                                </a>
                             </td>
                             <td>
                                 <button className={'btn btn-default btn-block'} onClick={(e) => matchSetParts(item.matchId, item.setId, e)}>{item.setNo}</button>
@@ -90,6 +112,7 @@ function MatchSetListRoot(props) {
                             <td>{item.ratio}</td>
                             <td>
                                 <button className={'btn btn-sm btn-danger'} onClick={(e) => removeAllSetMyParts(item.setNo, e)}>CLEAR</button>&nbsp;&nbsp;
+                                <button className={'btn btn-sm btn-danger'} onClick={(e) => hideMatchSet(item.matchId, item.setId, e)}>HIDE</button>&nbsp;&nbsp;
                             </td>
                         </tr>;
                     })}
@@ -118,5 +141,10 @@ function matchSetListAjax(matchId) {
 function removeAllSetMyParts(setNo, e) {
     if (typeof e != "undefined") e.preventDefault();
     matchSetListDOM.removeAllSetMyParts(setNo);
+}
+
+function hideMatchSet(matchId, setId, e) {
+    if (typeof e != "undefined") e.preventDefault();
+    matchSetListDOM.hideMatchSet(matchId, setId);
 }
 
