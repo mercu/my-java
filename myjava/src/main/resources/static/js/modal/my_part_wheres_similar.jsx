@@ -123,7 +123,7 @@ class MyPartWheresModalBody extends React.Component {
                                 <td>
                                     {whereInfo.itemNo}
                                 </td>
-                                <td bgcolor={setNo == whereInfo.whereMore && 'f7d117'}>
+                                <td bgcolor={(setNo == whereInfo.whereMore && 'f7d117') || ('storage' == whereInfo.whereCode && '2aabd2')}>
                                     {whereInfo.whereCode} - {whereInfo.whereMore}
                                     <br/>{matchMyItemSetItemRatio && (matchMyItemSetItemRatio.matched + '/' + matchMyItemSetItemRatio.total + '(' + ratio + '%)')}
                                 </td>
