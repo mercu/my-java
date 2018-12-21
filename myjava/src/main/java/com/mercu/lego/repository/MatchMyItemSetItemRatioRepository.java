@@ -23,8 +23,12 @@ public interface MatchMyItemSetItemRatioRepository extends CrudRepository<MatchM
             "order by mmsr.ratio desc, mmsr.matched desc")
     List<MatchMyItemSetItemRatio> findMatchSetList(@Param("matchId") String matchId, Pageable pageable);
 
+    @Query("select mmsr from MatchMyItemSetItemRatio mmsr where mmsr.setNo = :setNo and mmsr.matchId = (select max(mmsr2.matchId) from MatchMyItemSetItemRatio mmsr2 where mmsr2.setNo = :setNo)")
+    MatchMyItemSetItemRatio findRecentlyOneBySetNo(@Param("setNo") String setNo);
+
     @Transactional
     @Modifying
     @Query("delete from MatchMyItemSetItemRatio f where f.setId = :setId and f.matchId = :matchId")
     void deleteAllBySetIdMatchId(@Param("setId") String setId, @Param("matchId") String matchId);
+
 }

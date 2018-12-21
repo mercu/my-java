@@ -2,6 +2,7 @@ package com.mercu.lego.model.my;
 
 import com.mercu.bricklink.model.info.ColorInfo;
 import com.mercu.bricklink.model.info.PartInfo;
+import com.mercu.lego.model.match.MatchMyItemSetItemRatio;
 import lombok.*;
 
 import javax.persistence.*;
@@ -38,6 +39,8 @@ public class MyItem {
     private PartInfo partInfo;
     @Transient
     private String imgUrl;
+    @Transient
+    private MatchMyItemSetItemRatio matchMyItemSetItemRatio;
 
     public MyItem(String itemType, String itemNo, String colorId) {
         this.itemType = itemType;

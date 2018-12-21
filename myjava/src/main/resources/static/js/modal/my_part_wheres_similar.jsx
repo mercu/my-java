@@ -114,6 +114,8 @@ class MyPartWheresModalBody extends React.Component {
                         </thead>
                         <tbody>
                         {this.state.myItemWheres != null && this.state.myItemWheres.map(function(whereInfo, key) {
+                            var matchMyItemSetItemRatio = whereInfo.matchMyItemSetItemRatio;
+                            var ratio = matchMyItemSetItemRatio && Math.round(matchMyItemSetItemRatio.matched / matchMyItemSetItemRatio.total * 100);
                             return <tr key={key}>
                                 <td bgcolor={whereInfo.colorInfo != null && whereInfo.colorInfo.colorCode}>
                                     <img src={whereInfo.imgUrl} onError={(e)=>{e.target.onerror = null; whereInfo.partInfo != null ? e.target.src=whereInfo.partInfo.img : ''}}/>
@@ -121,8 +123,13 @@ class MyPartWheresModalBody extends React.Component {
                                 <td>
                                     {whereInfo.itemNo}
                                 </td>
-                                <td bgcolor={setNo == whereInfo.whereMore && 'f7d117'}>{whereInfo.whereCode} - {whereInfo.whereMore}</td>
-                                <td>{whereInfo.qty}</td>
+                                <td bgcolor={setNo == whereInfo.whereMore && 'f7d117'}>
+                                    {whereInfo.whereCode} - {whereInfo.whereMore}
+                                    <br/>{matchMyItemSetItemRatio && (matchMyItemSetItemRatio.matched + '/' + matchMyItemSetItemRatio.total + '=' + ratio + '%')}
+                                </td>
+                                <td>
+                                    {whereInfo.qty}
+                                </td>
                                 <td>
                                     <button className={'btn btn-lg btn-primary'} onClick={(e) => increaseMyPartWhereQty(whereInfo.itemNo, whereInfo.colorId, whereInfo.whereCode, whereInfo.whereMore, e)}>+</button>&nbsp;&nbsp;
                                     <button className={'btn btn-lg btn-primary'} onClick={(e) => decreaseMyPartWhereQty(whereInfo.itemNo, whereInfo.colorId, whereInfo.whereCode, whereInfo.whereMore, e)}> - </button>&nbsp;&nbsp;

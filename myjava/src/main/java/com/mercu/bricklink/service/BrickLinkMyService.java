@@ -132,6 +132,10 @@ public class BrickLinkMyService {
                     myItem.setColorInfo(brickLinkColorService.findColorById(myItem.getColorId()));
                     // 이미지URL
                     myItem.setImgUrl(BrickLinkUrlUtils.partImageUrl(myItem.getItemNo(), myItem.getColorId()));
+                    // 매칭율
+                    if (MyItem.WHERE_CODE_WANTED.equals(myItem.getWhereCode())) {
+                        myItem.setMatchMyItemSetItemRatio(matchMyItemSetItemRatioRepository.findRecentlyOneBySetNo(myItem.getWhereMore()));
+                    }
                 });
 
         return myItemList;
