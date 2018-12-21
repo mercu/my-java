@@ -103,6 +103,30 @@ public class MyCategoryService {
         }
     }
 
+    /**
+     * 최상위 카테고리를 구함 By BlCategoryId
+     * @param blCategoryId
+     * @return
+     */
+    public MyPartCategory findRootCategoryByBlCategoryId(Integer blCategoryId) {
+        MyPartCategory myPartCategory = myPartCategoryRepository.findByBlCategoryId(blCategoryId);
+
+        if (myPartCategory.getDepth() == 0) return myPartCategory;
+        return findRootCategory(myPartCategory.getParentId());
+    }
+
+    /**
+     * 최상위 카테고리를 구함 By categoryId
+     * @param categoryId
+     * @return
+     */
+    public MyPartCategory findRootCategory(Integer categoryId) {
+        MyPartCategory myPartCategory = myPartCategoryRepository.findById(categoryId).get();
+
+        if (myPartCategory.getDepth() == 0) return myPartCategory;
+        return findRootCategory(myPartCategory.getParentId());
+    }
+
     public void save(MyPartCategory myPartCategory) {
         myPartCategoryRepository.save(myPartCategory);
     }

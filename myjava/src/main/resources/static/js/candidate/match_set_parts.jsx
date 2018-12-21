@@ -46,6 +46,7 @@ class MatchSetParts extends React.Component {
                 setInfo={this.state.setInfo}
                 items={this.state.items}
                 matchId={this.state.matchId}
+                setId={this.state.setId}
             />
         );
     }
@@ -59,6 +60,7 @@ function MatchSetPartsRoot(props) {
                 matchId={props.matchId} />
             <div className={'panel-body'}>
                 setNo : {setNo}
+                <button name={'REFRESH'} className={'btn btn-info'} onClick={(e) => matchSetParts(props.matchId, props.setId, e)}>REFRESH</button>
                 <table className="table table-bordered">
                     <thead>
                     <tr>
