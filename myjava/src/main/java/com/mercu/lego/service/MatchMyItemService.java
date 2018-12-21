@@ -1,7 +1,24 @@
 package com.mercu.lego.service;
 
+import static java.util.stream.Collectors.*;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
+
 import com.mercu.bricklink.BrickLinkUrlUtils;
-import com.mercu.bricklink.model.CategoryType;
+import com.mercu.bricklink.model.info.PartInfo;
 import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
@@ -13,16 +30,8 @@ import com.mercu.lego.model.match.MatchMyItemSetItemRatio;
 import com.mercu.lego.model.my.MyItem;
 import com.mercu.lego.repository.MatchMyItemSetItemRatioRepository;
 import com.mercu.lego.repository.MatchMyItemSetItemRepository;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
 
-import java.util.*;
-
-import static com.mercu.lego.model.my.MyItem.WHERE_CODE_WANTED;
-import static java.util.stream.Collectors.toList;
-
+@Slf4j
 @Service
 public class MatchMyItemService {
     @Autowired
@@ -40,6 +49,8 @@ public class MatchMyItemService {
     private BrickLinkSimilarService brickLinkSimilarService;
     @Autowired
     private MyItemService myItemService;
+    @Autowired
+    private MyCategoryService myCategoryService;
 
     public List<String> findMatchIds() {
         return matchMyItemSetItemRatioRepository.findMatchIds();
@@ -81,10 +92,13 @@ public class MatchMyItemService {
                         if (Objects.nonNull(matchItem.getColorId()))
                             matchItem.setColorInfo(brickLinkColorService.findColorById(matchItem.getColorId()));
                         if (Objects.nonNull(matchItem.getItemNo())) {
-                            matchItem.setPartInfo(brickLinkCatalogService.findPartByPartNo(matchItem.getItemNo()));
+                            PartInfo partInfo = brickLinkCatalogService.findPartByPartNo(matchItem.getItemNo());
+                            matchItem.setPartInfo(partInfo);
                             matchItem.setMyItems(findMyItemsWithSimilar(matchItem));
                             matchItem.setMatched(hasMatchedWhere(matchItem.getMyItems(), setNo)
                                     && matchItem.getQty() >= matchItem.getPartQty());
+                            // 정렬 순서 (카테고리)
+                            matchItem.setSortOrder(myCategoryService.findRootCategoryByBlCategoryId(partInfo.getCategoryId()).getSortOrder());
                         }
                         matchItem.setImgUrl(BrickLinkUrlUtils.partImageUrl(matchItem.getItemNo(), matchItem.getColorId()));
 
@@ -93,7 +107,11 @@ public class MatchMyItemService {
                     }
                 });
 
-        resultMap.put("matchItems", matchItems);
+        // 부품 카테고리 기준으로 정렬하기
+        resultMap.put("matchItems", matchItems.stream()
+            .sorted(Comparator.comparing(MatchMyItemSetItem::getSortOrder).reversed()
+                .thenComparing(matchItem -> Optional.ofNullable(matchItem.getPartInfo()).map(PartInfo::getPartName).orElse("")))
+            .collect(toList()));
 
         return resultMap;
     }
