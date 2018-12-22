@@ -208,7 +208,7 @@ function MyPartInfo(props) {
     // {"id":"444","categoryId":8,"img":"http://img.bricklink.com/ItemImage/PT/5/3062b.t1.png","partNo":"3062b","partName":"Brick, Round 1 x 1 Open Stud","setQty":9841,"myItemsQty":0}
     return (
         <div>
-            <label>부품 - partNo : {props.partInfo.partNo}, partName : {props.partInfo.partName}</label><br/>
+            <label><a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + props.partInfo.id + '#T=C'} target={'_blank'}>부품 - partNo : {props.partInfo.partNo}, partName : {props.partInfo.partName}</a></label><br/>
             {/*<img src={props.partInfo.img}/>*/}
         </div>
     );
@@ -219,7 +219,7 @@ function ColorInfos(props) {
 
     return (
         <div>
-            <label>색상 선택</label><br/>
+            <label><a href={'https://www.bricklink.com/catalogColors.asp?sortBy=N'} target={'_blank'}>색상 선택</a></label><br/>
             {props.allColorPartImgUrls.map(function(colorPartImgUrl, key) {
                 return (
                 <a onClick={(e) => pickMyPartColor(props.partInfo.partNo, colorPartImgUrl.colorId, e)}>

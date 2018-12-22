@@ -21,8 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static com.mercu.lego.model.my.MyItem.WHERE_CODE_STORAGE;
-import static com.mercu.lego.model.my.MyItem.WHERE_CODE_WANTED;
+import static com.mercu.lego.model.my.MyItem.*;
 import static java.util.stream.Collectors.*;
 
 @Service
@@ -122,6 +121,7 @@ public class BrickLinkMyService {
         // 기본 보관소(storage) 값 추가하기
         if (containsWhere(myItemList, WHERE_CODE_STORAGE) == false) {
             myItemList = addMyItemWhereForward(itemType, itemNo, colorId, WHERE_CODE_STORAGE, WHERE_CODE_STORAGE, myItemList);
+            myItemList = addMyItemWhereForward(itemType, itemNo, colorId, WHERE_CODE_STORAGE, WHERE_CODE_TEMPORARY, myItemList);
         }
 
         myItemList.stream()

@@ -18,6 +18,7 @@ import java.util.Objects;
 @IdClass(MyItemId.class)
 public class MyItem {
     public static final String WHERE_CODE_STORAGE = "storage";
+    public static final String WHERE_CODE_TEMPORARY = "temporary";
     public static final String WHERE_CODE_WANTED = "wanted";
 
     @Id
