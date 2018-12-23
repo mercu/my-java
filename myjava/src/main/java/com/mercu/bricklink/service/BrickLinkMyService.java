@@ -119,8 +119,10 @@ public class BrickLinkMyService {
             myItemList = addMyItemWhereForward(itemType, itemNo, colorId, WHERE_CODE_WANTED, setNo, myItemList);
         }
         // 기본 보관소(storage) 값 추가하기
-        if (containsWhere(myItemList, WHERE_CODE_STORAGE) == false) {
+        if (containsWhere(myItemList, WHERE_CODE_STORAGE, WHERE_CODE_STORAGE) == false) {
             myItemList = addMyItemWhereForward(itemType, itemNo, colorId, WHERE_CODE_STORAGE, WHERE_CODE_STORAGE, myItemList);
+        }
+        if (containsWhere(myItemList, WHERE_CODE_STORAGE, WHERE_CODE_TEMPORARY) == false) {
             myItemList = addMyItemWhereForward(itemType, itemNo, colorId, WHERE_CODE_STORAGE, WHERE_CODE_TEMPORARY, myItemList);
         }
 
