@@ -29,4 +29,14 @@ public class MyItemService {
     public MyItem findByIdWhere(String itemType, String itemNo, String colorId, String setNo) {
         return myItemRepository.findByIdWhere(itemType, itemNo, colorId, WHERE_CODE_WANTED, setNo);
     }
+
+    public String whereCodeFromWhereValue(String whereValue) {
+        if (Objects.isNull(whereValue)) return null;
+        else return whereValue.split("-")[0];
+    }
+
+    public String whereMoreFromWhereValue(String whereValue) {
+        if (Objects.isNull(whereValue)) return null;
+        else return whereValue.substring(whereValue.indexOf("-") + 1);
+    }
 }

@@ -46,5 +46,7 @@ public class MatchMyItemSetItem {
     private boolean matched;
     @Transient
     private Integer sortOrder = 0;
+    @Transient
+    private Boolean filtered = true;
 
 }

@@ -2,14 +2,11 @@ package com.mercu.lego.service;
 
 import static java.util.stream.Collectors.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
+import com.mercu.bricklink.model.CategoryType;
+import com.mercu.bricklink.service.*;
+import com.mercu.utils.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -21,10 +18,6 @@ import com.mercu.bricklink.BrickLinkUrlUtils;
 import com.mercu.bricklink.model.info.PartInfo;
 import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.model.map.SetItem;
-import com.mercu.bricklink.service.BrickLinkCatalogService;
-import com.mercu.bricklink.service.BrickLinkColorService;
-import com.mercu.bricklink.service.BrickLinkSetService;
-import com.mercu.bricklink.service.BrickLinkSimilarService;
 import com.mercu.lego.model.match.MatchMyItemSetItem;
 import com.mercu.lego.model.match.MatchMyItemSetItemRatio;
 import com.mercu.lego.model.my.MyItem;
@@ -51,6 +44,8 @@ public class MatchMyItemService {
     private MyItemService myItemService;
     @Autowired
     private MyCategoryService myCategoryService;
+    @Autowired
+    private BrickLinkMyService brickLinkMyService;
 
     public List<String> findMatchIds() {
         return matchMyItemSetItemRatioRepository.findMatchIds();
@@ -64,7 +59,7 @@ public class MatchMyItemService {
         return matchMyItemSetItemRatioRepository.findMatchSetList(matchId, new PageRequest(0, 1000));
     }
 
-    public Map<String, Object> findMatchSetParts(String matchId, String setId) {
+    public Map<String, Object> findMatchSetParts(String matchId, String setId, String whereValue) {
         Map<String, Object> resultMap = new HashMap<>();
 
         SetInfo setInfo = brickLinkCatalogService.findSetInfo(setId);
@@ -75,8 +70,12 @@ public class MatchMyItemService {
 
         List<MatchMyItemSetItem> matchItems = matchMyItemSetItemRepository.findMatchSetParts(matchId, setId);
 
+        // 해당 WANTED에 모자른 부품들에 대한 Set Where 목록
+        Map<String, Integer> matchWheres = new HashMap<>();
+
         partList.stream()
                 .forEach(part -> {
+                    // 해당 WANTED에 있으면 match
                     MatchMyItemSetItem matchItem = findMatched(part, matchItems);
                     if (Objects.isNull(matchItem)) {
                         matchItem = newMatchMyItemSetItem(part, matchId);
@@ -84,6 +83,28 @@ public class MatchMyItemService {
                     }
                     matchItem.setPartQty(part.getQty());
                     matchItem.setQty(Optional.ofNullable(myItemService.findByIdWhere(part.getCategoryType(), part.getItemNo(), part.getColorId(), setNo)).map(MyItem::getQty).orElse(0));
+                    // 필터링 여부 (숨김)
+                    final boolean[] filtered = {true};
+                    if (StringUtils.isNotBlank(whereValue)) {
+                        filtered[0] = false;
+                    }
+                    // 해당 WANTED match qty가 모자르면 나머지 STORAGE, WANTED에서 찾기
+                    if (matchItem.getQty() < matchItem.getPartQty()) {
+                        brickLinkMyService.findMyItemWheresSimilar(part.getCategoryType(), part.getItemNo(), part.getColorId(), null).stream()
+                                .filter(myItem -> myItem.getQty() > 0)
+                                .collect(toList()).stream()
+                                .map(myItem -> myItem.getWhereCode() + "-" + myItem.getWhereMore())
+                                .collect(toSet()).stream()
+                                .forEach(matchWhere -> {
+                                    MapUtils.increase(matchWheres, matchWhere);
+                                    // 필터링 여부 (노출)
+                                    if (StringUtils.equals(matchWhere, whereValue)) {
+                                        filtered[0] = true;
+                                    }
+                                });
+                    }
+                    // 필터링 여부 (숨김)
+                    matchItem.setFiltered(filtered[0]);
                 });
 
         matchItems.stream()
@@ -109,9 +130,15 @@ public class MatchMyItemService {
 
         // 부품 카테고리 기준으로 정렬하기
         resultMap.put("matchItems", matchItems.stream()
-            .sorted(Comparator.comparing(MatchMyItemSetItem::getSortOrder).reversed()
-                .thenComparing(matchItem -> Optional.ofNullable(matchItem.getPartInfo()).map(PartInfo::getPartName).orElse("")))
-            .collect(toList()));
+                .filter(MatchMyItemSetItem::getFiltered)
+                .sorted(Comparator.comparing(MatchMyItemSetItem::getSortOrder).reversed()
+                        .thenComparing(matchItem -> Optional.ofNullable(matchItem.getPartInfo()).map(PartInfo::getPartName).orElse("")))
+                .collect(toList()));
+
+        // 해당 WANTED에 모자른 부품들에 대한 Set Where 목록
+        resultMap.put("matchWheres", matchWheres.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(toList()));
 
         return resultMap;
     }

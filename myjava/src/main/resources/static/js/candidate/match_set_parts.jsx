@@ -23,7 +23,8 @@ class MatchSetParts extends React.Component {
             matchId : props.matchId,
             setId : props.setId,
             setInfo : null,
-            items : []
+            items : [],
+            matchWheres : []
         };
     }
 
@@ -47,6 +48,7 @@ class MatchSetParts extends React.Component {
                 items={this.state.items}
                 matchId={this.state.matchId}
                 setId={this.state.setId}
+                matchWheres={this.state.matchWheres}
             />
         );
     }
@@ -61,6 +63,12 @@ function MatchSetPartsRoot(props) {
             <div className={'panel-body'}>
                 setNo : {setNo}
                 <button name={'REFRESH'} className={'btn btn-info'} onClick={(e) => matchSetParts(props.matchId, props.setId, e)}>REFRESH</button>
+                <select name={'whereSelect'} className={'form-control'} style={{width:'auto', display:'inline'}} onChange={(e) => filterByWhere(props.matchId, props.setId, e.target.value, e)}>
+                    <option value=''>--- ALL ---</option>
+                    {props.matchWheres.map(function(item, key) {
+                        return <option key={key} value={item.key}>{item.key}</option>;
+                    })}
+                </select>
                 <table className="table table-bordered">
                     <thead>
                     <tr>
@@ -136,21 +144,23 @@ function MyItemsWhere(props) {
     );
 }
 
-function matchSetPartsAjax(matchId, setId) {
+function matchSetPartsAjax(matchId, setId, whereValue) {
     $.ajax({
         url:"/admin/matchSetParts",
         type : "GET",
         dataType : "json",
         data : {
             matchId : matchId,
-            setId : setId
+            setId : setId,
+            whereValue : whereValue
         },
         contentType: "application/json;charset=UTF-8",
         async : true
     }).done(function(data) {
         matchSetPartsDOM.setState({
             setInfo : data.setInfo,
-            items : data.matchItems
+            items : data.matchItems,
+            matchWheres : data.matchWheres
         });
     });
 }
@@ -165,5 +175,12 @@ function MatchSetPartsFloatMenuLayer(props) {
         </div>
     );
 
+}
+
+function filterByWhere(matchId, setId, whereValue, e) {
+    if (typeof e != "undefined") e.preventDefault();
+
+    console.log(whereValue);
+    matchSetPartsAjax(matchId, setId, whereValue);
 }
 
