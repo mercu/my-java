@@ -95,9 +95,9 @@ public class BrickLinkCatalogCrawlTest {
     @Test
     public void crawlSetInfoListOfYear() {
         logService.log("crawlSetInfoListOfYear", "=== start");
-        for (int year = 2018; year >= 1953; year--) {
+        for (int year = 2015; year >= 2000; year--) {
             logService.log("crawlSetInfoListOfYear", "year : " + year);
-            List<SetInfo> setInfoList = brickLinkCatalogCrawler.crawlSetInfoListOfYear(String.valueOf(year));
+            List<SetInfo> setInfoList = brickLinkCatalogCrawler.crawlSetInfoListOfYear(year);
             brickLinkCatalogService.saveSetInfoList(setInfoList);
         }
         logService.log("crawlSetInfoListOfYear", "=== finish");

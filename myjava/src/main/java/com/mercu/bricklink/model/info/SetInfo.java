@@ -28,6 +28,7 @@ public class SetInfo implements AbstractInfo, Serializable {
     private String blSetNo;
     private String setName;
     private String setBrief;
+    private Integer year;
 
     @Override
     public String getItemType() {

@@ -24,6 +24,9 @@ public interface SetItemRepository extends CrudRepository<SetItem, String> {
     @Query("select s from SetItem s where s.itemNo = :itemNo and s.colorId = :colorId")
     List<SetItem> findByItemAndColor(@Param("itemNo") String itemNo, @Param("colorId") String colorId);
 
+    @Query("select s from SetItem s join SetInfo si on si.id = s.setId and si.year = :year where s.itemNo = :itemNo and s.colorId = :colorId")
+    List<SetItem> findByItemAndColorByYear(@Param("itemNo") String itemNo, @Param("colorId") String colorId, @Param("year") Integer year);
+
     @Query("select s from SetItem s where s.setId = :setId and s.itemNo = :itemNo and s.colorId = :colorId")
     SetItem findSetPart(@Param("setId") String setId, @Param("itemNo") String itemNo, @Param("colorId") String colorId);
 

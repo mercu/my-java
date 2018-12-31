@@ -271,52 +271,81 @@ public class BrickLinkMyService {
      * @param matchId
      */
     public void mapMyItemToSet(String matchId) {
-        logService.log("mapMyItemToSet", "map start - matchId : " + matchId);
-        // myItemList 조회하기
-        List<MyItem> myItemList = ((List<MyItem>)myItemRepository.findAll()).stream()
-                .collect(
-                        groupingBy(myItem -> new MyItem(myItem.getItemType(), myItem.getItemNo(), myItem.getColorId()),
-                                summingInt(MyItem::getQty))
-                ).entrySet().stream()
-                .map(entry -> {
-                    MyItem myItem = new MyItem(entry.getKey().getItemType(), entry.getKey().getItemNo(), entry.getKey().getColorId());
-                    myItem.setQty(entry.getValue());
-                    return myItem;
-                }).collect(toList());
-        logService.log("mapMyItemToSet", "myItemList.size : " + myItemList.size());
+        mapMyItemToSetByYear(matchId, null);
+    }
 
+    /**
+     *
+     * @param matchId
+     * @param year
+     */
+    public void mapMyItemToSetByYear(String matchId, Integer year) {
+        logService.log("mapMyItemToSet", "map start - matchId : " + matchId + ", year : " + year);
+
+        // myItemList 조회하기 (aggregated)
+        List<MyItem> myItemList = getMyItemsAggregated();
+        logService.log("mapMyItemToSet", "myItemList.size : " + myItemList.size() + ", year : " + year);
+
+        // MyItem 별 matching SetItem 구하기
         int index = 0;
         for (MyItem myItem : myItemList) {
             index++;
-            logService.log("mapMyItemToSet", index + "/" + myItemList.size() + ", myItem : " + myItem);
-            boolean existsMapItem = matchMyItemSetItemRepository.existsMapItem(matchId, myItem.getItemNo(), myItem.getColorId());
-            if (existsMapItem) {
+            logService.log("mapMyItemToSet", index + "/" + myItemList.size() + ", myItem : " + myItem + ", year : " + year);
+
+            // 이미 수행한 경우 skip
+            if (matchMyItemSetItemRepository.existsMapItem(matchId, myItem.getItemNo(), myItem.getColorId())) {
                 logService.log("mapMyItemToSet", "alread exists! - skipped");
                 continue;
             }
 
             // find set
             // TODO color 범위 확대하기
-            addMatchSetItemWithSimilarAll(matchId, myItem);
+            addMatchSetItemWithSimilarAllByYear(matchId, myItem, year);
         }
-        logService.log("mapMyItemToSet", "map finish - matchId : " + matchId);
+
+        logService.log("mapMyItemToSet", "map finish - matchId : " + matchId + ", year : " + year);
     }
 
+    // myItemList 조회하기 (aggregated)
+    private List<MyItem> getMyItemsAggregated() {
+        return ((List<MyItem>)myItemRepository.findAll()).stream()
+                .collect(
+                    groupingBy(myItem -> new MyItem(myItem.getItemType(), myItem.getItemNo(), myItem.getColorId()),
+                        summingInt(MyItem::getQty))
+                ).entrySet().stream()
+                .map(entry -> {
+                    MyItem myItem = new MyItem(entry.getKey().getItemType(), entry.getKey().getItemNo(), entry.getKey().getColorId());
+                    myItem.setQty(entry.getValue());
+                    return myItem;
+                }).collect(toList());
+    }
+
+    // find set
     private void addMatchSetItemWithSimilarAll(String matchId, MyItem myItem) {
+        addMatchSetItemWithSimilarAllByYear(matchId, myItem, null);
+    }
+
+    // find set
+    private void addMatchSetItemWithSimilarAllByYear(String matchId, MyItem myItem, Integer year) {
         // 유사 item 반영하기
         Set<String> itemNosWithSimilarAll = itemNosWithSimilarAll(myItem.getItemNo());
-        List<SetItem> setItemList = itemNosWithSimilarAll.stream()
-                .map(itemNo -> setItemRepository.findByItemAndColor(itemNo, myItem.getColorId()))
-                .flatMap(List::stream)
-                .collect(toList());
-        logService.log("addMatchSetItemWithSimilarAll", "setItemList.size : " + setItemList.size());
+
+        // SetItem 목록
+        List<SetItem> setItemList = (Objects.isNull(year)) ? getSetItems(myItem, itemNosWithSimilarAll) : getSetItemsByYear(myItem, itemNosWithSimilarAll, year);
+        logService.log("addMatchSetItemWithSimilarAllByYear", "year : " + year + ", setItemList.size : " + setItemList.size());
 
         // 대표 itemNo
-//        String itemNo = myItem.getItemNo();
-//        if (itemNosWithSimilarAll.size() > 1) {
-//            itemNo = brickLinkSimilarService.findRepresentPartNo(itemNo);
-//        }
+        //        String itemNo = myItem.getItemNo();
+        //        if (itemNosWithSimilarAll.size() > 1) {
+        //            itemNo = brickLinkSimilarService.findRepresentPartNo(itemNo);
+        //        }
 
+        // MatchMyItemSetItem
+        List<MatchMyItemSetItem> matchMyItemSetItemList = matchMyItemSetItems(matchId, myItem, setItemList);
+        matchMyItemSetItemRepository.saveAll(matchMyItemSetItemList);
+    }
+
+    private List<MatchMyItemSetItem> matchMyItemSetItems(String matchId, MyItem myItem, List<SetItem> setItemList) {
         List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
         for (SetItem setItem : setItemList) {
             // 수량 적용
@@ -333,8 +362,21 @@ public class BrickLinkMyService {
 
             matchMyItemSetItemList.add(matchMyItemSetItem);
         }
+        return matchMyItemSetItemList;
+    }
 
-        matchMyItemSetItemRepository.saveAll(matchMyItemSetItemList);
+    private List<SetItem> getSetItems(MyItem myItem, Set<String> itemNosWithSimilarAll) {
+        return itemNosWithSimilarAll.stream()
+                .map(itemNo -> setItemRepository.findByItemAndColor(itemNo, myItem.getColorId()))
+                .flatMap(List::stream)
+                .collect(toList());
+    }
+
+    private List<SetItem> getSetItemsByYear(MyItem myItem, Set<String> itemNosWithSimilarAll, Integer year) {
+        return itemNosWithSimilarAll.stream()
+            .map(itemNo -> setItemRepository.findByItemAndColorByYear(itemNo, myItem.getColorId(), year))
+            .flatMap(List::stream)
+            .collect(toList());
     }
 
     private Set<String> itemNosWithSimilarAll(String itemNo) {
@@ -350,18 +392,18 @@ public class BrickLinkMyService {
      */
     public void mapMyItemToSetRatio(String matchId) {
         logService.log("mapMyItemToSemtRatio", "map start - matchId : " + matchId);
+
         // 대상 setIdList
-        List<MatchMyItemSetItem> matchList = matchMyItemSetItemRepository.distinctSetIdNoAll(matchId)
-            .stream()
-            .map(objectArr -> {
-                MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
-                matchMyItemSetItem.setSetId((String)objectArr[0]);
-                matchMyItemSetItem.setSetNo((String)objectArr[1]);
-                return matchMyItemSetItem;
-            }).collect(toList());
+        List<MatchMyItemSetItem> matchList = matchedMyItemSetItems(matchId);
         logService.log("mapMyItemToSemtRatio", "setIdList.size : " + matchList.size());
 
         // 비율 구하기
+        matchedMyItemSetRatio(matchId, matchList);
+
+        logService.log("mapMyItemToSemtRatio", "map finish - matchId : " + matchId);
+    }
+
+    private void matchedMyItemSetRatio(String matchId, List<MatchMyItemSetItem> matchList) {
         int index = 0;
         for (MatchMyItemSetItem match : matchList) {
             index++;
@@ -385,8 +427,17 @@ public class BrickLinkMyService {
             matchMyItemSetItemRatioRepository.save(itemRatio);
 
         }
+    }
 
-        logService.log("mapMyItemToSemtRatio", "map finish - matchId : " + matchId);
+    private List<MatchMyItemSetItem> matchedMyItemSetItems(String matchId) {
+        return matchMyItemSetItemRepository.distinctSetIdNoAll(matchId)
+                .stream()
+                .map(objectArr -> {
+                    MatchMyItemSetItem matchMyItemSetItem = new MatchMyItemSetItem();
+                    matchMyItemSetItem.setSetId((String)objectArr[0]);
+                    matchMyItemSetItem.setSetNo((String)objectArr[1]);
+                    return matchMyItemSetItem;
+                }).collect(toList());
     }
 
     /**
@@ -397,4 +448,5 @@ public class BrickLinkMyService {
         myItemRepository.findByWhere(WHERE_CODE_WANTED, setNo).stream()
             .forEach(myItem -> myItemRepository.delete(myItem));
     }
+
 }

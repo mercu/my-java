@@ -43,6 +43,11 @@ public class BrickLinkMyTest {
     }
 
     @Test
+    public void mapMyItemToSetByYear() {
+        brickLinkMyService.mapMyItemToSetByYear("181231-1", 2015);
+    }
+
+    @Test
     public void mapMyItemToSetRatio() {
         brickLinkMyService.mapMyItemToSetRatio("181204-1");
     }
@@ -51,7 +56,14 @@ public class BrickLinkMyTest {
     public void mapMyItemToSetAndRatio() {
         brickLinkMyService.mapMyItemToSet("181218-2");
         brickLinkMyService.mapMyItemToSetRatio("181218-2");
+    }
 
+    @Test
+    public void mapMyItemToSetAndRatioByYear() {
+        for (int year = 2015; year >= 2010; year--) {
+            brickLinkMyService.mapMyItemToSetByYear("181231-1", year);
+        }
+        brickLinkMyService.mapMyItemToSetRatio("181231-1");
     }
 
 

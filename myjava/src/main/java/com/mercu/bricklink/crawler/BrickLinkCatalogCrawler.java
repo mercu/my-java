@@ -89,10 +89,13 @@ public class BrickLinkCatalogCrawler {
     /**
      * https://www.bricklink.com/catalogList.asp?catType=S&itemYear=2018
      */
-    public List<SetInfo> crawlSetInfoListOfYear(String year) {
+    public List<SetInfo> crawlSetInfoListOfYear(Integer year) {
         String setListUrl = "https://www.bricklink.com/catalogList.asp?catType=S&itemYear=" + year;
         return crawlInfoListByUrl(setListUrl, CategoryType.S).stream()
-                .map(info -> (SetInfo)info)
+                .map(info -> {
+                    ((SetInfo)info).setYear(year);
+                    return (SetInfo)info;
+                })
                 .collect(toList());
     }
 
