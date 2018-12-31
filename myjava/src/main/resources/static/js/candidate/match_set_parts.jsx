@@ -62,7 +62,7 @@ function MatchSetPartsRoot(props) {
                 matchId={props.matchId} />
             <div className={'panel-body'}>
                 setNo : {setNo}
-                <button name={'REFRESH'} className={'btn btn-info'} onClick={(e) => matchSetParts(props.matchId, props.setId, e)}>REFRESH</button>
+                <button name={'REFRESH'} className={'btn btn-info'} onClick={(e) => filterByWhere(props.matchId, props.setId, null, e)}>REFRESH</button>
                 <select name={'whereSelect'} className={'form-control'} style={{width:'auto', display:'inline'}} onChange={(e) => filterByWhere(props.matchId, props.setId, e.target.value, e)}>
                     <option value=''>--- ALL ---</option>
                     {props.matchWheres.map(function(item, key) {
@@ -179,8 +179,11 @@ function MatchSetPartsFloatMenuLayer(props) {
 
 function filterByWhere(matchId, setId, whereValue, e) {
     if (typeof e != "undefined") e.preventDefault();
-
     console.log(whereValue);
+    if (whereValue == null) {
+        whereValue = $("[name=whereSelect]").val();
+    }
+
     matchSetPartsAjax(matchId, setId, whereValue);
 }
 
