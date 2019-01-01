@@ -208,6 +208,13 @@ public class BrickLinkCatalogService {
         return getSetIdNoCacheMap().get(setId);
     }
 
+    public String setIdBySetNoCached(String setNo) {
+        return getSetIdNoCacheMap().entrySet().stream()
+                .filter(entry -> StringUtils.equals(entry.getValue(), setNo))
+                .findFirst()
+                .get().getKey();
+    }
+
     public Map<String, String> getSetIdNoCacheMap() {
         if (CollectionUtils.isEmpty(setIdNoCacheMap)) {
             setInfoRepository.findAll()
@@ -215,4 +222,5 @@ public class BrickLinkCatalogService {
         }
         return setIdNoCacheMap;
     }
+
 }

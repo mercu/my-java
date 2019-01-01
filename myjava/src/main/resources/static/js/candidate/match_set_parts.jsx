@@ -22,6 +22,7 @@ class MatchSetParts extends React.Component {
         this.state = {
             matchId : props.matchId,
             setId : props.setId,
+            setNo : null,
             setInfo : null,
             items : [],
             matchWheres : []
@@ -61,14 +62,14 @@ function MatchSetPartsRoot(props) {
             <MatchSetPartsFloatMenuLayer
                 matchId={props.matchId} />
             <div className={'panel-body'}>
-                setNo : {setNo}
-                <button name={'REFRESH'} className={'btn btn-info'} onClick={(e) => filterByWhere(props.matchId, props.setId, null, e)}>REFRESH</button>
+                setNo : <input id={'setNo'} type={'text'} value={matchSetPartsDOM !=null && matchSetPartsDOM.state.setNo} onChange={(e) => changeSetNo(e)} />&nbsp;&nbsp;
+                <button name={'REFRESH'} className={'btn btn-info'} onClick={(e) => reloadBySetNo(e)}>REFRESH</button>&nbsp;&nbsp;
                 <select name={'whereSelect'} className={'form-control'} style={{width:'auto', display:'inline'}} onChange={(e) => filterByWhere(props.matchId, props.setId, e.target.value, e)}>
                     <option value=''>--- ALL ---</option>
                     {props.matchWheres != undefined && props.matchWheres.map(function(item, key) {
                         return <option key={key} value={item.key}>{item.key}</option>;
                     })}
-                </select>
+                </select>&nbsp;&nbsp;
                 <button name={'RECOMMEND'} className={'btn btn-info'} onClick={(e) => recommendWhere(props.matchId, props.setId, e)}>RECOMMEND</button>
                 <table className="table table-bordered">
                     <thead>
@@ -154,6 +155,7 @@ function matchSetPartsAjax(matchId, setId, whereValue) {
     }).done(function(data) {
         matchSetPartsDOM.setState({
             setInfo : data.setInfo,
+            setNo : data.setInfo.setNo,
             items : data.matchItems,
             matchWheres : data.matchWheres
         });
@@ -188,6 +190,29 @@ function MatchSetPartsFloatMenuLayer(props) {
             <button name={'goUp'} className={'btn btn-primary'} onClick={(e) => matchSetList(props.matchId, e)}>상위</button>
         </div>
     );
+
+}
+
+function changeSetNo(e) {
+    if (typeof e != "undefined") e.preventDefault();
+    matchSetPartsDOM.setState({setNo : $("#setNo").val()});
+}
+
+function reloadBySetNo(e) {
+    if (typeof e != "undefined") e.preventDefault();
+
+    $.ajax({
+        url:"/setIdBySetNo",
+        type : "GET",
+        dataType : "json",
+        data : {
+            setNo : matchSetPartsDOM.state.setNo
+        },
+        contentType: "application/json;charset=UTF-8",
+        async : true
+    }).done(function(setId) {
+        matchSetPartsAjax(matchSetPartsDOM.state.matchId, setId);
+    });
 
 }
 
