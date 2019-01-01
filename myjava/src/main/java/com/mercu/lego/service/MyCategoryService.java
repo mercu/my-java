@@ -9,6 +9,7 @@ import com.mercu.utils.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,16 +23,28 @@ public class MyCategoryService {
     @Autowired
     private MyPartCategoryRepository myPartCategoryRepository;
 
-    public List<MyPartCategory> findPartCategoriesAll() {
-        return (List<MyPartCategory>)myPartCategoryRepository.findAll();
+    private List<MyPartCategory> categoriesCache;
+    // 카테고리 정보가 변경되면 modified = true로 설정하기
+    private boolean modified = false;
+
+    private List<MyPartCategory> getCategoriesCache() {
+        if (CollectionUtils.isEmpty(categoriesCache) || modified) {
+            categoriesCache = (List<MyPartCategory>)myPartCategoryRepository.findAll();
+        }
+        return categoriesCache;
+    }
+
+    public List<MyPartCategory> findPartCategoriesAllCached() {
+        return getCategoriesCache();
     }
 
     /**
      * @param depth
      * @return
      */
-    public List<MyPartCategory> findPartCategoriesByDepth(Integer depth) {
-        return myPartCategoryRepository.findByDepth(depth).stream()
+    public List<MyPartCategory> findPartCategoriesByDepthCached(Integer depth) {
+        return getCategoriesCache().stream()
+                .filter(myPartCategory -> myPartCategory.getDepth().equals(depth))
                 .map(myPartCategory -> propagateChildRepresentImageUrls(myPartCategory))
                 .collect(toList());
     }
@@ -39,7 +52,7 @@ public class MyCategoryService {
     private MyPartCategory propagateChildRepresentImageUrls(MyPartCategory myPartCategory) {
         if (StringUtils.isBlank(myPartCategory.getRepImgs())) {
             myPartCategory.setRepImgs(JsonUtils.toJson(
-                    findPartCategoriesByParentId(myPartCategory.getId()).stream()
+                    findPartCategoriesByParentIdCached(myPartCategory.getId()).stream()
                             .map(childPartCategory -> firstRepresentImageUrl(childPartCategory))
                             .filter(imgUrl -> Objects.nonNull(imgUrl))
                             .collect(toList())
@@ -48,9 +61,16 @@ public class MyCategoryService {
         return myPartCategory;
     }
 
-    public List<MyPartCategory> findPartCategoriesByParentId(Integer parentCategoryId) {
-        List<MyPartCategory> partCategories = myPartCategoryRepository.findByParentCategoryId(parentCategoryId);
-        partCategories = partCategories.stream()
+    /**
+     * parentCategoryId 로 child 카테고리 목록을 조회
+     * - 대표 이미지 경로 정보도 추가
+     * @param parentCategoryId
+     * @return
+     */
+    public List<MyPartCategory> findPartCategoriesByParentIdCached(Integer parentCategoryId) {
+        List<MyPartCategory> partCategories = getCategoriesCache().stream()
+                .filter(myPartCategory -> NumberUtils.equals(myPartCategory.getParentId(), parentCategoryId))
+                .collect(toList()).stream()
                 .map(myPartCategory -> {
                     if (Objects.nonNull(myPartCategory.getBlCategoryId())) {
 
@@ -67,9 +87,11 @@ public class MyCategoryService {
      * @param id
      * @return
      */
-    public MyPartCategory findById(Integer id) {
-        MyPartCategory myPartCategory = myPartCategoryRepository.findById(id).orElse(null);
-        return myPartCategory;
+    public MyPartCategory findByIdCached(Integer id) {
+        return getCategoriesCache().stream()
+                .filter(myPartCategory -> NumberUtils.equals(myPartCategory.getId(), id))
+                .findFirst()
+                .orElse(null);
     }
 
     private String repImg(MyPartCategory myPartCategory) {
@@ -87,8 +109,11 @@ public class MyCategoryService {
      * @param blCategoryId
      * @return
      */
-    public MyPartCategory findByBlCategoryId(Integer blCategoryId) {
-        return myPartCategoryRepository.findByBlCategoryId(blCategoryId);
+    public MyPartCategory findByBlCategoryIdCached(Integer blCategoryId) {
+        return getCategoriesCache().stream()
+                .filter(myPartCategory -> NumberUtils.equals(myPartCategory.getBlCategoryId(), blCategoryId))
+                .findFirst()
+                .orElse(null);
     }
 
     private String firstRepresentImageUrl(MyPartCategory childPartCategory) {
@@ -108,11 +133,11 @@ public class MyCategoryService {
      * @param blCategoryId
      * @return
      */
-    public MyPartCategory findRootCategoryByBlCategoryId(Integer blCategoryId) {
-        MyPartCategory myPartCategory = myPartCategoryRepository.findByBlCategoryId(blCategoryId);
+    public MyPartCategory findRootCategoryByBlCategoryIdCached(Integer blCategoryId) {
+        MyPartCategory myPartCategory = findByBlCategoryIdCached(blCategoryId);
 
         if (myPartCategory.getDepth() == 0) return myPartCategory;
-        return findRootCategory(myPartCategory.getParentId());
+        return findRootCategoryCached(myPartCategory.getParentId());
     }
 
     /**
@@ -120,15 +145,17 @@ public class MyCategoryService {
      * @param categoryId
      * @return
      */
-    public MyPartCategory findRootCategory(Integer categoryId) {
-        MyPartCategory myPartCategory = myPartCategoryRepository.findById(categoryId).get();
+    public MyPartCategory findRootCategoryCached(Integer categoryId) {
+        MyPartCategory myPartCategory = findByIdCached(categoryId);
 
         if (myPartCategory.getDepth() == 0) return myPartCategory;
-        return findRootCategory(myPartCategory.getParentId());
+        return findRootCategoryCached(myPartCategory.getParentId());
     }
 
     public void save(MyPartCategory myPartCategory) {
         myPartCategoryRepository.save(myPartCategory);
+        // 카테고리 정보가 변경되면 modified = true로 설정하기
+        modified = true;
     }
 
     public void newPartCatergory(String name, Integer parentId) {
@@ -138,12 +165,12 @@ public class MyCategoryService {
         myPartCategory.setType(CategoryType.P.getCode());
         myPartCategory.setDepth(parentId == 0 ? 0 : myPartCategoryRepository.findById(parentId).get().getDepth() + 1);
 
-        myPartCategoryRepository.save(myPartCategory);
+        save(myPartCategory);
     }
 
     public void movePartCatergory(Integer categoryIdFrom, Integer parentIdTo) {
         // BL 카테고리 하위로는 옮길 수 없다!
-        if (isBlCategory(parentIdTo)) {
+        if (isBlCategoryCached(parentIdTo)) {
             throw new RuntimeException("BL 카테고리 하위로는 옮길 수 없습니다!");
         }
 
@@ -153,27 +180,27 @@ public class MyCategoryService {
         targetPartCategory.setParentId(parentIdTo);
         targetPartCategory.setDepth(parentIdTo == 0 ? 0 : myPartCategoryRepository.findById(parentIdTo).get().getDepth() + 1);
 
-        myPartCategoryRepository.save(targetPartCategory);
+        save(targetPartCategory);
 
         // 부품 수 재계산 (parts, setQty)
         sumChildParts(parentIdFrom);
         sumChildParts(parentIdTo);
     }
 
-    private boolean isBlCategory(Integer categoryId) {
-        MyPartCategory myPartCategory = myPartCategoryRepository.findById(categoryId).get();
+    private boolean isBlCategoryCached(Integer categoryId) {
+        MyPartCategory myPartCategory = findByIdCached(categoryId);
         return Objects.nonNull(myPartCategory.getBlCategoryId()) && myPartCategory.getBlCategoryId() > 0;
     }
 
     public void sumChildParts(Integer categoryId) {
         if (categoryId == 0) return;
-        if (isBlCategory(categoryId)) {
+        if (isBlCategoryCached(categoryId)) {
             throw new RuntimeException("BL 카테고리는 재계산 할 수 없습니다!");
         }
 
-        List<MyPartCategory> childCategories = myPartCategoryRepository.findByParentCategoryId(categoryId);
+        List<MyPartCategory> childCategories = findPartCategoriesByParentIdCached(categoryId);
 
-        MyPartCategory myPartCategory = myPartCategoryRepository.findById(categoryId).get();
+        MyPartCategory myPartCategory = findByIdCached(categoryId);
         myPartCategory.setParts(childCategories.stream()
                 .filter(childCategory -> Objects.nonNull(childCategory.getParts()))
                 .mapToInt(childCategory -> childCategory.getParts())
@@ -183,7 +210,7 @@ public class MyCategoryService {
                 .mapToInt(childCategory -> childCategory.getSetQty())
                 .sum());
 
-        myPartCategoryRepository.save(myPartCategory);
+        save(myPartCategory);
     }
 
 }

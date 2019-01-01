@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +20,16 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 public class BrickLinkColorService {
-    Logger logger = LoggerFactory.getLogger(BrickLinkColorService.class);
-
     @Autowired
     private BrickLinkCatalogService brickLinkCatalogService;
 
     @Autowired
     private ColorInfoRepository colorInfoRepository;
 
-    private List<ColorInfo> allColors;
+    private List<ColorInfo> allColorsCache;
 
-    public ColorInfo findColor(String desc) {
-        for (ColorInfo colorInfo : allColors()) {
+    public ColorInfo findColorCached(String desc) {
+        for (ColorInfo colorInfo : allColorsCache()) {
             if (desc.startsWith(colorInfo.getName())) {
                 return colorInfo;
             }
@@ -38,15 +37,18 @@ public class BrickLinkColorService {
         return null;
     }
 
-    public ColorInfo findColorById(String colorId) {
-        return colorInfoRepository.findById(colorId).orElse(null);
+    public ColorInfo findColorByIdCached(String colorId) {
+        return allColorsCache().stream()
+                .filter(colorInfo -> StringUtils.equals(colorId, colorInfo.getId()))
+                .findFirst()
+                .orElse(null);
     }
 
-    public List<ColorInfo> allColors() {
-        if (Objects.isNull(allColors)) {
-            allColors = (List<ColorInfo>)colorInfoRepository.findAll();
+    public List<ColorInfo> allColorsCache() {
+        if (Objects.isNull(allColorsCache)) {
+            allColorsCache = (List<ColorInfo>)colorInfoRepository.findAll();
         }
-        return allColors;
+        return allColorsCache;
     }
 
     public List<ColorPartImageUrl> findAllColorPartImgUrlsByPartNo(String partNo) {
@@ -57,7 +59,7 @@ public class BrickLinkColorService {
         return colorIds.stream()
                 .map(colorId -> new ColorPartImageUrl(colorId,
                         UrlUtils.replaceLastPath(partImgUrl, colorId),
-                        colorInfoRepository.findById(colorId).get().getName()))
+                        findColorByIdCached(colorId).getName()))
                 .collect(toList());
     }
 

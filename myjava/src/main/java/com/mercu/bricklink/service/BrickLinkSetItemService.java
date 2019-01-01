@@ -10,13 +10,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class BrickLinkSetService {
-    Logger logger = LoggerFactory.getLogger(BrickLinkSetService.class);
-
+public class BrickLinkSetItemService {
     @Autowired
     private SetItemRepository setItemRepository;
 
-    public List<SetItem> findBySetId(String setId) {
+    public List<SetItem> findItemsAllBySetId(String setId) {
         return setItemRepository.findBySetId(setId);
     }
 

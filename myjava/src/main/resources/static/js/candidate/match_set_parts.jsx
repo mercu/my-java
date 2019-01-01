@@ -92,7 +92,7 @@ function MatchSetPartsRoot(props) {
                             <td bgcolor={!item.matched && 'f7d117'}>{item.qty} / {item.partQty}</td>
                             <td bgcolor={!item.matched && 'f7d117'}>
                                 {/* 부품 단건에 대해 보유 목록 리스팅하고(유사포함), 증감 메뉴 레이어 노출하기 */}
-                                <button name={'myItemManipulate'} className={'btn btn-primary'} onClick={(e) => myPartWheresModal(item.itemNo, item.colorId, setNo, props.matchId, e)}>조회/증감</button>
+                                <button name={'myItemManipulate'} className={'btn btn-primary'} onClick={(e) => myPartWheresModal(item.itemNo, item.colorId, setNo, props.matchId, item.partQty, e)}>조회/증감</button>
 
                                 {/*<MyItemsWhere*/}
                                     {/*setNo={setNo}*/}

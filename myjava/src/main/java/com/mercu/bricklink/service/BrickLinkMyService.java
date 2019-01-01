@@ -2,6 +2,7 @@ package com.mercu.bricklink.service;
 
 import com.mercu.bricklink.BrickLinkUrlUtils;
 import com.mercu.bricklink.model.CategoryType;
+import com.mercu.bricklink.model.info.PartInfo;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.lego.model.my.MyItem;
 import com.mercu.lego.model.my.MyItemGroup;
@@ -91,7 +92,7 @@ public class BrickLinkMyService {
                 .mapToInt(MyItem::getQty)
                 .sum());
         myItemGroup.setMyItems(myItemList);
-        myItemGroup.setColorCode(brickLinkColorService.findColorById(firstItem.getColorId()).getColorCode());
+        myItemGroup.setColorCode(brickLinkColorService.findColorByIdCached(firstItem.getColorId()).getColorCode());
         myItemGroup.setRepImgOriginal(brickLinkCatalogService.findPartByPartNo(firstItem.getItemNo()).getImg());
         myItemGroup.setRepImg(
                 UrlUtils.replaceLastPath(
@@ -112,7 +113,7 @@ public class BrickLinkMyService {
      * @return
      */
     public List<MyItem> findMyItemWheres(String itemType, String itemNo, String colorId, String setNo) {
-        List<MyItem> myItemList = myItemRepository.findList(itemType, itemNo, colorId);
+        List<MyItem> myItemList = myItemRepository.findList(itemNo, colorId);
 
         // wanted 보관소(whereMore-setNo) 값 추가하기
         if (Objects.nonNull(setNo) && containsWhere(myItemList, WHERE_CODE_WANTED, setNo) == false) {
@@ -131,7 +132,7 @@ public class BrickLinkMyService {
                     // 부품 정보
                     myItem.setPartInfo(brickLinkCatalogService.findPartByPartNo(myItem.getItemNo()));
                     // 색상 정보
-                    myItem.setColorInfo(brickLinkColorService.findColorById(myItem.getColorId()));
+                    myItem.setColorInfo(brickLinkColorService.findColorByIdCached(myItem.getColorId()));
                     // 이미지URL
                     myItem.setImgUrl(BrickLinkUrlUtils.partImageUrl(myItem.getItemNo(), myItem.getColorId()));
                     // 매칭율
@@ -155,12 +156,19 @@ public class BrickLinkMyService {
         List<MyItem> myItemList = new ArrayList<>();
 
         // 유사 아이템 목록
-        brickLinkSimilarService.findPartNos(itemNo).stream()
+        brickLinkSimilarService.findPartNosCached(itemNo).stream()
                 .forEach(partNo -> {
                     myItemList.addAll(findMyItemWheres(itemType, partNo, colorId, setNo));
                 });
 
-        return myItemList;
+        // 정렬
+        return myItemList.stream()
+                .sorted(Comparator.comparing(myItem -> ((MyItem)myItem).getWhereCode().equals(WHERE_CODE_WANTED) && ((MyItem)myItem).getWhereMore().equals(setNo))
+                        .thenComparing(myItem -> ((MyItem)myItem).getWhereCode().equals(WHERE_CODE_WANTED) && ((MyItem)myItem).getWhereMore().equals(setNo))
+                        .thenComparing(myItem -> ((MyItem)myItem).getWhereCode().equals(WHERE_CODE_STORAGE))
+                        .thenComparing(myItem -> ((MyItem)myItem).getQty()).reversed()
+                        .thenComparing(myItem -> ((MyItem)myItem).getItemNo())
+                ).collect(toList());
     }
 
     private List<MyItem> addMyItemWhereForward(String itemType, String itemNo, String colorId, String whereCode, String whereMore, List<MyItem> myItemList) {
@@ -220,7 +228,7 @@ public class BrickLinkMyService {
      */
     public List<MyItem> increaseMyPartWhere(String itemType, String itemNo, String colorId, String whereCode, String whereMore, Integer val, String setNo) {
         // 부품-단건 보유 수량(양수/음수) 변경
-        MyItem myItem = myItemRepository.findByIdWhere(itemType, itemNo, colorId, whereCode, whereMore);
+        MyItem myItem = myItemRepository.findByIdWhere(itemNo, colorId, whereCode, whereMore);
         // 값이 없을 시 초기화
         if (Objects.isNull(myItem)) {
             myItem = new MyItem(itemType, itemNo, colorId, whereCode, whereMore, 0);
@@ -250,7 +258,7 @@ public class BrickLinkMyService {
             index++;
             logService.log("addMyListBySetNo", "add item : " + setItem, index + "/" + setItemList.size());
 
-            MyItem myItem = myItemRepository.findById(CategoryType.P.getCode(), setItem.getItemNo(), setItem.getColorId(), whereCode);
+            MyItem myItem = myItemRepository.findById(setItem.getItemNo(), setItem.getColorId(), whereCode);
             if (Objects.nonNull(myItem)) {
                 myItem.setQty(myItem.getQty() + setItem.getQty());
             } else {
@@ -381,7 +389,7 @@ public class BrickLinkMyService {
 
     private Set<String> itemNosWithSimilarAll(String itemNo) {
         Set<String> itemNos = new HashSet<>();
-        itemNos.addAll(brickLinkSimilarService.findPartNos(itemNo));
+        itemNos.addAll(brickLinkSimilarService.findPartNosCached(itemNo));
 
         return itemNos;
     }

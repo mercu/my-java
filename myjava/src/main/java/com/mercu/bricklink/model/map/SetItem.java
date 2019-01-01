@@ -31,4 +31,8 @@ public class SetItem {
     private Integer qty;
     private String description;
 
+    public SetItemId id() {
+        return new SetItemId(this);
+    }
+
 }

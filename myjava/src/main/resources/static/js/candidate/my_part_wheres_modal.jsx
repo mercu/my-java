@@ -1,5 +1,5 @@
 // 부품 단건에 대해 보유 목록 리스팅하고(유사포함), 증감 메뉴 레이어 노출하기
-function myPartWheresModal(partNo, colorId, setNo, matchId, e) {
+function myPartWheresModal(partNo, colorId, setNo, matchId, partQty, e) {
     if (typeof e != "undefined") e.preventDefault();
 
     $('#myModal .modal-title').html("부품-단건 보유 목록 리스팅 및 증감")
@@ -12,6 +12,7 @@ function myPartWheresModal(partNo, colorId, setNo, matchId, e) {
                 colorId={colorId}
                 setNo={setNo}
                 matchId={matchId}
+                partQty={partQty}
             />
             , document.getElementById("myModal-body")
         );
@@ -20,7 +21,8 @@ function myPartWheresModal(partNo, colorId, setNo, matchId, e) {
             partNo : partNo,
             colorId : colorId,
             setNo : setNo,
-            matchId : matchId
+            matchId : matchId,
+            partQty : partQty
         });
         myPartWheresDOM.loadMyPartWheresSimilar(partNo, colorId, setNo);
     }
@@ -35,6 +37,7 @@ class MyPartWheresModalBody extends React.Component {
             colorId : props.colorId,
             setNo : props.setNo,
             matchId : props.matchId,
+            partQty : props.partQty,
             myItemWheres : null
         };
         console.log(props);
@@ -101,7 +104,7 @@ class MyPartWheresModalBody extends React.Component {
         return (
             <div className={'panel panel-default'}>
                 <div className={'panel-body'}>
-                    partNo : {this.state.partNo}, colorId : {this.state.colorId}, setNo : {this.state.setNo}
+                    partNo : {this.state.partNo}, colorId : {this.state.colorId}, setNo : {this.state.setNo}, partQty : {this.state.partQty}
                     <table className="table table-bordered">
                         <thead>
                         <tr>

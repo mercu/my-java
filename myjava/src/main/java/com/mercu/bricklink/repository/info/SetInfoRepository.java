@@ -6,6 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface SetInfoRepository extends CrudRepository<SetInfo, String> {
 
@@ -17,4 +18,5 @@ public interface SetInfoRepository extends CrudRepository<SetInfo, String> {
 
     @Query("select s from SetInfo s where s.blSetNo = :blSetNo")
     SetInfo findByBlSetNo(@Param("blSetNo") String blSetNo);
+
 }
