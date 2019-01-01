@@ -2,7 +2,6 @@ package com.mercu.bricklink.service;
 
 import com.mercu.bricklink.BrickLinkUrlUtils;
 import com.mercu.bricklink.model.CategoryType;
-import com.mercu.bricklink.model.info.PartInfo;
 import com.mercu.bricklink.model.map.SetItem;
 import com.mercu.lego.model.my.MyItem;
 import com.mercu.lego.model.my.MyItemGroup;
@@ -101,8 +100,8 @@ public class BrickLinkMyService {
         return myItemGroup;
     }
 
-    public List<MyItem> findMyItemWheres(String itemType, String itemNo, String colorId) {
-        return findMyItemWheres(itemType, itemNo, colorId, null);
+    public List<MyItem> findMyItemWheresWithInfos(String itemType, String itemNo, String colorId) {
+        return findMyItemWheresWithInfos(itemType, itemNo, colorId, null);
     }
 
     /**
@@ -112,8 +111,8 @@ public class BrickLinkMyService {
      * @param setNo nullable
      * @return
      */
-    public List<MyItem> findMyItemWheres(String itemType, String itemNo, String colorId, String setNo) {
-        List<MyItem> myItemList = myItemRepository.findList(itemNo, colorId);
+    public List<MyItem> findMyItemWheresWithInfos(String itemType, String itemNo, String colorId, String setNo) {
+        List<MyItem> myItemList = findMyItems(itemNo, colorId);
 
         // wanted 보관소(whereMore-setNo) 값 추가하기
         if (Objects.nonNull(setNo) && containsWhere(myItemList, WHERE_CODE_WANTED, setNo) == false) {
@@ -158,7 +157,7 @@ public class BrickLinkMyService {
         // 유사 아이템 목록
         brickLinkSimilarService.findPartNosCached(itemNo).stream()
                 .forEach(partNo -> {
-                    myItemList.addAll(findMyItemWheres(itemType, partNo, colorId, setNo));
+                    myItemList.addAll(findMyItemWheresWithInfos(itemType, partNo, colorId, setNo));
                 });
 
         // 정렬

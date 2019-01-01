@@ -33,6 +33,12 @@ public class CandidateController {
         return JsonUtils.toJson(matchMyItemService.findMatchSetParts(matchId, setId, whereValue));
     }
 
+    @RequestMapping("/admin/recommendPartsWhere")
+    @ResponseBody
+    public String recommendPartsWhere(@RequestParam(value = "matchId") String matchId, @RequestParam(value = "setId") String setId) {
+        return JsonUtils.toJson(matchMyItemService.recommendPartsWhere(matchId, setId));
+    }
+
     @RequestMapping(value = "/admin/hideMatchSet", method = RequestMethod.POST)
     @ResponseBody
     public String hideMatchSet(@RequestParam String matchId, @RequestParam String setId) {

@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author 고종봉 (jongbong.ko@navercorp.com)
@@ -40,7 +39,7 @@ public class MyPartController {
     @RequestMapping("/admin/myPartWhereInfos")
     @ResponseBody
     public String myPartWhereInfos(@RequestParam String partNo, @RequestParam String colorId) {
-        List<MyItem> myPartWhereInfos = brickLinkMyService.findMyItemWheres(CategoryType.P.getCode(), partNo, colorId);
+        List<MyItem> myPartWhereInfos = brickLinkMyService.findMyItemWheresWithInfos(CategoryType.P.getCode(), partNo, colorId);
         return JsonUtils.toJson(myPartWhereInfos);
     }
 

@@ -65,10 +65,11 @@ function MatchSetPartsRoot(props) {
                 <button name={'REFRESH'} className={'btn btn-info'} onClick={(e) => filterByWhere(props.matchId, props.setId, null, e)}>REFRESH</button>
                 <select name={'whereSelect'} className={'form-control'} style={{width:'auto', display:'inline'}} onChange={(e) => filterByWhere(props.matchId, props.setId, e.target.value, e)}>
                     <option value=''>--- ALL ---</option>
-                    {props.matchWheres.map(function(item, key) {
+                    {props.matchWheres != undefined && props.matchWheres.map(function(item, key) {
                         return <option key={key} value={item.key}>{item.key}</option>;
                     })}
                 </select>
+                <button name={'RECOMMEND'} className={'btn btn-info'} onClick={(e) => recommendWhere(props.matchId, props.setId, e)}>RECOMMEND</button>
                 <table className="table table-bordered">
                     <thead>
                     <tr>
@@ -76,6 +77,7 @@ function MatchSetPartsRoot(props) {
                         <th>itemNo<br/>partName</th>
                         <th>qty</th>
                         <th>where</th>
+                        <th>rcmd</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -93,12 +95,13 @@ function MatchSetPartsRoot(props) {
                             <td bgcolor={!item.matched && 'f7d117'}>
                                 {/* 부품 단건에 대해 보유 목록 리스팅하고(유사포함), 증감 메뉴 레이어 노출하기 */}
                                 <button name={'myItemManipulate'} className={'btn btn-primary'} onClick={(e) => myPartWheresModal(item.itemNo, item.colorId, setNo, props.matchId, item.partQty, e)}>조회/증감</button>
-
-                                {/*<MyItemsWhere*/}
-                                    {/*setNo={setNo}*/}
-                                    {/*myItems={item.myItems}*/}
-                                    {/*matched={item.matched}*/}
-                                {/*/>*/}
+                            </td>
+                            <td>
+                                <MyItemsWhere
+                                    setNo={setNo}
+                                    myItems={item.myItems}
+                                    matched={item.matched}
+                                />
                             </td>
                         </tr>;
                     })}
@@ -116,26 +119,18 @@ function MyItemsWhere(props) {
     var setNo = props.setNo;
     return (
         <table className="table table-bordered">
-            <thead>
-            <tr>
-                <th>where</th>
-                <th>qty</th>
-                <th></th>
-                <th></th>
-            </tr>
-            </thead>
+            {/*<thead>*/}
+            {/*<tr>*/}
+                {/*<th>where</th>*/}
+                {/*<th>qty</th>*/}
+            {/*</tr>*/}
+            {/*</thead>*/}
             <tbody>
             {props.myItems.map(function(item, key) {
                 return <tr key={key}>
                     <td>{item.whereCode}-{item.whereMore}</td>
                     <td>
                         {item.qty}
-                    </td>
-                    <td>
-                        <button className={'btn btn-block btn-info'} >+</button>
-                    </td>
-                    <td>
-                        <button className={'btn btn-block btn-info'} >-</button>
                     </td>
                 </tr>;
             })}
@@ -165,6 +160,25 @@ function matchSetPartsAjax(matchId, setId, whereValue) {
     });
 }
 
+function recommendWhereAjax(matchId, setId) {
+    $.ajax({
+        url:"/admin/recommendPartsWhere",
+        type : "GET",
+        dataType : "json",
+        data : {
+            matchId : matchId,
+            setId : setId
+        },
+        contentType: "application/json;charset=UTF-8",
+        async : true
+    }).done(function(data) {
+        matchSetPartsDOM.setState({
+            items : data.matchItems,
+            matchWheres : data.matchWheres
+        });
+    });
+}
+
 /**
  * 플로팅 메뉴
  */
@@ -179,11 +193,16 @@ function MatchSetPartsFloatMenuLayer(props) {
 
 function filterByWhere(matchId, setId, whereValue, e) {
     if (typeof e != "undefined") e.preventDefault();
-    console.log(whereValue);
     if (whereValue == null) {
         whereValue = $("[name=whereSelect]").val();
     }
 
     matchSetPartsAjax(matchId, setId, whereValue);
+}
+
+function recommendWhere(matchId, setId, e) {
+    if (typeof e != "undefined") e.preventDefault();
+
+    recommendWhereAjax(matchId, setId);
 }
 
