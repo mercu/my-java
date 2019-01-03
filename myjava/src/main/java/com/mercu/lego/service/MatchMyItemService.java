@@ -153,6 +153,7 @@ public class MatchMyItemService {
 
         // 수량 정렬
         Map<String, List<MyItem>> myItemsMap = myItemList.stream()
+                .filter(myItem -> myItem.getQty() > 0)
                 .collect(Collectors.groupingBy(myItem -> myItem.getWhereCode() + "-" + myItem.getWhereMore()
                         , toList())).entrySet().stream()
                 .sorted(Comparator.comparing(entry -> ((List<MyItem>)((Map.Entry)entry).getValue()).stream()
