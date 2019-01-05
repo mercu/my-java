@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.mercu.bricklink.model.similar.SimilarPart;
 import com.mercu.bricklink.service.*;
 import com.mercu.utils.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +41,9 @@ public class MatchMyItemService {
     @Autowired
     private BrickLinkColorService brickLinkColorService;
     @Autowired
-    private BrickLinkSimilarService brickLinkSimilarService;
+    private SimilarPartService similarPartService;
+    @Autowired
+    private SimilarColorService similarColorService;
     @Autowired
     private MyItemService myItemService;
     @Autowired
@@ -145,10 +146,9 @@ public class MatchMyItemService {
         matchItems.stream()
                 .forEach(matchItem -> {
                     // 보유 아이템 목록 전체 - 유사 아이템 반영
-                    brickLinkSimilarService.findPartNosCached(matchItem.getItemNo()).stream()
-                            .forEach(partNo -> {
-                                myItemList.addAll(brickLinkMyService.findMyItems(matchItem.getItemNo(), matchItem.getColorId()));
-                            });
+                    similarColorService.findColorIdsCached(matchItem.getColorId()).stream()
+                            .forEach(similarColorId -> similarPartService.findPartNosCached(matchItem.getItemNo()).stream()
+                                        .forEach(partNo -> myItemList.addAll(brickLinkMyService.findMyItems(partNo, similarColorId))));
                 });
 
         // 수량 정렬
@@ -323,8 +323,9 @@ public class MatchMyItemService {
     // 유사 아이템 추가
     private List<MyItem> findMyItemsWithSimilar(MatchMyItemSetItem matchItem) {
         List<MyItem> myItems = new ArrayList<>();
-        brickLinkSimilarService.findPartNosCached(matchItem.getItemNo()).stream()
-                .forEach(partNo -> myItems.addAll(myItemService.findList(partNo, matchItem.getColorId())));
+        similarColorService.findColorIdsCached(matchItem.getColorId()).stream()
+                .forEach(similarColorId -> similarPartService.findPartNosCached(matchItem.getItemNo()).stream()
+                            .forEach(partNo -> myItems.addAll(myItemService.findList(partNo, similarColorId))));
         return myItems;
     }
 
@@ -344,8 +345,8 @@ public class MatchMyItemService {
     // 매칭(유사) 보유 아이템 찾기 (없으면 null)
     private MatchMyItemSetItem findMatchedWithSimilar(SetItem part, List<MatchMyItemSetItem> matchItems) {
         return matchItems.stream()
-                .filter(matchItem -> StringUtils.equals(matchItem.getColorId(), part.getColorId())
-                        && brickLinkSimilarService.compareWithSimilarPartNos(matchItem.getItemNo(), part.getItemNo()))
+                .filter(matchItem -> similarColorService.compareWithSimilarColorIds(matchItem.getColorId(), part.getColorId())
+                        && similarPartService.compareWithSimilarPartNos(matchItem.getItemNo(), part.getItemNo()))
                 .findFirst()
                 .orElse(null);
     }
@@ -421,8 +422,11 @@ public class MatchMyItemService {
         SetItem setItem = brickLinkSetItemService.findSetPart(setId, partNo, colorId);
 
         // 보유 부품 목록(유사부품 포함)
-        List<MyItem> myItems = brickLinkSimilarService.findPartNosCached(setItem.getItemNo()).stream()
-                .map(itemNo -> myItemService.findList(itemNo, setItem.getColorId()))
+        List<MyItem> myItems = similarColorService.findColorIdsCached(setItem.getColorId()).stream()
+                .map(similarColorId -> similarPartService.findPartNosCached(setItem.getItemNo()).stream()
+                        .map(itemNo -> myItemService.findList(itemNo, similarColorId))
+                        .flatMap(List::stream)
+                        .collect(toList()))
                 .flatMap(List::stream)
                 .collect(toList());
 
@@ -466,8 +470,11 @@ public class MatchMyItemService {
         List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
         setItemList.stream()
                 .forEach(setItem -> {
-                    List<MyItem> myItems = brickLinkSimilarService.findPartNosCached(setItem.getItemNo()).stream()
-                            .map(partNo -> myItemService.findList(partNo, setItem.getColorId()))
+                    List<MyItem> myItems = similarColorService.findColorIdsCached(setItem.getColorId()).stream()
+                            .map(similarColorId -> similarPartService.findPartNosCached(setItem.getItemNo()).stream()
+                                    .map(partNo -> myItemService.findList(partNo, setItem.getColorId()))
+                                    .flatMap(List::stream)
+                                    .collect(toList()))
                             .flatMap(List::stream)
                             .collect(toList());
                     // 수량 1건이라도 있으면 등록

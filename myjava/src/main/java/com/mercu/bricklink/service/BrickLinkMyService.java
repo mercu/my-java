@@ -11,6 +11,7 @@ import com.mercu.lego.model.match.MatchMyItemSetItem;
 import com.mercu.lego.model.match.MatchMyItemSetItemRatio;
 import com.mercu.lego.repository.MatchMyItemSetItemRatioRepository;
 import com.mercu.lego.repository.MatchMyItemSetItemRepository;
+import com.mercu.lego.service.SimilarColorService;
 import com.mercu.log.LogService;
 import com.mercu.utils.UrlUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +29,9 @@ import static java.util.stream.Collectors.*;
 public class BrickLinkMyService {
 
     @Autowired
-    private BrickLinkSimilarService brickLinkSimilarService;
+    private SimilarPartService similarPartService;
+    @Autowired
+    private SimilarColorService similarColorService;
     @Autowired
     private BrickLinkCatalogService brickLinkCatalogService;
     @Autowired
@@ -155,10 +158,9 @@ public class BrickLinkMyService {
         List<MyItem> myItemList = new ArrayList<>();
 
         // 유사 아이템 목록
-        brickLinkSimilarService.findPartNosCached(itemNo).stream()
-                .forEach(partNo -> {
-                    myItemList.addAll(findMyItemWheresWithInfos(itemType, partNo, colorId, setNo));
-                });
+        similarColorService.findColorIdsCached(colorId).stream()
+                .forEach(similarColorId -> similarPartService.findPartNosCached(itemNo).stream()
+                            .forEach(partNo -> myItemList.addAll(findMyItemWheresWithInfos(itemType, partNo, similarColorId, setNo))));
 
         // 정렬
         return myItemList.stream()
@@ -388,7 +390,7 @@ public class BrickLinkMyService {
 
     private Set<String> itemNosWithSimilarAll(String itemNo) {
         Set<String> itemNos = new HashSet<>();
-        itemNos.addAll(brickLinkSimilarService.findPartNosCached(itemNo));
+        itemNos.addAll(similarPartService.findPartNosCached(itemNo));
 
         return itemNos;
     }

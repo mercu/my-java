@@ -109,7 +109,7 @@ class MyPartWheresModalBody extends React.Component {
                         <thead>
                         <tr>
                             <th>img</th>
-                            <th>itemNo</th>
+                            <th>itemNo<br/>color</th>
                             <th>where</th>
                             <th>qty</th>
                             <th>set</th>
@@ -124,7 +124,8 @@ class MyPartWheresModalBody extends React.Component {
                                     <img src={whereInfo.imgUrl} onError={(e)=>{e.target.onerror = null; whereInfo.partInfo != null ? e.target.src=whereInfo.partInfo.img : ''}}/>
                                 </td>
                                 <td>
-                                    {whereInfo.itemNo}
+                                    {whereInfo.itemNo}<br/>
+                                    {whereInfo.colorInfo != null && whereInfo.colorInfo.name}({whereInfo.colorId})
                                 </td>
                                 <td bgcolor={(setNo == whereInfo.whereMore && 'f7d117') || ('storage' == whereInfo.whereCode && '2aabd2')}>
                                     {whereInfo.whereCode} - {whereInfo.whereMore}

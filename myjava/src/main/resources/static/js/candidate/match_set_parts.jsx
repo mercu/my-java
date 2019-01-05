@@ -91,6 +91,7 @@ function MatchSetPartsRoot(props) {
                                 <a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + (item.partInfo != null ? item.partInfo.id : '') + '#T=C'} target={'_blank'}>{item.itemNo}</a>
                                 <br/>
                                 {item.partInfo != null ? item.partInfo.partName : ''}
+                                {item.colorInfo != null ? '(' + item.colorInfo.name + ')' : ''}
                             </td>
                             <td bgcolor={!item.matched && 'f7d117'}>{item.qty} / {item.partQty}</td>
                             <td bgcolor={!item.matched && 'f7d117'}>

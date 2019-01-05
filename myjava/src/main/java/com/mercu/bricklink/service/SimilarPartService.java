@@ -18,9 +18,7 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 
 @Service
-public class BrickLinkSimilarService {
-    Logger logger = LoggerFactory.getLogger(BrickLinkSimilarService.class);
-
+public class SimilarPartService {
     @Autowired
     private SimilarPartRepository similarPartRepository;
 
