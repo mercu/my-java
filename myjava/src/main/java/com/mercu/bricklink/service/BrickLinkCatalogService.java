@@ -195,8 +195,20 @@ public class BrickLinkCatalogService {
         logService.log("updatePartInfoSetQty", "=== finish !");
     }
 
+    /**
+     * @param partNo
+     * @return
+     */
     public PartInfo findPartByPartNo(String partNo) {
         return partInfoRepository.findByPartNo(partNo).orElse(null);
+    }
+
+    /**
+     * @param itemNo
+     * @return
+     */
+    public MinifigInfo findMinifigByPartNo(String itemNo) {
+        return minifigInfoRepository.findByMinifigNo(itemNo).orElse(null);
     }
 
     /**

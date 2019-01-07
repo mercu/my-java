@@ -1,6 +1,8 @@
 package com.mercu.lego.model.match;
 
+import com.mercu.bricklink.model.CategoryType;
 import com.mercu.bricklink.model.info.ColorInfo;
+import com.mercu.bricklink.model.info.MinifigInfo;
 import com.mercu.bricklink.model.info.PartInfo;
 import com.mercu.lego.model.my.MyItem;
 import lombok.Data;
@@ -37,6 +39,8 @@ public class MatchMyItemSetItem {
     @Transient
     private PartInfo partInfo;
     @Transient
+    private MinifigInfo minifigInfo;
+    @Transient
     private String imgUrl;
     @Transient
     private List<MyItem> myItems;
@@ -49,4 +53,11 @@ public class MatchMyItemSetItem {
     @Transient
     private Boolean filtered = true;
 
+    public boolean isPart() {
+        return CategoryType.P.getCode().equals(this.getItemType());
+    }
+
+    public boolean isMinifig() {
+        return CategoryType.M.getCode().equals(this.getItemType());
+    }
 }

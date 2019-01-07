@@ -1,30 +1,29 @@
 package com.mercu.lego.service;
 
-import static com.mercu.lego.model.my.MyItem.WHERE_CODE_WANTED;
-import static java.util.stream.Collectors.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import com.mercu.bricklink.service.*;
-import com.mercu.utils.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-
-import lombok.extern.slf4j.Slf4j;
-
 import com.mercu.bricklink.BrickLinkUrlUtils;
 import com.mercu.bricklink.model.info.PartInfo;
 import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.model.map.SetItem;
+import com.mercu.bricklink.service.*;
 import com.mercu.lego.model.match.MatchMyItemSetItem;
 import com.mercu.lego.model.match.MatchMyItemSetItemRatio;
 import com.mercu.lego.model.my.MyItem;
 import com.mercu.lego.repository.MatchMyItemSetItemRatioRepository;
 import com.mercu.lego.repository.MatchMyItemSetItemRepository;
+import com.mercu.utils.MapUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.mercu.lego.model.my.MyItem.WHERE_CODE_WANTED;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Service
@@ -247,22 +246,27 @@ public class MatchMyItemService {
         matchItems.stream()
                 .forEach(matchItem -> {
                     try {
+                        // IMG_URL
+                        matchItem.setImgUrl(BrickLinkUrlUtils.itemImageUrl(matchItem.getItemType(), matchItem.getItemNo(), matchItem.getColorId()));
                         // ColorInfo 추가
                         if (Objects.nonNull(matchItem.getColorId()))
                             matchItem.setColorInfo(brickLinkColorService.findColorByIdCached(matchItem.getColorId()));
-                        // PartInfo 추가
-                        if (Objects.nonNull(matchItem.getItemNo())) {
-                            PartInfo partInfo = brickLinkCatalogService.findPartByPartNo(matchItem.getItemNo());
-                            matchItem.setPartInfo(partInfo);
-                            // 유사 아이템 추가
-                            matchItem.setMyItems(findMyItemsWithSimilar(matchItem));
-                            // 해당 WANTED SET 수량 충족여부
-                            matchItem.setMatched(matchItem.getQty() >= matchItem.getPartQty()
-                                    && hasMatchedWhere(matchItem.getMyItems(), brickLinkCatalogService.setNoBySetIdCached(setId)));
+                        if (matchItem.isPart()) {
+                            // PartInfo 추가
+                            matchItem.setPartInfo(brickLinkCatalogService.findPartByPartNo(matchItem.getItemNo()));
                             // 정렬 순서 (카테고리)
-                            matchItem.setSortOrder(myCategoryService.findRootCategoryByBlCategoryIdCached(partInfo.getCategoryId()).getSortOrder());
+                            matchItem.setSortOrder(myCategoryService.findRootCategoryByBlCategoryIdCached(matchItem.getPartInfo().getCategoryId()).getSortOrder());
+                        } else if (matchItem.isMinifig()) {
+                            // MinifigInfo 추가
+                            matchItem.setMinifigInfo(brickLinkCatalogService.findMinifigByPartNo(matchItem.getItemNo()));
+                            // 정렬 순서 (카테고리)
+                            matchItem.setSortOrder(0);
                         }
-                        matchItem.setImgUrl(BrickLinkUrlUtils.partImageUrl(matchItem.getItemNo(), matchItem.getColorId()));
+                        // 유사 아이템 추가
+                        matchItem.setMyItems(findMyItemsWithSimilar(matchItem));
+                        // 해당 WANTED SET 수량 충족여부
+                        matchItem.setMatched(matchItem.getQty() >= matchItem.getPartQty()
+                                && hasMatchedWhere(matchItem.getMyItems(), brickLinkCatalogService.setNoBySetIdCached(setId)));
 
                     } catch (Exception e) {
                         System.out.println("exception! - matchItem : " + matchItem);

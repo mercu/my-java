@@ -83,12 +83,24 @@ function MatchSetPartsRoot(props) {
                     </thead>
                     <tbody>
                     {props.items.map(function(item, key) {
+                        var itemId = '';
+                        var ltemUrl = '';
+                        if (item.itemType == 'P' && item.partInfo != null) {
+                            itemId = item.partInfo.id;
+                            ltemUrl = 'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + itemId + '#T=C'
+                        } else if (item.itemType == 'M' && item.minifigInfo != null) {
+                            itemId = item.minifigInfo.id;
+                            ltemUrl = 'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + itemId + '#T=I'
+                        }
+
                         return <tr key={key}>
                             <td bgcolor={item.colorInfo != null ? item.colorInfo.colorCode : ''}>
-                                <img src={item.imgUrl} onError={(e)=>{e.target.onerror = null; item.partInfo != null ? e.target.src=item.partInfo.img : ''}}/>
+                                <a href={ltemUrl} target={'_blank'}>
+                                    <img src={item.imgUrl} onError={(e)=>{e.target.onerror = null; item.partInfo != null ? e.target.src=item.partInfo.img : ''}}/>
+                                </a>
                             </td>
                             <td>
-                                <a href={'https://www.bricklink.com/v2/catalog/catalogitem.page?id=' + (item.partInfo != null ? item.partInfo.id : '') + '#T=C'} target={'_blank'}>{item.itemNo}</a>
+                                <a href={ltemUrl} target={'_blank'}>{item.itemNo}</a>
                                 <br/>
                                 {item.partInfo != null ? item.partInfo.partName : ''}
                                 {item.colorInfo != null ? '(' + item.colorInfo.name + ')' : ''}
