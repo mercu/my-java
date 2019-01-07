@@ -30,7 +30,7 @@ public class BrickLinkColorService {
 
     public ColorInfo findColorCached(String desc) {
         for (ColorInfo colorInfo : allColorsCache()) {
-            if (desc.startsWith(colorInfo.getName())) {
+            if (desc.startsWith(colorInfo.getName() + " ")) {
                 return colorInfo;
             }
         }

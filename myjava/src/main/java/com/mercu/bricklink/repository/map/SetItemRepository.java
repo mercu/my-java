@@ -1,10 +1,12 @@
 package com.mercu.bricklink.repository.map;
 
 import com.mercu.bricklink.model.map.SetItem;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 public interface SetItemRepository extends CrudRepository<SetItem, String> {
@@ -33,4 +35,8 @@ public interface SetItemRepository extends CrudRepository<SetItem, String> {
     @Query("select count(1) from SetItem s where s.setId = :setId and s.categoryType = :categoryType")
     int countItemsBySetId(@Param("setId") String setId, @Param("categoryType") String categoryType);
 
+    @Transactional
+    @Modifying
+    @Query("delete from SetItem s where s.setNo = :setNo")
+    void deleteAllBySetNo(@Param("setNo") String setNo);
 }

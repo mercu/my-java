@@ -33,8 +33,9 @@ public class BrickLinkSetTest {
 
     @Test
     public void crawlSetInventory() {
+        brickLinkSetItemService.removeBySetNo("41327");
         brickLinkSetItemService.saveSetItemList(
-                brickLinkService.crawlSetInventoryBySetNo("6243"));
+                brickLinkService.crawlSetInventoryBySetNo("41327"));
     }
 
     @Test
@@ -56,12 +57,14 @@ public class BrickLinkSetTest {
 //                        logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - exists - skipped!");
 //                        continue;
 //                    } else
+                    // sub-set skip
                     if (setInfo.getSetNo().contains("-")) {
                         logService.log("crawlSetInventories", "- invalid setNo : " + setInfo.getSetNo() + " - skipped!", "invalid");
                         continue;
                     }
 
                     logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - start");
+                    brickLinkSetItemService.removeBySetNo(setInfo.getSetNo());
                     brickLinkSetItemService.saveSetItemList(
                         brickLinkService.crawlSetInventoryBySetNo(setInfo.getSetNo()));
                     logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - finish");

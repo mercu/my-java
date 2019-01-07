@@ -47,4 +47,10 @@ public class BrickLinkSetItemService {
         return setItemRepository.countItemsBySetId(setId, itemType);
     }
 
+    /**
+     * @param setNo
+     */
+    public void removeBySetNo(String setNo) {
+        setItemRepository.deleteAllBySetNo(setNo);
+    }
 }
