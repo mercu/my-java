@@ -101,6 +101,9 @@ class MyPartWheresModalBody extends React.Component {
 
     render() {
         var setNo = this.state.setNo;
+        var partNo = this.state.partNo;
+        var colorId = this.state.colorId;
+
         return (
             <div className={'panel panel-default'}>
                 <div className={'panel-body'}>
@@ -119,6 +122,12 @@ class MyPartWheresModalBody extends React.Component {
                         {this.state.myItemWheres != null && this.state.myItemWheres.map(function(whereInfo, key) {
                             var matchMyItemSetItemRatio = whereInfo.matchMyItemSetItemRatio;
                             var ratio = matchMyItemSetItemRatio && Math.round(matchMyItemSetItemRatio.matched / matchMyItemSetItemRatio.total * 100);
+                            var bgcolor = '';
+                            if (setNo == whereInfo.whereMore) {
+                                if (partNo == whereInfo.itemNo && colorId == whereInfo.colorId) bgcolor = 'A6CA55';
+                                else bgcolor = 'f7d117';
+                            } else if ('storage' == whereInfo.whereCode) bgcolor = '2aabd2';
+
                             return <tr key={key}>
                                 <td bgcolor={whereInfo.colorInfo != null && whereInfo.colorInfo.colorCode}>
                                     <img src={whereInfo.imgUrl} onError={(e)=>{e.target.onerror = null; whereInfo.partInfo != null ? e.target.src=whereInfo.partInfo.img : ''}}/>
@@ -127,7 +136,7 @@ class MyPartWheresModalBody extends React.Component {
                                     {whereInfo.itemNo}<br/>
                                     {whereInfo.colorInfo != null && whereInfo.colorInfo.name}({whereInfo.colorId})
                                 </td>
-                                <td bgcolor={(setNo == whereInfo.whereMore && 'f7d117') || ('storage' == whereInfo.whereCode && '2aabd2')}>
+                                <td bgcolor={bgcolor}>
                                     {whereInfo.whereCode} - {whereInfo.whereMore}
                                     <br/>{matchMyItemSetItemRatio && (matchMyItemSetItemRatio.matched + '/' + matchMyItemSetItemRatio.total + '(' + ratio + '%)')}
                                 </td>
