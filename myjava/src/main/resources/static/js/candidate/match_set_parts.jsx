@@ -64,6 +64,7 @@ function MatchSetPartsRoot(props) {
             <div className={'panel-body'}>
                 setNo : <input id={'setNo'} type={'text'} value={matchSetPartsDOM !=null && matchSetPartsDOM.state.setNo} onChange={(e) => changeSetNo(e)} />&nbsp;&nbsp;
                 <button name={'REFRESH'} className={'btn btn-info'} onClick={(e) => reloadBySetNo(e)}>REFRESH</button>&nbsp;&nbsp;
+                <button name={'UPADTE_MATCH'} className={'btn btn-info'} onClick={(e) => updateMatch(setNo, props.matchId, e)}>UPADTE_MATCH</button>&nbsp;&nbsp;
                 <select name={'whereSelect'} className={'form-control'} style={{width:'auto', display:'inline'}} onChange={(e) => filterByWhere(props.matchId, props.setId, e.target.value, e)}>
                     <option value=''>--- ALL ---</option>
                     {props.matchWheres != undefined && props.matchWheres.map(function(item, key) {
@@ -225,6 +226,25 @@ function reloadBySetNo(e) {
         async : true
     }).done(function(setId) {
         matchSetPartsAjax(matchSetPartsDOM.state.matchId, setId);
+    });
+
+}
+
+function updateMatch(setNo, matchId, e) {
+    if (typeof e != "undefined") e.preventDefault();
+
+    $.ajax({
+        url:"/admin/updateMatch",
+        type : "GET",
+        dataType : "json",
+        data : {
+            setNo : setNo,
+            matchId : matchId
+        },
+        contentType: "application/json;charset=UTF-8",
+        async : true
+    }).done(function() {
+        reloadBySetNo();
     });
 
 }

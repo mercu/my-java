@@ -56,9 +56,9 @@ public class MyPartController {
         // 부품-단건 보유 수량(양수/음수) 변경 후, 갱신된 목록 리스트 반환
         List<MyItem> myPartWhereInfos = brickLinkMyService.increaseMyPartWhere(CategoryType.P.getCode(), partNo, colorId, whereCode, whereMore, val, setNo);
         // 매칭 정보도 갱신 (매칭 부품, 매칭율)
-        if (StringUtils.isNotBlank(setNo) & StringUtils.isNotBlank(matchId)) {
-            matchMyItemService.updateMatchSetPart(partNo, colorId, setNo, matchId);
-        }
+//        if (StringUtils.isNotBlank(setNo) & StringUtils.isNotBlank(matchId)) {
+//            matchMyItemService.updateMatchSetPart(partNo, colorId, setNo, matchId);
+//        }
         return JsonUtils.toJson(myPartWhereInfos);
     }
 
