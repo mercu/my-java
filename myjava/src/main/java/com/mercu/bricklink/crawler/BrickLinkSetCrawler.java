@@ -93,7 +93,7 @@ public class BrickLinkSetCrawler {
         setItem.setQty(NumberUtils.toInt(itemRow.select("td:nth-of-type(3)").html(), 0));
         setItem.setDescription(itemRow.select("td:nth-of-type(5) b").first().html());
         if (categoryType == CategoryType.P) {
-            ColorInfo colorInfo = brickLinkColorService.findColor(setItem.getDescription());
+            ColorInfo colorInfo = brickLinkColorService.findColorCached(setItem.getDescription());
             if (Objects.isNull(colorInfo)) logger.warn("not found color! - desc : {}", setItem.getDescription());
             else {
                 setItem.setColorId(colorInfo.getId());

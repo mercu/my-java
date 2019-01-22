@@ -18,26 +18,24 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 
 @Service
-public class BrickLinkSimilarService {
-    Logger logger = LoggerFactory.getLogger(BrickLinkSimilarService.class);
-
+public class SimilarPartService {
     @Autowired
     private SimilarPartRepository similarPartRepository;
 
     // 캐시 맵 (partNo, List<PartNo>)
-    private Map<String, List<String>> similarPartNosMap;
+    private Map<String, List<String>> similarPartNosCacheMap;
 
-    private Map<String, List<String>> getSimilarPartNosMap() {
-        if (similarPartNosMap == null) {
-            initSimilarPartsMap();
+    private Map<String, List<String>> getSimilarPartNosCacheMap() {
+        if (similarPartNosCacheMap == null) {
+            initSimilarPartsCacheMap();
         }
-        return similarPartNosMap;
+        return similarPartNosCacheMap;
     }
 
-    private void initSimilarPartsMap() {
+    private void initSimilarPartsCacheMap() {
         List<SimilarPart> similarPartsAll = (List<SimilarPart>)similarPartRepository.findAll();
 
-        similarPartNosMap = new HashMap<>();
+        similarPartNosCacheMap = new HashMap<>();
         Map<Integer, List<SimilarPart>> similarPartsGroup = similarPartsAll.stream()
                 .collect(Collectors.groupingBy(
                         SimilarPart::getSimilarId, toList()
@@ -48,7 +46,7 @@ public class BrickLinkSimilarService {
                     similarParts.stream()
                             .forEach(similarPart -> {
                                 String partNo = similarPart.getPartNo();
-                                similarPartNosMap.put(partNo, toSimilarPartNoList(similarParts));
+                                similarPartNosCacheMap.put(partNo, toSimilarPartNoList(similarParts));
                             });
                 });
     }
@@ -65,14 +63,14 @@ public class BrickLinkSimilarService {
      * @param partNo
      * @return
      */
-    public List<String> findPartNos(String partNo) {
-        List<String> partNos = getSimilarPartNosMap().get(partNo);
+    public List<String> findPartNosCached(String partNo) {
+        List<String> partNos = getSimilarPartNosCacheMap().get(partNo);
         if (CollectionUtils.isEmpty(partNos)) {
             return Arrays.asList(new String[]{partNo});
         } else {
             return partNos;
         }
-//        return similarPartRepository.findPartNos(partNo);
+//        return similarPartRepository.findPartNosCached(partNo);
     }
 
     public String findRepresentPartNo(String partNo) {
@@ -85,7 +83,7 @@ public class BrickLinkSimilarService {
      * @return
      */
     public boolean compareWithSimilarPartNos(String partNo1, String partNo2) {
-        List<String> similarPartNos = findPartNos(partNo1);
+        List<String> similarPartNos = findPartNosCached(partNo1);
         if (similarPartNos == null) {
             return StringUtils.equals(partNo1, partNo2);
         } else {

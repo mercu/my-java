@@ -1,35 +1,29 @@
 package com.mercu.lego.service;
 
-import static java.util.stream.Collectors.*;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-
-import lombok.extern.slf4j.Slf4j;
-
 import com.mercu.bricklink.BrickLinkUrlUtils;
 import com.mercu.bricklink.model.info.PartInfo;
 import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.model.map.SetItem;
-import com.mercu.bricklink.service.BrickLinkCatalogService;
-import com.mercu.bricklink.service.BrickLinkColorService;
-import com.mercu.bricklink.service.BrickLinkSetService;
-import com.mercu.bricklink.service.BrickLinkSimilarService;
+import com.mercu.bricklink.service.*;
 import com.mercu.lego.model.match.MatchMyItemSetItem;
 import com.mercu.lego.model.match.MatchMyItemSetItemRatio;
 import com.mercu.lego.model.my.MyItem;
 import com.mercu.lego.repository.MatchMyItemSetItemRatioRepository;
 import com.mercu.lego.repository.MatchMyItemSetItemRepository;
+import com.mercu.utils.MapUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.mercu.lego.model.my.MyItem.WHERE_CODE_WANTED;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Service
@@ -42,15 +36,19 @@ public class MatchMyItemService {
     @Autowired
     private BrickLinkCatalogService brickLinkCatalogService;
     @Autowired
-    private BrickLinkSetService brickLinkSetService;
+    private BrickLinkSetItemService brickLinkSetItemService;
     @Autowired
     private BrickLinkColorService brickLinkColorService;
     @Autowired
-    private BrickLinkSimilarService brickLinkSimilarService;
+    private SimilarPartService similarPartService;
+    @Autowired
+    private SimilarColorService similarColorService;
     @Autowired
     private MyItemService myItemService;
     @Autowired
     private MyCategoryService myCategoryService;
+    @Autowired
+    private BrickLinkMyService brickLinkMyService;
 
     public List<String> findMatchIds() {
         return matchMyItemSetItemRatioRepository.findMatchIds();
@@ -64,56 +62,259 @@ public class MatchMyItemService {
         return matchMyItemSetItemRatioRepository.findMatchSetList(matchId, new PageRequest(0, 1000));
     }
 
-    public Map<String, Object> findMatchSetParts(String matchId, String setId) {
+    /**
+     * @param matchId
+     * @param setId
+     * @param whereValue (nullable)
+     * @return
+     */
+    public Map<String, Object> findMatchSetParts(String matchId, String setId, String whereValue) {
         Map<String, Object> resultMap = new HashMap<>();
 
+        // SetInfo
         SetInfo setInfo = brickLinkCatalogService.findSetInfo(setId);
         resultMap.put("setInfo", setInfo);
-        String setNo = setInfo.getSetNo();
 
-        List<SetItem> partList = brickLinkSetService.findBySetId(setId);
-
+        // 매칭된 보유 부품목록
         List<MatchMyItemSetItem> matchItems = matchMyItemSetItemRepository.findMatchSetParts(matchId, setId);
 
-        partList.stream()
-                .forEach(part -> {
-                    MatchMyItemSetItem matchItem = findMatched(part, matchItems);
-                    if (Objects.isNull(matchItem)) {
-                        matchItem = newMatchMyItemSetItem(part, matchId);
-                        matchItems.add(matchItem);
-                    }
-                    matchItem.setPartQty(part.getQty());
-                    matchItem.setQty(Optional.ofNullable(myItemService.findByIdWhere(part.getCategoryType(), part.getItemNo(), part.getColorId(), setNo)).map(MyItem::getQty).orElse(0));
+        // 해당 WANTED에 모자른 부품들에 대한 Set Where 목록
+//        Map<String, Integer> matchWheres = new HashMap<>();
+
+        // 전체 부품 목록기준으로 보유 부품 대입하고 없으면 생성 (세트 부품 목록 완성하기)
+        fillSetItems(matchId, setId, matchItems);
+
+        // matchItem 내용 채우기
+        fillMatchItemInfos(setId, matchItems);
+
+        // 부품 카테고리 기준으로 정렬하기
+        resultMap.put("matchItems", sortMatchItems(matchItems));
+
+        // 해당 WANTED에 모자른 부품들에 대한 Set Where 목록
+//        resultMap.put("matchWheres", matchWheres.entrySet().stream()
+//                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+//                .collect(toList()));
+
+        return resultMap;
+    }
+
+    public Map<String, Object> recommendPartsWhere(String matchId, String setId) {
+        Map<String, Object> resultMap = new HashMap<>();
+
+        // 매칭된 보유 부품목록
+        List<MatchMyItemSetItem> matchItems = matchMyItemSetItemRepository.findMatchSetParts(matchId, setId);
+
+        // 전체 부품 목록기준으로 보유 부품 대입하고 없으면 생성 (세트 부품 목록 완성하기)
+        fillSetItems(matchId, setId, matchItems);
+
+        // matchItem 내용 채우기
+        fillMatchItemInfos(setId, matchItems);
+
+        // 추천 부품 위치 채우기
+        recommendItemWheres(setId, matchItems);
+
+        // 부품 카테고리 기준으로 정렬하기
+        resultMap.put("matchItems", sortMatchItems(matchItems));
+
+        // 추천 위치 목록
+        resultMap.put("matchWheres", matchWheres(matchItems));
+
+        return resultMap;
+    }
+
+    // 추천 위치 목록
+    private List<Map.Entry<String, Integer>> matchWheres(List<MatchMyItemSetItem> matchItems) {
+        Map<String, Integer> matchWheres = new HashMap<>();
+        matchItems.stream()
+                .forEach(matchItem -> {
+                    matchItem.getMyItems().stream()
+                            .forEach(myItem -> {
+                                MapUtils.increase(matchWheres, myItem.getWhereCode() + "-" + myItem.getWhereMore());
+                            });
                 });
 
+        return matchWheres.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(toList());
+    }
+
+    // 추천 부품 위치 채우기
+    private void recommendItemWheres(String setId, List<MatchMyItemSetItem> matchItems) {
+        List<MyItem> myItemList = new ArrayList<>();
+        // 보유 부품 위치 목록 전체
+        matchItems.stream()
+                .forEach(matchItem -> {
+                    // 보유 아이템 목록 전체 - 유사 아이템 반영
+                    similarColorService.findColorIdsCached(matchItem.getColorId()).stream()
+                            .forEach(similarColorId -> similarPartService.findPartNosCached(matchItem.getItemNo()).stream()
+                                        .forEach(partNo -> myItemList.addAll(brickLinkMyService.findMyItems(partNo, similarColorId))));
+                });
+
+        // 수량 정렬
+        Map<String, List<MyItem>> myItemsMap = myItemList.stream()
+                .filter(myItem -> myItem.getQty() > 0)
+                .collect(Collectors.groupingBy(myItem -> myItem.getWhereCode() + "-" + myItem.getWhereMore()
+                        , toList())).entrySet().stream()
+                .sorted(Comparator.comparing(entry -> ((List<MyItem>)((Map.Entry)entry).getValue()).stream()
+                        .mapToInt(MyItem::getQty)
+                        .sum()).reversed())
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        log.info("myItemsMap : {}", myItemsMap);
+
+        // 추천 부품 채우기
+        matchItems.stream()
+                .forEach(matchItem -> {
+                    // 부품 채우기 (1순위. 해당 SET 부품 -> 2순위. 추천 부품)
+                    matchItem.setMyItems(fillPriority(matchItem, myItemsMap, setId));
+                    matchItem.setQty(matchItem.getMyItems().stream()
+                            .mapToInt(MyItem::getQty).sum());
+                });
+
+        log.info("matchItems : {}", matchItems);
+//                    brickLinkMyService.findMyItemWheresSimilar(matchItem.getItemType(), matchItem.getItemNo(), matchItem.getColorId(), brickLinkCatalogService.setNoBySetIdCached(setId)).stream()
+//                                .filter(myItem -> myItem.getQty() > 0)
+//                                .collect(toList()).stream()
+//                                .map(myItem -> myItem.getWhereCode() + "-" + myItem.getWhereMore())
+//                                .collect(toSet()).stream()
+//                                .forEach(matchWhere -> {
+//                                    MapUtils.increase(matchWheres, matchWhere);
+//                                    // 필터링 여부 (노출)
+//                                    if (StringUtils.equals(matchWhere, whereValue)) {
+//                                        filtered[0] = true;
+//                                    }
+//                                });
+//                    }
+//                });
+    }
+
+    // 부품 채우기 (1순위. 해당 SET 부품 -> 2순위. 추천 부품)
+    private List<MyItem> fillPriority(MatchMyItemSetItem matchItem, Map<String, List<MyItem>> myItemsMap, String setId) {
+        List<MyItem> fillItems = new ArrayList<>();
+
+        // 1순위. 해당 SET 부품
+        String wantedSet = WHERE_CODE_WANTED + "-" + brickLinkCatalogService.setNoBySetIdCached(setId);
+        List<MyItem> wantedItems = myItemsMap.get(wantedSet);
+        if (CollectionUtils.isEmpty(wantedItems) == false) {
+            MyItem wantedItem = wantedItems.stream()
+                    .filter(myItem -> StringUtils.equals(myItem.getItemNo(), matchItem.getItemNo())
+                            && StringUtils.equals(myItem.getColorId(), matchItem.getColorId()))
+                    .findFirst()
+                    .orElse(null);
+            if (Objects.nonNull(wantedItem) && wantedItem.getQty() > 0) {
+                fillItems.add(wantedItem);
+
+                if (wantedItem.getQty() >= matchItem.getPartQty())
+                    return fillItems;
+            }
+        }
+
+        // 2순위. 추천 부품 (수량 다 채워질때 까지)
+        myItemsMap.entrySet().stream()
+                .forEach(entry -> {
+                    // 해당 SET이거나 수량이 다 차면 skip
+                    if (StringUtils.equals(entry.getKey(), wantedSet)
+                            || fillItems.stream().mapToInt(MyItem::getQty).sum() >= matchItem.getPartQty()) {
+                        // skip
+                    } else {
+                        // 부품 일치하면 순서대로 채우기
+                        MyItem recommendItem = entry.getValue().stream()
+                                .filter(myItem -> StringUtils.equals(myItem.getItemNo(), matchItem.getItemNo())
+                                        && StringUtils.equals(myItem.getColorId(), matchItem.getColorId()))
+                                .findFirst()
+                                .orElse(null);
+                        if (Objects.nonNull(recommendItem)) {
+                            fillItems.add(recommendItem);
+                        }
+                    }
+
+                });
+
+
+        return fillItems;
+    }
+
+    private List<MatchMyItemSetItem> sortMatchItems(List<MatchMyItemSetItem> matchItems) {
+        return matchItems.stream()
+                .filter(MatchMyItemSetItem::getFiltered)
+                .sorted(Comparator.comparing(MatchMyItemSetItem::getSortOrder).reversed()
+                        .thenComparing(matchItem -> Optional.ofNullable(matchItem.getPartInfo()).map(PartInfo::getPartName).orElse("")))
+                .collect(toList());
+    }
+
+    // matchItem 내용 채우기
+    private void fillMatchItemInfos(String setId, List<MatchMyItemSetItem> matchItems) {
         matchItems.stream()
                 .forEach(matchItem -> {
                     try {
+                        // IMG_URL
+                        matchItem.setImgUrl(BrickLinkUrlUtils.itemImageUrl(matchItem.getItemType(), matchItem.getItemNo(), matchItem.getColorId()));
+                        // ColorInfo 추가
                         if (Objects.nonNull(matchItem.getColorId()))
-                            matchItem.setColorInfo(brickLinkColorService.findColorById(matchItem.getColorId()));
-                        if (Objects.nonNull(matchItem.getItemNo())) {
-                            PartInfo partInfo = brickLinkCatalogService.findPartByPartNo(matchItem.getItemNo());
-                            matchItem.setPartInfo(partInfo);
-                            matchItem.setMyItems(findMyItemsWithSimilar(matchItem));
-                            matchItem.setMatched(hasMatchedWhere(matchItem.getMyItems(), setNo)
-                                    && matchItem.getQty() >= matchItem.getPartQty());
+                            matchItem.setColorInfo(brickLinkColorService.findColorByIdCached(matchItem.getColorId()));
+                        if (matchItem.isPart()) {
+                            // PartInfo 추가
+                            matchItem.setPartInfo(brickLinkCatalogService.findPartByPartNo(matchItem.getItemNo()));
                             // 정렬 순서 (카테고리)
-                            matchItem.setSortOrder(myCategoryService.findRootCategoryByBlCategoryId(partInfo.getCategoryId()).getSortOrder());
+                            matchItem.setSortOrder(myCategoryService.findRootCategoryByBlCategoryIdCached(matchItem.getPartInfo().getCategoryId()).getSortOrder());
+                        } else if (matchItem.isMinifig()) {
+                            // MinifigInfo 추가
+                            matchItem.setMinifigInfo(brickLinkCatalogService.findMinifigByPartNo(matchItem.getItemNo()));
+                            // 정렬 순서 (카테고리)
+                            matchItem.setSortOrder(0);
                         }
-                        matchItem.setImgUrl(BrickLinkUrlUtils.partImageUrl(matchItem.getItemNo(), matchItem.getColorId()));
+                        // 유사 아이템 추가
+                        matchItem.setMyItems(findMyItemsWithSimilar(matchItem));
+                        // 해당 WANTED SET 수량 충족여부
+                        matchItem.setMatched(matchItem.getQty() >= matchItem.getPartQty()
+                                && hasMatchedWhere(matchItem.getMyItems(), brickLinkCatalogService.setNoBySetIdCached(setId)));
 
                     } catch (Exception e) {
                         System.out.println("exception! - matchItem : " + matchItem);
                     }
                 });
+    }
 
-        // 부품 카테고리 기준으로 정렬하기
-        resultMap.put("matchItems", matchItems.stream()
-            .sorted(Comparator.comparing(MatchMyItemSetItem::getSortOrder).reversed()
-                .thenComparing(matchItem -> Optional.ofNullable(matchItem.getPartInfo()).map(PartInfo::getPartName).orElse("")))
-            .collect(toList()));
+    // 전체 부품 목록기준으로 보유 부품 대입하고 없으면 생성 (세트 부품 목록 완성하기)
+    private void fillSetItems(String matchId, String setId, List<MatchMyItemSetItem> matchItems) {
+        brickLinkSetItemService.findItemsAllBySetId(setId).stream()
+                .forEach(part -> {
+                    // 매칭(유사) 보유 아이템 찾기 (없으면 null)
+                    MatchMyItemSetItem matchItem = findMatchedWithSimilar(part, matchItems);
+                    // 없으면 새로 생성해서 목록에 추가하기
+                    if (Objects.isNull(matchItem)) {
+                        matchItem = newMatchMyItemSetItem(part, matchId);
+                        matchItems.add(matchItem);
+                    }
 
-        return resultMap;
+                    // 보유 수량
+                    matchItem.setQty(Optional.ofNullable(myItemService.findByIdWhereWanted(part.id(), brickLinkCatalogService.setNoBySetIdCached(setId)))
+                            .map(MyItem::getQty)
+                            .orElse(0));
+                    matchItem.setPartQty(part.getQty());
+
+//                    // 필터링 여부 (숨김)
+//                    final boolean[] filtered = {true};
+//                    if (StringUtils.isNotBlank(whereValue)) {
+//                        filtered[0] = false;
+//                    }
+//                    // 해당 WANTED match qty가 모자르면 나머지 STORAGE, WANTED에서 찾기
+//                    if (matchItem.getQty() < matchItem.getPartQty()) {
+//                        brickLinkMyService.findMyItemWheresSimilar(part.getCategoryType(), part.getItemNo(), part.getColorId(), null).stream()
+//                                .filter(myItem -> myItem.getQty() > 0)
+//                                .collect(toList()).stream()
+//                                .map(myItem -> myItem.getWhereCode() + "-" + myItem.getWhereMore())
+//                                .collect(toSet()).stream()
+//                                .forEach(matchWhere -> {
+//                                    MapUtils.increase(matchWheres, matchWhere);
+//                                    // 필터링 여부 (노출)
+//                                    if (StringUtils.equals(matchWhere, whereValue)) {
+//                                        filtered[0] = true;
+//                                    }
+//                                });
+//                    }
+//                    // 필터링 여부 (숨김)
+//                    matchItem.setFiltered(filtered[0]);
+                });
     }
 
     private boolean hasMatchedWhere(List<MyItem> myItems, String setNo) {
@@ -123,10 +324,12 @@ public class MatchMyItemService {
                 .isPresent();
     }
 
+    // 유사 아이템 추가
     private List<MyItem> findMyItemsWithSimilar(MatchMyItemSetItem matchItem) {
         List<MyItem> myItems = new ArrayList<>();
-        brickLinkSimilarService.findPartNos(matchItem.getItemNo()).stream()
-                .forEach(partNo -> myItems.addAll(myItemService.findList(matchItem.getItemType(), partNo, matchItem.getColorId())));
+        similarColorService.findColorIdsCached(matchItem.getColorId()).stream()
+                .forEach(similarColorId -> similarPartService.findPartNosCached(matchItem.getItemNo()).stream()
+                            .forEach(partNo -> myItems.addAll(myItemService.findList(partNo, similarColorId))));
         return myItems;
     }
 
@@ -143,10 +346,11 @@ public class MatchMyItemService {
         return matchMyItemSetItem;
     }
 
-    private MatchMyItemSetItem findMatched(SetItem part, List<MatchMyItemSetItem> matchItems) {
+    // 매칭(유사) 보유 아이템 찾기 (없으면 null)
+    private MatchMyItemSetItem findMatchedWithSimilar(SetItem part, List<MatchMyItemSetItem> matchItems) {
         return matchItems.stream()
-                .filter(matchItem -> brickLinkSimilarService.compareWithSimilarPartNos(matchItem.getItemNo(), part.getItemNo())
-                        && matchItem.getColorId().equals(part.getColorId()))
+                .filter(matchItem -> similarColorService.compareWithSimilarColorIds(matchItem.getColorId(), part.getColorId())
+                        && similarPartService.compareWithSimilarPartNos(matchItem.getItemNo(), part.getItemNo()))
                 .findFirst()
                 .orElse(null);
     }
@@ -193,7 +397,7 @@ public class MatchMyItemService {
             .mapToInt(MatchMyItemSetItem::getQty).sum();
 
         // 전체 부품 수량
-        int totalQty = brickLinkSetService.findBySetId(setId).stream()
+        int totalQty = brickLinkSetItemService.findItemsAllBySetId(setId).stream()
             .mapToInt(SetItem::getQty).sum();
 
         MatchMyItemSetItemRatio itemRatio = new MatchMyItemSetItemRatio();
@@ -219,11 +423,14 @@ public class MatchMyItemService {
         String setId = brickLinkCatalogService.findSetInfoBySetNo(setNo).getId();
 
         // 세트 부품 정보
-        SetItem setItem = brickLinkSetService.findSetPart(setId, partNo, colorId);
+        SetItem setItem = brickLinkSetItemService.findSetPart(setId, partNo, colorId);
 
         // 보유 부품 목록(유사부품 포함)
-        List<MyItem> myItems = brickLinkSimilarService.findPartNos(setItem.getItemNo()).stream()
-                .map(itemNo -> myItemService.findList(setItem.getCategoryType(), itemNo, setItem.getColorId()))
+        List<MyItem> myItems = similarColorService.findColorIdsCached(setItem.getColorId()).stream()
+                .map(similarColorId -> similarPartService.findPartNosCached(setItem.getItemNo()).stream()
+                        .map(itemNo -> myItemService.findList(itemNo, similarColorId))
+                        .flatMap(List::stream)
+                        .collect(toList()))
                 .flatMap(List::stream)
                 .collect(toList());
 
@@ -261,14 +468,17 @@ public class MatchMyItemService {
         String setId = brickLinkCatalogService.findSetInfoBySetNo(setNo).getId();
 
         // 세트 부품 목록
-        List<SetItem> setItemList = brickLinkSetService.findBySetId(setId);
+        List<SetItem> setItemList = brickLinkSetItemService.findItemsAllBySetId(setId);
 
         // 보유 부품 목록(유사부품 포함)
         List<MatchMyItemSetItem> matchMyItemSetItemList = new ArrayList<>();
         setItemList.stream()
                 .forEach(setItem -> {
-                    List<MyItem> myItems = brickLinkSimilarService.findPartNos(setItem.getItemNo()).stream()
-                            .map(partNo -> myItemService.findList(setItem.getCategoryType(), partNo, setItem.getColorId()))
+                    List<MyItem> myItems = similarColorService.findColorIdsCached(setItem.getColorId()).stream()
+                            .map(similarColorId -> similarPartService.findPartNosCached(setItem.getItemNo()).stream()
+                                    .map(partNo -> myItemService.findList(partNo, setItem.getColorId()))
+                                    .flatMap(List::stream)
+                                    .collect(toList()))
                             .flatMap(List::stream)
                             .collect(toList());
                     // 수량 1건이라도 있으면 등록

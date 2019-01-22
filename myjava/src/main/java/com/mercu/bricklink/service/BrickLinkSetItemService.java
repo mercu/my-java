@@ -10,13 +10,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class BrickLinkSetService {
-    Logger logger = LoggerFactory.getLogger(BrickLinkSetService.class);
-
+public class BrickLinkSetItemService {
     @Autowired
     private SetItemRepository setItemRepository;
 
-    public List<SetItem> findBySetId(String setId) {
+    public List<SetItem> findItemsAllBySetId(String setId) {
         return setItemRepository.findBySetId(setId);
     }
 
@@ -49,4 +47,10 @@ public class BrickLinkSetService {
         return setItemRepository.countItemsBySetId(setId, itemType);
     }
 
+    /**
+     * @param setNo
+     */
+    public void removeBySetNo(String setNo) {
+        setItemRepository.deleteAllBySetNo(setNo);
+    }
 }

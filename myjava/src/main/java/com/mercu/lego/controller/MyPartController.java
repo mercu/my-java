@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author 고종봉 (jongbong.ko@navercorp.com)
@@ -40,7 +39,7 @@ public class MyPartController {
     @RequestMapping("/admin/myPartWhereInfos")
     @ResponseBody
     public String myPartWhereInfos(@RequestParam String partNo, @RequestParam String colorId) {
-        List<MyItem> myPartWhereInfos = brickLinkMyService.findMyItemWheres(CategoryType.P.getCode(), partNo, colorId);
+        List<MyItem> myPartWhereInfos = brickLinkMyService.findMyItemWheresWithInfos(CategoryType.P.getCode(), partNo, colorId);
         return JsonUtils.toJson(myPartWhereInfos);
     }
 
@@ -57,9 +56,9 @@ public class MyPartController {
         // 부품-단건 보유 수량(양수/음수) 변경 후, 갱신된 목록 리스트 반환
         List<MyItem> myPartWhereInfos = brickLinkMyService.increaseMyPartWhere(CategoryType.P.getCode(), partNo, colorId, whereCode, whereMore, val, setNo);
         // 매칭 정보도 갱신 (매칭 부품, 매칭율)
-        if (StringUtils.isNotBlank(setNo) & StringUtils.isNotBlank(matchId)) {
-            matchMyItemService.updateMatchSetPart(partNo, colorId, setNo, matchId);
-        }
+//        if (StringUtils.isNotBlank(setNo) & StringUtils.isNotBlank(matchId)) {
+//            matchMyItemService.updateMatchSetPart(partNo, colorId, setNo, matchId);
+//        }
         return JsonUtils.toJson(myPartWhereInfos);
     }
 

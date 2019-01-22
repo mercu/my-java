@@ -1,5 +1,5 @@
 // 부품 단건에 대해 보유 목록 리스팅하고(유사포함), 증감 메뉴 레이어 노출하기
-function myPartWheresModal(partNo, colorId, setNo, matchId, e) {
+function myPartWheresModal(partNo, colorId, setNo, matchId, partQty, e) {
     if (typeof e != "undefined") e.preventDefault();
 
     $('#myModal .modal-title').html("부품-단건 보유 목록 리스팅 및 증감")
@@ -12,6 +12,7 @@ function myPartWheresModal(partNo, colorId, setNo, matchId, e) {
                 colorId={colorId}
                 setNo={setNo}
                 matchId={matchId}
+                partQty={partQty}
             />
             , document.getElementById("myModal-body")
         );
@@ -20,7 +21,8 @@ function myPartWheresModal(partNo, colorId, setNo, matchId, e) {
             partNo : partNo,
             colorId : colorId,
             setNo : setNo,
-            matchId : matchId
+            matchId : matchId,
+            partQty : partQty
         });
         myPartWheresDOM.loadMyPartWheresSimilar(partNo, colorId, setNo);
     }
@@ -35,6 +37,7 @@ class MyPartWheresModalBody extends React.Component {
             colorId : props.colorId,
             setNo : props.setNo,
             matchId : props.matchId,
+            partQty : props.partQty,
             myItemWheres : null
         };
         console.log(props);
@@ -98,15 +101,18 @@ class MyPartWheresModalBody extends React.Component {
 
     render() {
         var setNo = this.state.setNo;
+        var partNo = this.state.partNo;
+        var colorId = this.state.colorId;
+
         return (
             <div className={'panel panel-default'}>
                 <div className={'panel-body'}>
-                    partNo : {this.state.partNo}, colorId : {this.state.colorId}, setNo : {this.state.setNo}
+                    partNo : {this.state.partNo}, colorId : {this.state.colorId}, setNo : {this.state.setNo}, partQty : {this.state.partQty}
                     <table className="table table-bordered">
                         <thead>
                         <tr>
                             <th>img</th>
-                            <th>itemNo</th>
+                            <th>itemNo<br/>color</th>
                             <th>where</th>
                             <th>qty</th>
                             <th>set</th>
@@ -116,14 +122,21 @@ class MyPartWheresModalBody extends React.Component {
                         {this.state.myItemWheres != null && this.state.myItemWheres.map(function(whereInfo, key) {
                             var matchMyItemSetItemRatio = whereInfo.matchMyItemSetItemRatio;
                             var ratio = matchMyItemSetItemRatio && Math.round(matchMyItemSetItemRatio.matched / matchMyItemSetItemRatio.total * 100);
+                            var bgcolor = '';
+                            if (setNo == whereInfo.whereMore) {
+                                if (partNo == whereInfo.itemNo && colorId == whereInfo.colorId) bgcolor = 'A6CA55';
+                                else bgcolor = 'f7d117';
+                            } else if ('storage' == whereInfo.whereCode) bgcolor = '2aabd2';
+
                             return <tr key={key}>
                                 <td bgcolor={whereInfo.colorInfo != null && whereInfo.colorInfo.colorCode}>
                                     <img src={whereInfo.imgUrl} onError={(e)=>{e.target.onerror = null; whereInfo.partInfo != null ? e.target.src=whereInfo.partInfo.img : ''}}/>
                                 </td>
                                 <td>
-                                    {whereInfo.itemNo}
+                                    {whereInfo.itemNo}<br/>
+                                    {whereInfo.colorInfo != null && whereInfo.colorInfo.name}({whereInfo.colorId})
                                 </td>
-                                <td bgcolor={(setNo == whereInfo.whereMore && 'f7d117') || ('storage' == whereInfo.whereCode && '2aabd2')}>
+                                <td bgcolor={bgcolor}>
                                     {whereInfo.whereCode} - {whereInfo.whereMore}
                                     <br/>{matchMyItemSetItemRatio && (matchMyItemSetItemRatio.matched + '/' + matchMyItemSetItemRatio.total + '(' + ratio + '%)')}
                                 </td>

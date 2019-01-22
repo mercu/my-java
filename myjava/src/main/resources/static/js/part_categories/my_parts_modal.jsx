@@ -222,10 +222,10 @@ function ColorInfos(props) {
             <label><a href={'https://www.bricklink.com/catalogColors.asp?sortBy=N'} target={'_blank'}>색상 선택</a></label><br/>
             {props.allColorPartImgUrls.map(function(colorPartImgUrl, key) {
                 return (
-                <a onClick={(e) => pickMyPartColor(props.partInfo.partNo, colorPartImgUrl.colorId, e)}>
-                    <img key={key} name="colorPartImgUrl" id={'colorPartImgUrl_' + colorPartImgUrl.colorId} src={colorPartImgUrl.imgUrl} />
-                    <span>{colorPartImgUrl.colorName}</span>
-                </a>
+                    <a onClick={(e) => pickMyPartColor(props.partInfo.partNo, colorPartImgUrl.colorId, e)}>
+                        <img key={key} name="colorPartImgUrl" id={'colorPartImgUrl_' + colorPartImgUrl.colorId} src={colorPartImgUrl.imgUrl} />
+                        <span>{colorPartImgUrl.colorName}</span>
+                    </a>
                 );
             })}
             <input id={'myPartColorId'} type={'text'} value={myPartDOM.state.colorId} onChange={(e) => pickMyPartColor(props.partInfo.partNo, e.target.value, e)}/>&nbsp;&nbsp;

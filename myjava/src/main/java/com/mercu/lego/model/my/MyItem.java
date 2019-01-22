@@ -22,8 +22,6 @@ public class MyItem {
     public static final String WHERE_CODE_WANTED = "wanted";
 
     @Id
-    private String itemType;
-    @Id
     private String itemNo;
     @Id
     private String colorId = "0";
@@ -32,6 +30,7 @@ public class MyItem {
     @Id
     private String whereMore;
 
+    private String itemType;
     private Integer qty = 0;
 
     @Transient

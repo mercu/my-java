@@ -18,8 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -44,6 +47,9 @@ public class BrickLinkCatalogService {
 
     @Autowired
     private LogService logService;
+
+    // setId와 setNo 매핑용 맵
+    private Map<String, String> setIdNoCacheMap = new HashMap<>();
 
     public List<PartInfo> findPartInfoListByCategoryId(Integer categoryId) {
         return partInfoRepository.findAllByCategoryId(categoryId);
@@ -189,8 +195,44 @@ public class BrickLinkCatalogService {
         logService.log("updatePartInfoSetQty", "=== finish !");
     }
 
+    /**
+     * @param partNo
+     * @return
+     */
     public PartInfo findPartByPartNo(String partNo) {
         return partInfoRepository.findByPartNo(partNo).orElse(null);
+    }
+
+    /**
+     * @param itemNo
+     * @return
+     */
+    public MinifigInfo findMinifigByPartNo(String itemNo) {
+        return minifigInfoRepository.findByMinifigNo(itemNo).orElse(null);
+    }
+
+    /**
+     * setId로 setNo를 구함 (캐싱됨)
+     * @param setId
+     * @return
+     */
+    public String setNoBySetIdCached(String setId) {
+        return getSetIdNoCacheMap().get(setId);
+    }
+
+    public String setIdBySetNoCached(String setNo) {
+        return getSetIdNoCacheMap().entrySet().stream()
+                .filter(entry -> StringUtils.equals(entry.getValue(), setNo))
+                .findFirst()
+                .get().getKey();
+    }
+
+    public Map<String, String> getSetIdNoCacheMap() {
+        if (CollectionUtils.isEmpty(setIdNoCacheMap)) {
+            setInfoRepository.findAll()
+                    .forEach(setInfo -> setIdNoCacheMap.put(setInfo.getId(), setInfo.getSetNo()));
+        }
+        return setIdNoCacheMap;
     }
 
 }

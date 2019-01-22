@@ -23,8 +23,8 @@ public class CategoryController {
         if (Objects.isNull(parentId)) parentId = 0;
 
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put("parentCategory", myCategoryService.findById(parentId));
-        resultMap.put("partCategories", myCategoryService.findPartCategoriesByParentId(parentId));
+        resultMap.put("parentCategory", myCategoryService.findByIdCached(parentId));
+        resultMap.put("partCategories", myCategoryService.findPartCategoriesByParentIdCached(parentId));
 
         return JsonUtils.toJson(resultMap);
     }
@@ -34,7 +34,7 @@ public class CategoryController {
     public String partCategory(@RequestParam(value = "blCategoryId", required = false) Integer blCategoryId) {
         if (Objects.isNull(blCategoryId)) return null;
 
-        return JsonUtils.toJson(myCategoryService.findByBlCategoryId(blCategoryId));
+        return JsonUtils.toJson(myCategoryService.findByBlCategoryIdCached(blCategoryId));
     }
 
     @RequestMapping(path = "/admin/partCategory/new", method = RequestMethod.POST)

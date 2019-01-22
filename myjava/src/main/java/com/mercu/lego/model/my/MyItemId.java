@@ -10,7 +10,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class MyItemId implements Serializable {
-    private String itemType;
     private String itemNo;
     private String colorId;
     private String whereCode;

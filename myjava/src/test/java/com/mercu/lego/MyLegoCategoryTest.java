@@ -66,7 +66,7 @@ public class MyLegoCategoryTest {
         List<PartCategory> blPartCategories = brickLinkCategoryService.findPartCategoriesAll();
 
         for (PartCategory partCategory : blPartCategories) {
-            MyPartCategory myPartCategory = myCategoryService.findByBlCategoryId(partCategory.getId());
+            MyPartCategory myPartCategory = myCategoryService.findByBlCategoryIdCached(partCategory.getId());
             myPartCategory.setRepImgs(partCategory.getRepImgs());
             logService.log("migrateBrickLinkPartCategoryRepImgs", "myPartCategory : " + myPartCategory);
 
@@ -81,7 +81,7 @@ public class MyLegoCategoryTest {
      */
     @Test
     public void updatePartCategoryPartsCount() {
-        List<MyPartCategory> myPartCategories = myCategoryService.findPartCategoriesAll();
+        List<MyPartCategory> myPartCategories = myCategoryService.findPartCategoriesAllCached();
         for (MyPartCategory myPartCategory : myPartCategories) {
             myPartCategory.setParts(partInfoRepository.countPartsByCategoryId(myPartCategory.getBlCategoryId()));
             myCategoryService.save(myPartCategory);

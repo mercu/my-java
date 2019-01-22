@@ -3,7 +3,7 @@ package com.mercu.bricklink;
 import com.mercu.bricklink.model.info.SetInfo;
 import com.mercu.bricklink.service.BrickLinkCatalogService;
 import com.mercu.bricklink.crawler.BrickLinkSetCrawler;
-import com.mercu.bricklink.service.BrickLinkSetService;
+import com.mercu.bricklink.service.BrickLinkSetItemService;
 import com.mercu.config.AppConfig;
 import com.mercu.log.LogService;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class BrickLinkSetTest {
     @Autowired
     private BrickLinkSetCrawler brickLinkService;
     @Autowired
-    private BrickLinkSetService brickLinkSetService;
+    private BrickLinkSetItemService brickLinkSetItemService;
     @Autowired
     private BrickLinkCatalogService brickLinkCatalogService;
 
@@ -33,13 +33,14 @@ public class BrickLinkSetTest {
 
     @Test
     public void crawlSetInventory() {
-        brickLinkSetService.saveSetItemList(
-                brickLinkService.crawlSetInventoryBySetNo("6243"));
+        brickLinkSetItemService.removeBySetNo("41327");
+        brickLinkSetItemService.saveSetItemList(
+                brickLinkService.crawlSetInventoryBySetNo("41327"));
     }
 
     @Test
     public void existsSetItem() {
-        System.out.println(brickLinkSetService.existsSetItem("149900"));
+        System.out.println(brickLinkSetItemService.existsSetItem("149900"));
     }
 
     @Test
@@ -56,13 +57,15 @@ public class BrickLinkSetTest {
 //                        logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - exists - skipped!");
 //                        continue;
 //                    } else
+                    // sub-set skip
                     if (setInfo.getSetNo().contains("-")) {
                         logService.log("crawlSetInventories", "- invalid setNo : " + setInfo.getSetNo() + " - skipped!", "invalid");
                         continue;
                     }
 
                     logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - start");
-                    brickLinkSetService.saveSetItemList(
+                    brickLinkSetItemService.removeBySetNo(setInfo.getSetNo());
+                    brickLinkSetItemService.saveSetItemList(
                         brickLinkService.crawlSetInventoryBySetNo(setInfo.getSetNo()));
                     logService.log("crawlSetInventories", "- year : " + year + ", " + index + "/" + setInfoList.size() + " - setInfo : " + setInfo + " - finish");
                 } catch (Exception e) {
