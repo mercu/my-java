@@ -40,6 +40,8 @@ public class MyItem {
     @Transient
     private String imgUrl;
     @Transient
+    private String linkUrl;
+    @Transient
     private MatchMyItemSetItemRatio matchMyItemSetItemRatio;
 
     public MyItem(String itemType, String itemNo, String colorId) {
@@ -55,6 +57,12 @@ public class MyItem {
         this.whereCode = whereCode;
         this.whereMore = whereMore;
         this.qty = qty;
+    }
+
+    public MyItem(String whereCode, String whereMore, Long qty) {
+        this.whereCode = whereCode;
+        this.whereMore = whereMore;
+        this.qty = qty.intValue();
     }
 
     public void setColorId(String colorId) {

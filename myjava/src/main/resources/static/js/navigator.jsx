@@ -54,7 +54,7 @@ class Navigator extends React.Component {
                         <ul className="nav navbar-nav">
                             <li className="active"><a href="#">Home</a></li>
                             <li id={"partCategoriesMenu"}><a href="#" onClick={(e) => {selectMenu('partCategoriesMenu');hideAll();partCategories();e.preventDefault();}}>Part Categories</a></li>
-                            <li id={"myPartsMenu"}><a className={(this.state.loginUserAdmin == true ? '' : ' hide')} href="#" onClick={(e) => {selectMenu('myPartsMenu');hideAll();myParts();e.preventDefault();}}>My Parts</a></li>
+                            <li id={"myWheresMenu"}><a className={(this.state.loginUserAdmin == true ? '' : ' hide')} href="#" onClick={(e) => {selectMenu('myWheresMenu');hideAll();myWheres();e.preventDefault();}}>My Wheres</a></li>
                             <li id={"candidateMenu"}><a className={(this.state.loginUserAdmin == true ? '' : ' hide')} href="#" onClick={(e) => {selectMenu('candidateMenu');hideAll();candidate();e.preventDefault();}}>Candidate</a></li>
                         </ul>
                         <ul className="nav navbar-nav navbar-right">

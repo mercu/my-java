@@ -5,6 +5,7 @@ import com.mercu.bricklink.service.BrickLinkMyService;
 import com.mercu.lego.model.my.MyItem;
 import com.mercu.lego.model.my.MyItemGroup;
 import com.mercu.lego.service.MatchMyItemService;
+import com.mercu.lego.service.MyItemService;
 import com.mercu.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ public class MyPartController {
     private BrickLinkMyService brickLinkMyService;
     @Autowired
     private MatchMyItemService matchMyItemService;
+    @Autowired
+    private MyItemService myItemService;
 
     @RequestMapping("/admin/myPartsByGroup")
     @ResponseBody
@@ -41,6 +44,13 @@ public class MyPartController {
     public String myPartWhereInfos(@RequestParam String partNo, @RequestParam String colorId) {
         List<MyItem> myPartWhereInfos = brickLinkMyService.findMyItemWheresWithInfos(CategoryType.P.getCode(), partNo, colorId);
         return JsonUtils.toJson(myPartWhereInfos);
+    }
+
+    @RequestMapping("/admin/groupByWheres")
+    @ResponseBody
+    public String groupByWheres() {
+        List<MyItem> groupByWheres = myItemService.groupByWheres();
+        return JsonUtils.toJson(groupByWheres);
     }
 
     @RequestMapping(value = "/admin/myPartQty", method = RequestMethod.POST)
