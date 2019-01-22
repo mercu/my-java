@@ -1,9 +1,11 @@
 package com.mercu.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaVendorAdapter;
@@ -27,15 +29,24 @@ import java.util.Properties;
         "com.mercu.log"
 })
 @EnableJpaRepositories(basePackages = {"com.mercu"})
+@PropertySource("classpath:/db.properties")
 public class AppConfig {
+    @Value("${db.driver}")
+    private String dbDriver;
+    @Value("${db.url}")
+    private String dbUrl;
+    @Value("${db.username}")
+    private String dbUsername;
+    @Value("${db.password}")
+    private String dbPassword;
 
     @Bean
     public DataSource dataSource(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://mercu.ipdisk.co.kr:13306/mercu?autoReconnect=true&useSSL=false&characterEncoding=utf8");
-        dataSource.setUsername( "" );
-        dataSource.setPassword( "" );
+        dataSource.setDriverClassName(dbDriver);
+        dataSource.setUrl(dbUrl);
+        dataSource.setUsername(dbUsername);
+        dataSource.setPassword(dbPassword);
         return dataSource;
     }
 
